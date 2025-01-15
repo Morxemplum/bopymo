@@ -77,7 +77,7 @@ class Game_Version:
         return str(self.major) + "." + str(self.minor) + "." + str(self.micro)
 
 
-GAME_VERSION = Game_Version(1, 0, 12)
+GAME_VERSION = Game_Version(1, 0, 13)
 
 ### ENUMS
 
