@@ -228,7 +228,6 @@ class Bopimo_Object:
         rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
-        self.uid: int = random.randrange(1, 2**32)
         self.id: Block_ID | int = id
         self.name: str = name
         self.nametag: bool = False
@@ -250,7 +249,6 @@ class Bopimo_Object:
 
     def json(self) -> dict[str, Any]:
         return {
-            "uid": self.uid,
             "block_id": self.id,
             "block_name": self.name,
             "nametag": self.nametag,
@@ -326,14 +324,23 @@ class Bopimo_Level:
 
         # MAP INFORMATION
         self.death_plane: float = -1000
-        self.blocks: List[Bopimo_Object] = []
+        self.blocks: dict[int, Bopimo_Object] = {}
 
-    def add_object(self, obj: Bopimo_Object):
-        self.blocks.append(obj)
+    def add_object(self, obj: Bopimo_Object) -> int:
+        uid: int = random.randrange(1, 2**32)
+        # If we encounter collisions, regenerate the uid
+        while uid in self.blocks:
+            uid = random.randrange(1, 2**32)
+        self.blocks[uid] = obj
+        # Return the UID in case the user wants a direct reference to the object in the level
+        return uid
 
-    def add_objects(self, obj_list: List[Bopimo_Object]):
+    def add_objects(self, obj_list: List[Bopimo_Object]) -> List[int]:
+        uid_list: List[int] = []
         for obj in obj_list:
-            self.blocks.append(obj)
+            uid = self.add_object(obj)
+            uid_list.append(uid)
+        return uid_list
 
     def json(self) -> dict[str, Any]:
         obj: dict[str, Any] = {
@@ -356,8 +363,10 @@ class Bopimo_Level:
             "level_blocks": {"type": "Container_Array", "value": []},
         }
         # Append all the blocks in JSON
-        for block in self.blocks:
-            obj["level_blocks"]["value"].append(block.json())
+        uid: int
+        block: Bopimo_Object
+        for uid, block in self.blocks.items():
+            obj["level_blocks"]["value"].append({"uid": uid} | block.json())
 
         return obj
 
