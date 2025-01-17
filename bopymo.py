@@ -324,14 +324,26 @@ class Bopimo_Level:
 
         # MAP INFORMATION
         self.death_plane: float = -1000
-        self.blocks: dict[int, Bopimo_Object] = {}
+        self.__blocks: dict[int, Bopimo_Object] = {}
+
+    def remove_object(self, uid: int) -> Bopimo_Object:
+        if uid not in self.__blocks:
+            raise KeyError(
+                "Bopimo Level does not contain an object with uid " + str(uid)
+            )
+        return self.__blocks.pop(uid)
+
+    def get_object(self, uid: int) -> Bopimo_Object | None:
+        if uid not in self.__blocks:
+            return None
+        return self.__blocks[uid]
 
     def add_object(self, obj: Bopimo_Object) -> int:
         uid: int = random.randrange(1, 2**32)
         # If we encounter collisions, regenerate the uid
-        while uid in self.blocks:
+        while uid in self.__blocks:
             uid = random.randrange(1, 2**32)
-        self.blocks[uid] = obj
+        self.__blocks[uid] = obj
         # Return the UID in case the user wants a direct reference to the object in the level
         return uid
 
@@ -365,7 +377,7 @@ class Bopimo_Level:
         # Append all the blocks in JSON
         uid: int
         block: Bopimo_Object
-        for uid, block in self.blocks.items():
+        for uid, block in self.__blocks.items():
             obj["level_blocks"]["value"].append({"uid": uid} | block.json())
 
         return obj
