@@ -103,11 +103,13 @@ class Bopimo_Vector3:
     def __sub__(self, other: "Bopimo_Vector3") -> "Bopimo_Vector3":
         return Bopimo_Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
 
-    def __iadd__(self, other: "Bopimo_Vector3") -> "Bopimo_Vector3":
-        return self.__add__(other)
+    def __mul__(self, other: int | float) -> "Bopimo_Vector3":
+        return Bopimo_Vector3(self.x * other, self.y * other, self.z * other)
 
-    def __isub__(self, other: "Bopimo_Vector3") -> "Bopimo_Vector3":
-        return self.__sub__(other)
+    def __div__(self, other: int | float) -> "Bopimo_Vector3":
+        if other == 0:
+            raise ZeroDivisionError()
+        return Bopimo_Vector3(self.x / other, self.y / other, self.z / other)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_Vector3):
