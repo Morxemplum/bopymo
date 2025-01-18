@@ -74,7 +74,7 @@ class Game_Version:
         return not (self == other)
 
     def __str__(self) -> str:
-        return str(self.major) + "." + str(self.minor) + "." + str(self.micro)
+        return f"{self.major}.{self.minor}.{self.micro}"
 
 
 GAME_VERSION = Game_Version(1, 0, 13)
@@ -328,9 +328,7 @@ class Bopimo_Level:
 
     def remove_object(self, uid: int) -> Bopimo_Object:
         if uid not in self.__blocks:
-            raise KeyError(
-                "Bopimo Level does not contain an object with uid " + str(uid)
-            )
+            raise KeyError(f"Bopimo Level does not contain an object with uid {uid}")
         return self.__blocks.pop(uid)
 
     def get_object(self, uid: int) -> Bopimo_Object | None:
@@ -385,7 +383,7 @@ class Bopimo_Level:
     # TODO: Add a function that can import a bopjson file.
 
     def export(self, file_path: str):
-        with open(file_path + ".bopjson", "w") as file:
+        with open(f"{file_path}.bopjson", "w") as file:
             file.write(json.dumps(self.json()))
 
 
@@ -717,7 +715,7 @@ class Bopimo_Cannon(Bopimo_Object):
         position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
         rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
-        power: float = 50
+        power: float = 50,
     ):
         super().__init__(Block_ID.CANNON, name, color, position, rotation, scale)
         self.power: float = power

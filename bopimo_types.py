@@ -79,18 +79,7 @@ class Bopimo_Color:
         return not (self == other)
 
     def __str__(self) -> str:
-        return (
-            self.bopjson_type_name
-            + "("
-            + str(self.red)
-            + ", "
-            + str(self.green)
-            + ", "
-            + str(self.blue)
-            + ", "
-            + str(self.alpha)
-            + ")"
-        )
+        return f"{self.bopjson_type_name}({self.red}, {self.green}, {self.blue}, {self.alpha})"
 
 
 class Bopimo_Vector3:
@@ -132,16 +121,7 @@ class Bopimo_Vector3:
         return not (self == other)
 
     def __str__(self) -> str:
-        return (
-            self.bopjson_type_name
-            + "( "
-            + str(self.x)
-            + ", "
-            + str(self.y)
-            + ", "
-            + str(self.z)
-            + ")"
-        )
+        return f"{self.bopjson_type_name}({self.x}, {self.y}, {self.z})"
 
 
 class Bopimo_Vector3Array:
