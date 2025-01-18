@@ -113,10 +113,14 @@ class Bopimo_ColorArray:
         return obj
 
 
+# This will come up often because though integers are technically acceptable, enums are more future-proof.
+type Bopimo_Integer = int | IntEnum
+
+
 class Bopimo_Int32Array:
     bopjson_type_name: str = "Int32_Array"
 
-    def __init__(self, int_list: List[int | IntEnum] = []):
+    def __init__(self, int_list: List[Bopimo_Integer] = []):
         self.list = int_list
 
     def is_empty(self) -> bool:
