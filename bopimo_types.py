@@ -53,6 +53,35 @@ class Bopimo_Color:
     def json(self) -> dict[str, Any]:
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_Color):
+            raise TypeError()
+        return (
+            (self.red == other.red)
+            and (self.green == other.green)
+            and (self.blue == other.blue)
+            and (self.alpha == other.alpha)
+        )
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_Color):
+            raise TypeError()
+        return not (self == other)
+
+    def __str__(self) -> str:
+        return (
+            self.bopjson_type_name
+            + "("
+            + str(self.red)
+            + ", "
+            + str(self.green)
+            + ", "
+            + str(self.blue)
+            + ", "
+            + str(self.alpha)
+            + ")"
+        )
+
 
 class Bopimo_Vector3:
     bopjson_type_name: str = "Vector3F32"
@@ -61,6 +90,12 @@ class Bopimo_Vector3:
         self.x = x
         self.y = y
         self.z = z
+
+    def to_obj(self) -> dict[str, float]:
+        return {"x": self.x, "y": self.y, "z": self.z}
+
+    def json(self) -> dict[str, Any]:
+        return {"type": self.bopjson_type_name, "value": self.to_obj()}
 
     def __add__(self, other: "Bopimo_Vector3") -> "Bopimo_Vector3":
         return Bopimo_Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
@@ -74,11 +109,27 @@ class Bopimo_Vector3:
     def __isub__(self, other: "Bopimo_Vector3") -> "Bopimo_Vector3":
         return self.__sub__(other)
 
-    def to_obj(self) -> dict[str, float]:
-        return {"x": self.x, "y": self.y, "z": self.z}
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_Vector3):
+            raise TypeError()
+        return (self.x == other.x) and (self.y == other.y) and (self.z == other.z)
 
-    def json(self) -> dict[str, Any]:
-        return {"type": self.bopjson_type_name, "value": self.to_obj()}
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_Vector3):
+            raise TypeError()
+        return not (self == other)
+
+    def __str__(self) -> str:
+        return (
+            self.bopjson_type_name
+            + "( "
+            + str(self.x)
+            + ", "
+            + str(self.y)
+            + ", "
+            + str(self.z)
+            + ")"
+        )
 
 
 class Bopimo_Vector3Array:
@@ -97,7 +148,7 @@ class Bopimo_Vector3Array:
         return self.__list[index]
 
     def is_empty(self) -> bool:
-        return len(self.__list) == 0
+        return len(self) == 0
 
     def remove_vector(self, index: int) -> Bopimo_Vector3:
         return self.__list.pop(index)
@@ -107,6 +158,36 @@ class Bopimo_Vector3Array:
         for vector3 in self.__list:
             obj["value"].append(vector3.to_obj())
         return obj
+
+    def __len__(self) -> int:
+        return len(self.__list)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_Vector3Array):
+            raise TypeError()
+        if len(self) != len(other):
+            return False
+        if self.is_empty():
+            return True
+
+        # Order matters for equality.
+        for vec1, vec2 in zip(self.__list, other.__list):
+            if vec1 != vec2:
+                return False
+        return True
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_Vector3Array):
+            raise TypeError()
+        return not (self == other)
+
+    def __str__(self) -> str:
+        s = "Vector3Array("
+        for vec in self.__list:
+            s = s + str(vec)
+            if self.__list[-1] != vec:
+                s = s + ", "
+        return s + ")"
 
 
 class Bopimo_ColorArray:
@@ -135,6 +216,36 @@ class Bopimo_ColorArray:
         for color in self.__list:
             obj["value"].append(color.to_obj())
         return obj
+
+    def __len__(self) -> int:
+        return len(self.__list)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_ColorArray):
+            raise TypeError()
+        if len(self) != len(other):
+            return False
+        if self.is_empty():
+            return True
+
+        # Order matters for equality.
+        for col1, col2 in zip(self.__list, other.__list):
+            if col1 != col2:
+                return False
+        return True
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_ColorArray):
+            raise TypeError()
+        return not (self == other)
+
+    def __str__(self) -> str:
+        s = "ColorArray("
+        for col in self.__list:
+            s = s + str(col)
+            if self.__list[-1] != col:
+                s = s + ", "
+        return s + ")"
 
 
 # This will come up often because though integers are technically acceptable, enums are more future-proof.
@@ -167,3 +278,33 @@ class Bopimo_Int32Array:
         for value in self.__list:
             values.append(value)
         return {"type": self.bopjson_type_name, "value": values}
+
+    def __len__(self) -> int:
+        return len(self.__list)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_Int32Array):
+            raise TypeError()
+        if len(self) != len(other):
+            return False
+        if self.is_empty():
+            return True
+
+        # Order matters for equality.
+        for num1, num2 in zip(self.__list, other.__list):
+            if num1 != num2:
+                return False
+        return True
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Bopimo_Int32Array):
+            raise TypeError()
+        return not (self == other)
+
+    def __str__(self) -> str:
+        s = "Int32Array("
+        for num in self.__list:
+            s = s + str(num)
+            if self.__list[-1] != num:
+                s = s + ", "
+        return s + ")"
