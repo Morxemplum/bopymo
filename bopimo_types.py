@@ -85,14 +85,26 @@ class Bopimo_Vector3Array:
     bopjson_type_name: str = Bopimo_Vector3.bopjson_type_name + "_Array"
 
     def __init__(self, vector3_list: List[Bopimo_Vector3] = []):
-        self.list = vector3_list
+        self.__list = vector3_list
+
+    def add_vector(self, vector: Bopimo_Vector3):
+        self.__list.append(vector)
+
+    def clear(self):
+        self.__list.clear()
+
+    def get_vector(self, index: int) -> Bopimo_Vector3:
+        return self.__list[index]
 
     def is_empty(self) -> bool:
-        return len(self.list) == 0
+        return len(self.__list) == 0
+
+    def remove_vector(self, index: int) -> Bopimo_Vector3:
+        return self.__list.pop(index)
 
     def json(self) -> dict[str, Any]:
         obj: dict[str, Any] = {"type": self.bopjson_type_name, "value": []}
-        for vector3 in self.list:
+        for vector3 in self.__list:
             obj["value"].append(vector3.to_obj())
         return obj
 
@@ -101,14 +113,26 @@ class Bopimo_ColorArray:
     bopjson_type_name: str = Bopimo_Color.bopjson_type_name + "_Array"
 
     def __init__(self, color_list: List[Bopimo_Color] = []):
-        self.list = color_list
+        self.__list = color_list
+
+    def add_color(self, vector: Bopimo_Color):
+        self.__list.append(vector)
+
+    def clear(self):
+        self.__list.clear()
+
+    def get_color(self, index: int) -> Bopimo_Color:
+        return self.__list[index]
 
     def is_empty(self) -> bool:
-        return len(self.list) == 0
+        return len(self.__list) == 0
+
+    def remove_color(self, index: int) -> Bopimo_Color:
+        return self.__list.pop(index)
 
     def json(self) -> dict[str, Any]:
         obj: dict[str, Any] = {"type": self.bopjson_type_name, "value": []}
-        for color in self.list:
+        for color in self.__list:
             obj["value"].append(color.to_obj())
         return obj
 
@@ -121,13 +145,25 @@ class Bopimo_Int32Array:
     bopjson_type_name: str = "Int32_Array"
 
     def __init__(self, int_list: List[Bopimo_Integer] = []):
-        self.list = int_list
+        self.__list = int_list
+
+    def add_int(self, vector: Bopimo_Integer):
+        self.__list.append(vector)
+
+    def clear(self):
+        self.__list.clear()
+
+    def get_int(self, index: int) -> Bopimo_Integer:
+        return self.__list[index]
 
     def is_empty(self) -> bool:
-        return len(self.list) == 0
+        return len(self.__list) == 0
+
+    def remove_int(self, index: int) -> Bopimo_Integer:
+        return self.__list.pop(index)
 
     def json(self) -> dict[str, Any]:
         values: List[int] = []
-        for value in self.list:
+        for value in self.__list:
             values.append(value)
         return {"type": self.bopjson_type_name, "value": values}
