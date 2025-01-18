@@ -12,6 +12,7 @@ class Bopimo_Color:
         self.green = green
         self.blue = blue
         self.alpha = alpha
+        self.__clamp()
 
     @classmethod
     def __from_hs(cls, h: int, s: float) -> tuple[float, float, float]:
@@ -38,14 +39,23 @@ class Bopimo_Color:
             return (1, t, g)
         return (1, 1, 1)  # Fallback
 
+    # Sanity check to stop out of range values
+    def __clamp(self):
+        self.red = max(0, min(self.red, 255))
+        self.green = max(0, min(self.green, 255))
+        self.blue = max(0, min(self.blue, 255))
+        self.alpha = max(0, min(self.alpha, 255))
+
     @classmethod
     def from_hsv(
         cls, hue: int = 0, saturation: float = 1, value: float = 1, alpha: int = 255
     ) -> "Bopimo_Color":
         r, g, b = cls.__from_hs(hue, saturation)
-        return Bopimo_Color(
+        c = Bopimo_Color(
             int(r * value * 255), int(g * value * 255), int(b * value * 255), alpha
         )
+        c.__clamp()
+        return c
 
     def to_obj(self) -> dict[str, int]:
         return {"r": self.red, "g": self.green, "b": self.blue, "a": self.alpha}
