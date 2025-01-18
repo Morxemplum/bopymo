@@ -717,9 +717,10 @@ class Bopimo_Cannon(Bopimo_Object):
         position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
         rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        power: float = 50
     ):
         super().__init__(Block_ID.CANNON, name, color, position, rotation, scale)
-        self.power: float = 50
+        self.power: float = power
 
     def json(self) -> dict[str, Any]:
         obj = super().json()
