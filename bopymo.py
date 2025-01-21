@@ -8,9 +8,16 @@ from bopimo_types import (
 
 import datetime
 from enum import IntEnum
+import logging
 import json
 import random
+import time
 from typing import Any, List
+
+# Change how much information you want to display on the console when you use Bopymo.
+LOG_LEVEL = logging.INFO
+LOG_FMT = "[%(levelname)s] - %(message)s"
+logging.basicConfig(level=LOG_LEVEL, format=LOG_FMT)
 
 
 class Game_Version:
@@ -289,6 +296,8 @@ class Bopimo_Tilable_Object(Bopimo_Object):
 
 
 class Bopimo_Level:
+    SERVER_BLOCK_LIMIT = 2048
+
     def __init__(
         self,
         name: str = "My Bopimo Level",
@@ -383,8 +392,19 @@ class Bopimo_Level:
     # TODO: Add a function that can import a bopjson file.
 
     def export(self, file_path: str):
+        start = time.perf_counter()
+        if len(self.__blocks) > Bopimo_Level.SERVER_BLOCK_LIMIT:
+            logging.warning(
+                f"Your level has {len(self.__blocks)} blocks, which exceeds the server block limit of {Bopimo_Level.SERVER_BLOCK_LIMIT}. "
+                "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
+                "not publish your level online."
+            )
         with open(f"{file_path}.bopjson", "w") as file:
             file.write(json.dumps(self.json()))
+        end = time.perf_counter()
+        logging.info(
+            f'"{self.name}" successfully exported to {file_path}.bopjson in {end - start}s'
+        )
 
 
 ## BOPIMO BLOCKS
