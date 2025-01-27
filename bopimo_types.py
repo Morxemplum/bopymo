@@ -90,6 +90,16 @@ class Bopimo_Vector3:
         self.y = y
         self.z = z
 
+    def to_degrees(self) -> "Bopimo_Vector3":
+        return Bopimo_Vector3(
+            math.degrees(self.x), math.degrees(self.y), math.degrees(self.z)
+        )
+
+    def to_radians(self) -> "Bopimo_Vector3":
+        return Bopimo_Vector3(
+            math.radians(self.x), math.radians(self.y), math.radians(self.z)
+        )
+
     def to_obj(self) -> dict[str, float]:
         return {"x": self.x, "y": self.y, "z": self.z}
 
