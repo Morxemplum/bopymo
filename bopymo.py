@@ -9,6 +9,8 @@ from bopimo_types import (
 import datetime
 from enum import IntEnum
 import logging
+import math
+from numpy import dot
 import json
 import random
 import time
@@ -1088,3 +1090,136 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
             "shoes": self.shoes,
             "toy": self.toy,
         }
+
+
+## UNOFFICIAL BLOCKS
+
+# WARNING: These classes are meant to incorporate concepts created by the
+#          Bopimo community, and are not official blocks. These blocks can be
+#          modified or removed at any time in the future, should the methods
+#          behind them break or an official implementation succeed these
+#          workarounds.
+
+
+# Decals can be made using either shirts or pants, each with their tradeoffs
+# Shirts: Has better resolution, but at the cost of warping if you rely on the corners
+# Pants: Has less warping, but you'll have a lower resolution.
+class Decal_Type(IntEnum):
+    SHIRT = 0
+    PANTS_FRONT_LEFT = 1  # Left Leg
+    PANTS_FRONT_RIGHT = 2  # Right Leg
+
+
+# Decals are made using transparent clothing items with images on specific faces.
+class Bopimo_Decal(Bopimo_Item_Mesh):
+    # The image will not match the actual object size. These constants will convert our size so it visually matches
+    # Shirt aspect ratio is 16:17
+    SHIRT_WIDTH_RATIO = 10 / 8
+    SHIRT_HEIGHT_RATIO = 20 / 17
+
+    PANTS_TILT_FIX = 2
+    PANTS_X_ADJUST = 41 / 200
+    PANTS_Y_ADJUST = 25 / 2000
+    # Pants aspect ratio is 12:21
+    PANTS_WIDTH_RATIO = 10 / 3
+    PANTS_HEIGHT_RATIO = 40 / 21
+
+    def __init__(
+        self,
+        name: str = "Generated Decal",
+        type: Decal_Type = Decal_Type.SHIRT,
+        image_id: int = 3372,
+        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        width: float = 2,
+        height: float = 2,
+    ):
+        super().__init__(
+            name,
+            Bopimo_Color(255, 255, 255),
+            position,
+            rotation,
+            # The Z axis must ideally be 0. By changing the Z value, you defeat the purpose of a decal
+            Bopimo_Vector3(width, height, 0.01),
+        )
+        self.item_id = image_id
+        self.type = type
+        # Oftentimes, images are not properly centered. Use this to center images.
+        self.offset = Bopimo_Vector3(0, 0, 0)
+
+    def calculate_size(self) -> Bopimo_Vector3:
+        if self.scale.z > 0.1:
+            logging.warning(
+                "You set a Decal's Z scale to a non-zero value, which defeats the purpose of a Decal. "
+                "Consider using a Bopimo_Item_Mesh instead."
+            )
+        match self.type:
+            case Decal_Type.SHIRT:
+                return Bopimo_Vector3(
+                    self.scale.x * self.SHIRT_WIDTH_RATIO,
+                    self.scale.y * self.SHIRT_HEIGHT_RATIO,
+                    self.scale.z,
+                )
+            case _:
+                return Bopimo_Vector3(
+                    self.scale.x * self.PANTS_WIDTH_RATIO,
+                    self.scale.y * self.PANTS_HEIGHT_RATIO,
+                    self.scale.z,
+                )
+
+    def __get_rotation_matrix(self, rotation: Bopimo_Vector3) -> List[List[float]]:
+        MATRIX_X: tuple[List[float], List[float], List[float]] = (
+            [1, 0, 0],
+            [0, math.cos(rotation.x), -math.sin(rotation.x)],
+            [0, math.sin(rotation.x), math.cos(rotation.x)],
+        )
+        MATRIX_Y: tuple[List[float], List[float], List[float]] = (
+            [math.cos(rotation.y), 0, math.sin(rotation.y)],
+            [0, 1, 0],
+            [-math.sin(rotation.y), 0, math.cos(rotation.y)],
+        )
+        MATRIX_Z: tuple[List[float], List[float], List[float]] = (
+            [math.cos(rotation.z), -math.sin(rotation.z), 0],
+            [math.sin(rotation.z), math.cos(rotation.z), 0],
+            [0, 0, 1],
+        )
+
+        return dot(dot(MATRIX_Y, MATRIX_X), MATRIX_Z)
+
+    def calculate_center_vector(self, scale: Bopimo_Vector3) -> Bopimo_Vector3:
+        if self.type == Decal_Type.SHIRT:
+            # Shirts are already centered
+            return Bopimo_Vector3(0, 0, 0)
+        direction = 1
+        if self.type == Decal_Type.PANTS_FRONT_RIGHT:
+            direction *= -1
+
+        x_adjust = self.PANTS_X_ADJUST * scale.x * -direction + self.offset.x
+        y_adjust = self.PANTS_Y_ADJUST * scale.y + self.offset.y
+        rot_matrix = self.__get_rotation_matrix(self.rotation.to_radians())
+        offset: List[float] = [x_adjust, y_adjust, 0]
+        x, y, z = dot(rot_matrix, offset)
+        return Bopimo_Vector3(x, y, z)
+
+    def json(self) -> dict[str, Any]:
+        obj = super().json()
+        fixed_scale = self.calculate_size()
+        obj["block_scale"] = fixed_scale.json()
+        translation = self.calculate_center_vector(fixed_scale)
+        if self.rotation_enabled:
+            # The pivot gets the translation instead of the position
+            fixed_pivot = self.rotation_pivot_offset + translation
+            obj["rotation_pivot_offset"] = fixed_pivot.json()
+        else:
+            fixed_position = self.position + translation
+            obj["block_position"] = fixed_position.json()
+        if self.type != Decal_Type.SHIRT:
+            tilt_fix = (
+                self.PANTS_TILT_FIX
+                if self.type == Decal_Type.PANTS_FRONT_RIGHT
+                else -self.PANTS_TILT_FIX
+            )
+            fixed_rotation = self.rotation + Bopimo_Vector3(0, 0, tilt_fix)
+            obj["block_rotation"] = fixed_rotation.json()
+
+        return obj
