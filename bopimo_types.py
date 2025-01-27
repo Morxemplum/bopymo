@@ -164,6 +164,12 @@ class Bopimo_Vector3Array:
             obj["value"].append(vector3.to_obj())
         return obj
 
+    def __iter__(self):
+        return iter(self.__list)
+
+    def __next__(self):
+        return next(self.__iter__())
+
     def __len__(self) -> int:
         return len(self.__list)
 
@@ -221,6 +227,12 @@ class Bopimo_ColorArray:
         for color in self.__list:
             obj["value"].append(color.to_obj())
         return obj
+
+    def __iter__(self):
+        return iter(self.__list)
+
+    def __next__(self):
+        return next(self.__iter__())
 
     def __len__(self) -> int:
         return len(self.__list)
@@ -283,6 +295,12 @@ class Bopimo_Int32Array:
         for value in self.__list:
             values.append(value)
         return {"type": self.bopjson_type_name, "value": values}
+
+    def __iter__(self):
+        return iter(self.__list)
+
+    def __next__(self):
+        return next(self.__iter__())
 
     def __len__(self) -> int:
         return len(self.__list)
