@@ -152,6 +152,9 @@ class Bopimo_Vector3Array:
     def get_vector(self, index: int) -> Bopimo_Vector3:
         return self.__list[index]
 
+    def set_vector(self, index: int, vector: Bopimo_Vector3):
+        self.__list[index] = vector
+
     def is_empty(self) -> bool:
         return len(self) == 0
 
@@ -215,6 +218,9 @@ class Bopimo_ColorArray:
 
     def get_color(self, index: int) -> Bopimo_Color:
         return self.__list[index]
+
+    def set_color(self, index: int, color: Bopimo_Color):
+        self.__list[index] = color
 
     def is_empty(self) -> bool:
         return len(self.__list) == 0
@@ -283,6 +289,9 @@ class Bopimo_Int32Array:
 
     def get_int(self, index: int) -> Bopimo_Integer:
         return self.__list[index]
+
+    def set_int(self, index: int, integer: Bopimo_Integer):
+        self.__list[index] = integer
 
     def is_empty(self) -> bool:
         return len(self.__list) == 0
