@@ -1,4 +1,5 @@
 import math
+from copy import copy, deepcopy
 from enum import IntEnum
 from typing import Any, List
 
@@ -78,6 +79,12 @@ class Bopimo_Color:
             raise TypeError()
         return not (self == other)
 
+    def __copy__(self) -> "Bopimo_Color":
+        return Bopimo_Color(self.red, self.green, self.blue, self.alpha)
+
+    def copy(self) -> "Bopimo_Color":
+        return copy(self)
+
     def __str__(self) -> str:
         return f"{self.bopjson_type_name}({self.red}, {self.green}, {self.blue}, {self.alpha})"
 
@@ -132,6 +139,12 @@ class Bopimo_Vector3:
         if not isinstance(other, Bopimo_Vector3):
             raise TypeError()
         return not (self == other)
+
+    def __copy__(self) -> "Bopimo_Vector3":
+        return Bopimo_Vector3(self.x, self.y, self.z)
+
+    def copy(self) -> "Bopimo_Vector3":
+        return copy(self)
 
     def __str__(self) -> str:
         return f"{self.bopjson_type_name}({self.x}, {self.y}, {self.z})"
@@ -194,6 +207,18 @@ class Bopimo_Vector3Array:
         if not isinstance(other, Bopimo_Vector3Array):
             raise TypeError()
         return not (self == other)
+
+    def __copy__(self) -> "Bopimo_Vector3Array":
+        return Bopimo_Vector3Array(copy(self.__list))
+
+    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_Vector3Array":
+        return Bopimo_Vector3Array(deepcopy(self.__list, memo))
+
+    # To make this more intuitive, this method will deep copy by default.
+    def copy(self, deep: bool = True) -> "Bopimo_Vector3Array":
+        if deep:
+            return deepcopy(self)
+        return copy(self)
 
     def __str__(self) -> str:
         s = "Vector3Array("
@@ -261,6 +286,17 @@ class Bopimo_ColorArray:
         if not isinstance(other, Bopimo_ColorArray):
             raise TypeError()
         return not (self == other)
+
+    def __copy__(self) -> "Bopimo_ColorArray":
+        return Bopimo_ColorArray(copy(self.__list))
+
+    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_ColorArray":
+        return Bopimo_ColorArray(deepcopy(self.__list, memo))
+
+    def copy(self, deep: bool = True) -> "Bopimo_ColorArray":
+        if deep:
+            return deepcopy(self)
+        return copy(self)
 
     def __str__(self) -> str:
         s = "ColorArray("
@@ -332,6 +368,17 @@ class Bopimo_Int32Array:
         if not isinstance(other, Bopimo_Int32Array):
             raise TypeError()
         return not (self == other)
+
+    def __copy__(self) -> "Bopimo_Int32Array":
+        return Bopimo_Int32Array(copy(self.__list))
+
+    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_Int32Array":
+        return Bopimo_Int32Array(deepcopy(self.__list, memo))
+
+    def copy(self, deep: bool = True) -> "Bopimo_Int32Array":
+        if deep:
+            return deepcopy(self)
+        return copy(self)
 
     def __str__(self) -> str:
         s = "Int32Array("
