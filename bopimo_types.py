@@ -1,7 +1,7 @@
 import math
 from copy import copy, deepcopy
 from enum import IntEnum
-from typing import Any, List
+from typing import Any, List, Self
 
 
 class Bopimo_Color:
@@ -154,40 +154,40 @@ class Bopimo_Vector3Array:
     bopjson_type_name: str = Bopimo_Vector3.bopjson_type_name + "_Array"
 
     def __init__(self, vector3_list: List[Bopimo_Vector3] = []):
-        self.__list = vector3_list
+        self._list = vector3_list
 
     def add_vector(self, vector: Bopimo_Vector3):
-        self.__list.append(vector)
+        self._list.append(vector)
 
     def clear(self):
-        self.__list.clear()
+        self._list.clear()
 
     def get_vector(self, index: int) -> Bopimo_Vector3:
-        return self.__list[index]
+        return self._list[index]
 
     def set_vector(self, index: int, vector: Bopimo_Vector3):
-        self.__list[index] = vector
+        self._list[index] = vector
 
     def is_empty(self) -> bool:
         return len(self) == 0
 
     def remove_vector(self, index: int) -> Bopimo_Vector3:
-        return self.__list.pop(index)
+        return self._list.pop(index)
 
     def json(self) -> dict[str, Any]:
         obj: dict[str, Any] = {"type": self.bopjson_type_name, "value": []}
-        for vector3 in self.__list:
+        for vector3 in self._list:
             obj["value"].append(vector3.to_obj())
         return obj
 
     def __iter__(self):
-        return iter(self.__list)
+        return iter(self._list)
 
     def __next__(self):
         return next(self.__iter__())
 
     def __len__(self) -> int:
-        return len(self.__list)
+        return len(self._list)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_Vector3Array):
@@ -198,7 +198,7 @@ class Bopimo_Vector3Array:
             return True
 
         # Order matters for equality.
-        for vec1, vec2 in zip(self.__list, other.__list):
+        for vec1, vec2 in zip(self._list, other._list):
             if vec1 != vec2:
                 return False
         return True
@@ -209,10 +209,10 @@ class Bopimo_Vector3Array:
         return not (self == other)
 
     def __copy__(self) -> "Bopimo_Vector3Array":
-        return Bopimo_Vector3Array(copy(self.__list))
+        return Bopimo_Vector3Array(copy(self._list))
 
     def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_Vector3Array":
-        return Bopimo_Vector3Array(deepcopy(self.__list, memo))
+        return Bopimo_Vector3Array(deepcopy(self._list, memo))
 
     # To make this more intuitive, this method will deep copy by default.
     def copy(self, deep: bool = True) -> "Bopimo_Vector3Array":
@@ -222,9 +222,9 @@ class Bopimo_Vector3Array:
 
     def __str__(self) -> str:
         s = "Vector3Array("
-        for vec in self.__list:
+        for vec in self._list:
             s = s + str(vec)
-            if self.__list[-1] != vec:
+            if self._list[-1] != vec:
                 s = s + ", "
         return s + ")"
 
@@ -233,40 +233,40 @@ class Bopimo_ColorArray:
     bopjson_type_name: str = Bopimo_Color.bopjson_type_name + "_Array"
 
     def __init__(self, color_list: List[Bopimo_Color] = []):
-        self.__list = color_list
+        self._list = color_list
 
     def add_color(self, vector: Bopimo_Color):
-        self.__list.append(vector)
+        self._list.append(vector)
 
     def clear(self):
-        self.__list.clear()
+        self._list.clear()
 
     def get_color(self, index: int) -> Bopimo_Color:
-        return self.__list[index]
+        return self._list[index]
 
     def set_color(self, index: int, color: Bopimo_Color):
-        self.__list[index] = color
+        self._list[index] = color
 
     def is_empty(self) -> bool:
-        return len(self.__list) == 0
+        return len(self._list) == 0
 
     def remove_color(self, index: int) -> Bopimo_Color:
-        return self.__list.pop(index)
+        return self._list.pop(index)
 
     def json(self) -> dict[str, Any]:
         obj: dict[str, Any] = {"type": self.bopjson_type_name, "value": []}
-        for color in self.__list:
+        for color in self._list:
             obj["value"].append(color.to_obj())
         return obj
 
     def __iter__(self):
-        return iter(self.__list)
+        return iter(self._list)
 
     def __next__(self):
         return next(self.__iter__())
 
     def __len__(self) -> int:
-        return len(self.__list)
+        return len(self._list)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_ColorArray):
@@ -277,7 +277,7 @@ class Bopimo_ColorArray:
             return True
 
         # Order matters for equality.
-        for col1, col2 in zip(self.__list, other.__list):
+        for col1, col2 in zip(self._list, other._list):
             if col1 != col2:
                 return False
         return True
@@ -288,10 +288,10 @@ class Bopimo_ColorArray:
         return not (self == other)
 
     def __copy__(self) -> "Bopimo_ColorArray":
-        return Bopimo_ColorArray(copy(self.__list))
+        return Bopimo_ColorArray(copy(self._list))
 
     def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_ColorArray":
-        return Bopimo_ColorArray(deepcopy(self.__list, memo))
+        return Bopimo_ColorArray(deepcopy(self._list, memo))
 
     def copy(self, deep: bool = True) -> "Bopimo_ColorArray":
         if deep:
@@ -300,9 +300,9 @@ class Bopimo_ColorArray:
 
     def __str__(self) -> str:
         s = "ColorArray("
-        for col in self.__list:
+        for col in self._list:
             s = s + str(col)
-            if self.__list[-1] != col:
+            if self._list[-1] != col:
                 s = s + ", "
         return s + ")"
 
@@ -311,47 +311,49 @@ class Bopimo_ColorArray:
 type Bopimo_Integer = int | IntEnum
 
 
-class Bopimo_Int32Array:
-    bopjson_type_name: str = "Int32_Array"
+# NOT A REAL TYPE. THIS IS A SUPERCLASS TO DEDUPLICATE CODE
+# The great thing about Python: Integers can be both 32 AND 64 bit.
+class Bopimo_IntArray:
+    bopjson_type_name: str = "Int_Array"
 
     def __init__(self, int_list: List[Bopimo_Integer] = []):
-        self.__list = int_list
+        self._list = int_list
 
-    def add_int(self, vector: Bopimo_Integer):
-        self.__list.append(vector)
+    def add_int(self, integer: Bopimo_Integer):
+        self._list.append(integer)
 
     def clear(self):
-        self.__list.clear()
+        self._list.clear()
 
     def get_int(self, index: int) -> Bopimo_Integer:
-        return self.__list[index]
+        return self._list[index]
 
     def set_int(self, index: int, integer: Bopimo_Integer):
-        self.__list[index] = integer
+        self._list[index] = integer
 
     def is_empty(self) -> bool:
-        return len(self.__list) == 0
+        return len(self._list) == 0
 
     def remove_int(self, index: int) -> Bopimo_Integer:
-        return self.__list.pop(index)
+        return self._list.pop(index)
 
     def json(self) -> dict[str, Any]:
         values: List[int] = []
-        for value in self.__list:
+        for value in self._list:
             values.append(value)
         return {"type": self.bopjson_type_name, "value": values}
 
     def __iter__(self):
-        return iter(self.__list)
+        return iter(self._list)
 
     def __next__(self):
         return next(self.__iter__())
 
     def __len__(self) -> int:
-        return len(self.__list)
+        return len(self._list)
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_Int32Array):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         if len(self) != len(other):
             return False
@@ -359,31 +361,71 @@ class Bopimo_Int32Array:
             return True
 
         # Order matters for equality.
-        for num1, num2 in zip(self.__list, other.__list):
+        for num1, num2 in zip(self._list, other._list):
             if num1 != num2:
                 return False
         return True
 
     def __ne__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_Int32Array):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
 
-    def __copy__(self) -> "Bopimo_Int32Array":
-        return Bopimo_Int32Array(copy(self.__list))
+    def __copy__(self) -> Self:
+        return self.__class__(copy(self._list))
 
-    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_Int32Array":
-        return Bopimo_Int32Array(deepcopy(self.__list, memo))
+    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+        return self.__class__(deepcopy(self._list, memo))
 
-    def copy(self, deep: bool = True) -> "Bopimo_Int32Array":
+    def copy(self, deep: bool = True) -> Self:
         if deep:
             return deepcopy(self)
         return copy(self)
 
     def __str__(self) -> str:
-        s = "Int32Array("
-        for num in self.__list:
+        s = f"{self.bopjson_type_name}("
+        for num in self._list:
             s = s + str(num)
-            if self.__list[-1] != num:
+            if self._list[-1] != num:
                 s = s + ", "
         return s + ")"
+
+
+class Bopimo_Int32Array(Bopimo_IntArray):
+    bopjson_type_name: str = "Int32_Array"
+
+    def __init__(self, int_list: List[Bopimo_Integer] = []):
+        self._list = int_list
+        self.signed = False
+
+    def json(self) -> dict[str, Any]:
+        values: List[int] = []
+        lower_bound = 0 if not self.signed else -(2**31)
+        upper_bound = 2**32 if not self.signed else (2**31) - 1
+        for value in self._list:
+            if value < lower_bound or value > upper_bound:
+                raise OverflowError(
+                    f"You have ran into an overflow/underflow in a 32-bit array with {value}."
+                )
+            values.append(value)
+        return {"type": self.bopjson_type_name, "value": values}
+
+
+class Bopimo_Int64Array(Bopimo_IntArray):
+    bopjson_type_name: str = "Int64_Array"
+
+    def __init__(self, int_list: List[Bopimo_Integer] = []):
+        self._list = int_list
+        self.signed = False
+
+    def json(self) -> dict[str, Any]:
+        values: List[int] = []
+        lower_bound = 0 if not self.signed else -(2**63)
+        upper_bound = 2**64 if not self.signed else (2**63) - 1
+        for value in self._list:
+            if value < lower_bound or value > upper_bound:
+                raise OverflowError(
+                    f"You have ran into an overflow/underflow in a 64-bit array with {value}."
+                )
+            values.append(value)
+        return {"type": self.bopjson_type_name, "value": values}
