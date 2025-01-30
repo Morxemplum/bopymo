@@ -6,6 +6,7 @@ from bopimo_types import (
     Bopimo_ColorArray,
 )
 
+from copy import deepcopy
 import datetime
 from enum import IntEnum
 import logging
@@ -14,7 +15,7 @@ from numpy import dot
 import json
 import random
 import time
-from typing import Any, List
+from typing import Any, List, Self
 
 # Change how much information you want to display on the console when you use Bopymo.
 LOG_LEVEL = logging.INFO
@@ -255,6 +256,39 @@ class Bopimo_Object:
         self.rotation_pivot_offset: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0)
         self.rotation_direction: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0)
         self.rotation_speed: float = 1
+
+    # Only keyword arguments are supported, because you should be using keyword arguments anyway when quickhanding Bopymo objects
+    def __copy__(self, deep_copy: bool = True, **kwargs: Any) -> Self:
+        copied_object = self.__class__()
+        dictionary = self.__dict__
+        # While this goes against convention to make deepcopying the default behavior, I am doing this for multiple reasons:
+        # 1. It is much more intuitive for the level maker for everything to be deep copied,
+        #    as new programmers will have a harder time figuring out bugs related to shallow copying
+        # 2. In the event that Bopimo adds a feature where Objects can have Parent-Child relationships,
+        #    __deepcopy__ should be reserved for that use case. __copy__ will ONLY copy the object invoked,
+        #    while __deepcopy__ will also make new copies of the object's children.
+        # If performance is really *that* much of a concern to you, you can set deep_copy to false
+        if deep_copy:
+            dictionary = deepcopy(self.__dict__)
+        copied_object.__dict__.update(dictionary)
+
+        # Overwrite copied attributes with custom provided arguments
+        for attribute, value in kwargs.items():
+            # Sanity checks, making debugging a lot easier
+            if not attribute in self.__dict__:
+                raise KeyError(
+                    f"{attribute} is not a valid attribute of {self.__class__}. To quickhand non-standard attributes, make sure they are declared in the object you're copying."
+                )
+            if not isinstance(value, copied_object.__dict__[attribute].__class__):
+                raise TypeError(
+                    f'Quickhanded "{attribute}" attribute has an incompatible type. Expected {copied_object.__dict__[attribute].__class__}, got {value.__class__}'
+                )
+            copied_object.__dict__[attribute] = value
+
+        return copied_object
+
+    def copy(self, deep_copy: bool = True, **kwargs: Any) -> Self:
+        return self.__copy__(deep_copy, **kwargs)
 
     def json(self) -> dict[str, Any]:
         return {
