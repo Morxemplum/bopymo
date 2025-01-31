@@ -287,6 +287,10 @@ class Bopimo_Object:
         # Overwrite copied attributes with custom provided arguments
         for attribute, value in kwargs.items():
             # Sanity checks, making debugging a lot easier
+            if attribute.startswith("_"):
+                raise AttributeError(
+                    f'Can not quickhand "{attribute}", a private attribute. This value either can not be modified, or requires methods to change values.'
+                )
             if not attribute in self.__dict__:
                 raise KeyError(
                     f"{attribute} is not a valid attribute of {self.__class__}. To quickhand non-standard attributes, make sure they are declared in the object you're copying."
