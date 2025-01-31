@@ -3,6 +3,7 @@ from bopimo_types import (
     Bopimo_Vector3,
     Bopimo_Vector3Array,
     Bopimo_Int32Array,
+    Bopimo_Int64Array,
     Bopimo_ColorArray,
 )
 
@@ -93,6 +94,8 @@ GAME_VERSION = Game_Version(1, 0, 13)
 
 
 class Block_ID(IntEnum):
+    NULL = -1
+
     # PRIMITIVES
     CUBE = 0
     RAMP = 1
@@ -121,6 +124,7 @@ class Block_ID(IntEnum):
     STRING_LIGHTS = 1009
     MESH = 1100
     CLOUD = 1101
+    STATUE = 1102
 
     # ACTION
     SPRING = 2000
@@ -139,10 +143,18 @@ class Block_ID(IntEnum):
     MISSILE_LAUNCHER = 2013
     BREAKABLE_BLOCK = 2014
     CANNON = 2015
+    PORTAL = 2016
     WEB = 2025
 
     # NPC
     BOPI_SPAWNER = 3000
+
+    # HIDDEN
+    HYACINTH = 1010
+    ANALOG_CLOCK = 1012
+    GLOOMLIGHT_SPAWNER = 3100
+    ITEM_GRANTER = 60000
+    BLEEDING_EYE = 61366
 
 
 class Block_Pattern(IntEnum):
@@ -231,7 +243,7 @@ class Bopimo_Property:
 class Bopimo_Object:
     def __init__(
         self,
-        id: Block_ID | int = Block_ID.CUBE,
+        id: Block_ID | int = Block_ID.NULL,
         name: str = "Object",
         color: Bopimo_Color = Bopimo_Color(0, 0, 0),
         position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
@@ -781,6 +793,31 @@ class Bopimo_Cannon(Bopimo_Object):
         return obj | {"power": self.power}
 
 
+# WARNING: This is a hidden block, not available in the level editor. It is functional, but has unfinished features.
+#          This class is subject to change.
+class Bopimo_Portal(Bopimo_Object):
+    def __init__(
+        self,
+        name: str = "Generated Portal",
+        color: Bopimo_Color = Bopimo_Color(0, 105, 182),
+        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        scale: Bopimo_Vector3 = Bopimo_Vector3(10, 10, 2),
+    ):
+        super().__init__(Block_ID.PORTAL, name, color, position, rotation, scale)
+        # Currently this attribute is non-functional. I will update it when it works properly
+        self.transparency: int = 224
+        # Destinations work based on Object UIDs. Bopimo_Level.add_object returns an object's UID, so use that to make this work.
+        self.destinations: Bopimo_Int64Array = Bopimo_Int64Array([])
+
+    def json(self) -> dict[str, Any]:
+        obj = super().json()
+        return obj | {
+            "transparency": self.transparency,
+            "destinations": self.destinations.json(),
+        }
+
+
 class Bopimo_Web(Bopimo_Object):
     def __init__(
         self,
@@ -1059,6 +1096,22 @@ class Bopimo_Cloud(Bopimo_Tilable_Object):
         return super().json()
 
 
+# WARNING: This is a hidden block and is very likely unfinished. This class is subject to change.
+class Bopimo_Statue(Bopimo_Tilable_Object):
+    def __init__(
+        self,
+        name: str = "Generated Analog Clock",
+        color: Bopimo_Color = Bopimo_Color(246, 156, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        scale: Bopimo_Vector3 = Bopimo_Vector3(3, 5, 2),
+    ):
+        super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
+
+    def json(self) -> dict[str, Any]:
+        return super().json()
+
+
 ## NPC BLOCKS
 class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
     def __init__(
@@ -1124,6 +1177,61 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
             "shoes": self.shoes,
             "toy": self.toy,
         }
+
+
+## HIDDEN BLOCKS
+
+# WARNING: These classes incorporate blocks that are not available in the editor,
+#          and typically for good reason. These are blocks that were never meant
+#          to be accessed by level makers. While I will allow hidden blocks that
+#          are functional and finished, Bopymo does not guarantee that these blocks
+#          will remain and removal of such blocks won't be considered a breaking
+#          change. Use at your own risk!
+
+
+class Bopimo_Analog_Clock(Bopimo_Tilable_Object):
+    def __init__(
+        self,
+        name: str = "Generated Analog Clock",
+        color: Bopimo_Color = Bopimo_Color(160, 29, 175),
+        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+    ):
+        super().__init__(Block_ID.ANALOG_CLOCK, name, color, position, rotation, scale)
+
+    def json(self) -> dict[str, Any]:
+        return super().json()
+
+
+class Bopimo_Bleeding_Eye(Bopimo_Tilable_Object):
+    def __init__(
+        self,
+        name: str = "Generated Bleeding Eye",
+        color: Bopimo_Color = Bopimo_Color(237, 0, 8),
+        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+    ):
+        super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
+
+    def json(self) -> dict[str, Any]:
+        return super().json()
+
+
+class Bopimo_Hyacinth(Bopimo_Tilable_Object):
+    def __init__(
+        self,
+        name: str = "Generated Hyacinth Flower",
+        color: Bopimo_Color = Bopimo_Color(20, 126, 172),
+        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+    ):
+        super().__init__(Block_ID.HYACINTH, name, color, position, rotation, scale)
+
+    def json(self) -> dict[str, Any]:
+        return super().json()
 
 
 ## UNOFFICIAL BLOCKS
