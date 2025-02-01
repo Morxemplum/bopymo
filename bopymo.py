@@ -385,24 +385,24 @@ class Bopimo_Level:
 
         # MAP INFORMATION
         self.death_plane: float = -1000
-        self.__blocks: dict[int, Bopimo_Object] = {}
+        self._blocks: dict[int, Bopimo_Object] = {}
 
     def remove_object(self, uid: int) -> Bopimo_Object:
-        if uid not in self.__blocks:
+        if uid not in self._blocks:
             raise KeyError(f"Bopimo Level does not contain an object with uid {uid}")
-        return self.__blocks.pop(uid)
+        return self._blocks.pop(uid)
 
     def get_object(self, uid: int) -> Bopimo_Object | None:
-        if uid not in self.__blocks:
+        if uid not in self._blocks:
             return None
-        return self.__blocks[uid]
+        return self._blocks[uid]
 
     def add_object(self, obj: Bopimo_Object) -> int:
         uid: int = random.randrange(1, 2**32)
         # If we encounter collisions, regenerate the uid
-        while uid in self.__blocks:
+        while uid in self._blocks:
             uid = random.randrange(1, 2**32)
-        self.__blocks[uid] = obj
+        self._blocks[uid] = obj
         # Return the UID in case the user wants a direct reference to the object in the level
         return uid
 
@@ -436,7 +436,7 @@ class Bopimo_Level:
         # Append all the blocks in JSON
         uid: int
         block: Bopimo_Object
-        for uid, block in self.__blocks.items():
+        for uid, block in self._blocks.items():
             obj["level_blocks"]["value"].append({"uid": uid} | block.json())
 
         return obj
@@ -445,9 +445,9 @@ class Bopimo_Level:
 
     def export(self, file_path: str):
         start = time.perf_counter()
-        if len(self.__blocks) > Bopimo_Level.SERVER_BLOCK_LIMIT:
+        if len(self._blocks) > Bopimo_Level.SERVER_BLOCK_LIMIT:
             logging.warning(
-                f"Your level has {len(self.__blocks)} blocks, which exceeds the server block limit of {Bopimo_Level.SERVER_BLOCK_LIMIT}. "
+                f"Your level has {len(self._blocks)} blocks, which exceeds the server block limit of {Bopimo_Level.SERVER_BLOCK_LIMIT}. "
                 "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
                 "not publish your level online."
             )
@@ -521,7 +521,7 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
 
 
 class Bopimo_Completion_Star(Bopimo_Tilable_Object):
-    __star_counter: int = 0
+    _star_counter: int = 0
 
     def __init__(
         self,
@@ -537,18 +537,18 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
         self.mute: bool = False
         self.float_height: float = 1.5
         # Star ID should NOT be changed! The id is tied to how many there are
-        self.__star_id: int = self.__star_counter
-        self.__star_counter += 1
+        self._star_id: int = self._star_counter
+        self._star_counter += 1
 
     @classmethod
     def get_star_count(cls) -> int:
-        return cls.__star_counter
+        return cls._star_counter
 
     def json(self) -> dict[str, Any]:
         obj = super().json()
         return obj | {
             "mute": self.mute,
-            "star_id": self.__star_id,
+            "star_id": self._star_id,
             "float_height": self.float_height,
         }
 
