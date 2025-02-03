@@ -387,6 +387,19 @@ class Bopimo_Level:
         self.death_plane: float = -1000
         self._blocks: dict[int, Bopimo_Object] = {}
 
+    def __block_sanity_check(self, block: Bopimo_Object):
+        # Portal destinations sanity check
+        if isinstance(block, Bopimo_Portal):
+            for dest in block.destinations:
+                if dest not in self._blocks:
+                    raise KeyError(
+                        f'A destination in Portal "{block.name}" has a destination ({dest}) that does not exist in the level. Did you forget to call add_object?'
+                    )
+                if not isinstance(self._blocks[dest], Bopimo_Portal):
+                    raise TypeError(
+                        f'A destination in Portal "{block.name}" has a destination (Name: {self._blocks[dest].name}, UID: {dest}) that is NOT a Portal object (Got {self._blocks[dest].__class__})'
+                    )
+
     def remove_object(self, uid: int) -> Bopimo_Object:
         if uid not in self._blocks:
             raise KeyError(f"Bopimo Level does not contain an object with uid {uid}")
@@ -402,6 +415,7 @@ class Bopimo_Level:
         # If we encounter collisions, regenerate the uid
         while uid in self._blocks:
             uid = random.randrange(1, 2**32)
+        self.__block_sanity_check(obj)
         self._blocks[uid] = obj
         # Return the UID in case the user wants a direct reference to the object in the level
         return uid
@@ -437,6 +451,7 @@ class Bopimo_Level:
         uid: int
         block: Bopimo_Object
         for uid, block in self._blocks.items():
+            self.__block_sanity_check(block)
             obj["level_blocks"]["value"].append({"uid": uid} | block.json())
 
         return obj
