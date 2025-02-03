@@ -469,8 +469,9 @@ class Bopimo_Level:
         with open(f"{file_path}.bopjson", "w") as file:
             file.write(json.dumps(self.json()))
         end = time.perf_counter()
+        export_time: int = int((end - start) * 1000)
         logging.info(
-            f'"{self.name}" successfully exported to {file_path}.bopjson in {end - start}s'
+            f'"{self.name}" successfully exported to {file_path}.bopjson in {export_time} ms'
         )
 
 
