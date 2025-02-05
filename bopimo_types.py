@@ -1,6 +1,8 @@
 import math
 from copy import copy, deepcopy
 from enum import IntEnum
+import numpy as np
+from numpy.typing import NDArray
 from typing import Any, Iterator, List, Self
 
 
@@ -99,6 +101,43 @@ class Bopimo_Vector3:
         self.x = x
         self.y = y
         self.z = z
+
+    @classmethod
+    def __matrix_from_euler(cls, roll: float, pitch: float, yaw: float) -> NDArray[Any]:
+        cos_r: float = math.cos(roll)
+        sin_r: float = math.sin(roll)
+        cos_p: float = math.cos(pitch)
+        sin_p: float = math.sin(pitch)
+        cos_y: float = math.cos(yaw)
+        sin_y: float = math.sin(yaw)
+
+        matrix: NDArray[Any] = np.array(
+            [
+                [
+                    cos_y * cos_p,
+                    cos_y * sin_p * sin_r - sin_y * cos_r,
+                    cos_y * sin_p * cos_r + sin_y * sin_r,
+                ],
+                [
+                    sin_y * cos_p,
+                    sin_y * sin_p * sin_r + cos_y * cos_r,
+                    sin_y * sin_p * cos_r - cos_y * sin_r,
+                ],
+                [-sin_p, cos_p * sin_r, cos_p * cos_r],
+            ]
+        )
+
+        return matrix
+
+    @classmethod
+    def forward(cls, roll: float, pitch: float, yaw: float) -> Self:
+        rotation_matrix = cls.__matrix_from_euler(roll, pitch, yaw)
+
+        forward_vector: tuple[float, float, float] = np.dot(
+            rotation_matrix, np.array([0, 0, 1])
+        )
+
+        return cls(*forward_vector)
 
     def to_degrees(self) -> "Bopimo_Vector3":
         return Bopimo_Vector3(
