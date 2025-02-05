@@ -726,10 +726,12 @@ class Bopimo_Speed_Panel(Bopimo_Object):
         position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
         rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
         scale: Bopimo_Vector3 = Bopimo_Vector3(3, 1, 3),
+        speed: float = 30,
+        duration: float = 10,
     ):
         super().__init__(Block_ID.SPEED_PANEL, name, color, position, rotation, scale)
-        self.new_speed: float = 30
-        self.duration: float = 10
+        self.new_speed: float = speed
+        self.duration: float = duration
 
     def json(self) -> dict[str, Any]:
         obj = super().json()
