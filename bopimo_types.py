@@ -208,6 +208,14 @@ class Bopimo_Vector3:
     def __truediv__(self, other: int | float) -> "Bopimo_Vector3":
         return self.__div__(other)
 
+    def __divmod__(self, other: int | float) -> "Bopimo_Vector3":
+        if other == 0:
+            raise ZeroDivisionError()
+        return Bopimo_Vector3(self.x % other, self.y % other, self.z % other)
+
+    def __neg__(self) -> "Bopimo_Vector3":
+        return Bopimo_Vector3(-self.x, -self.y, -self.z)
+
     ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
