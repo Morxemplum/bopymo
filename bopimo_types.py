@@ -155,6 +155,10 @@ class Bopimo_Vector3:
 
     ## INSTANCE METHODS
 
+    @property
+    def magnitude(self) -> float:
+        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+
     def copy(self) -> "Bopimo_Vector3":
         return copy(self)
 
