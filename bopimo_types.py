@@ -17,6 +17,8 @@ class Bopimo_Color:
         self.alpha = alpha
         self.__clamp()
 
+    ## PRIVATE METHODS
+
     @classmethod
     def __from_hs(cls, h: int, s: float) -> tuple[float, float, float]:
         # Find a color from hue and saturation.
@@ -49,6 +51,8 @@ class Bopimo_Color:
         self.blue = max(0, min(self.blue, 255))
         self.alpha = max(0, min(self.alpha, 255))
 
+    ## CLASS METHODS
+
     @classmethod
     def from_hsv(
         cls, hue: int = 0, saturation: float = 1, value: float = 1, alpha: int = 255
@@ -60,14 +64,29 @@ class Bopimo_Color:
         c.__clamp()
         return c
 
-    def to_obj(self) -> dict[str, int]:
-        return {"r": self.red, "g": self.green, "b": self.blue, "a": self.alpha}
+    ## INSTANCE METHODS
+
+    def copy(self) -> "Bopimo_Color":
+        return copy(self)
 
     def json(self) -> dict[str, Any]:
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
 
+    def to_obj(self) -> dict[str, int]:
+        return {"r": self.red, "g": self.green, "b": self.blue, "a": self.alpha}
+
+    ## DUNDER METHODS
+
     def __iter__(self) -> Iterator[float]:
         return iter((self.red, self.green, self.blue, self.alpha))
+
+    def __copy__(self) -> "Bopimo_Color":
+        return Bopimo_Color(self.red, self.green, self.blue, self.alpha)
+
+    def __str__(self) -> str:
+        return f"{self.bopjson_type_name}({self.red}, {self.green}, {self.blue}, {self.alpha})"
+
+    ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_Color):
@@ -84,15 +103,6 @@ class Bopimo_Color:
             raise TypeError()
         return not (self == other)
 
-    def __copy__(self) -> "Bopimo_Color":
-        return Bopimo_Color(self.red, self.green, self.blue, self.alpha)
-
-    def copy(self) -> "Bopimo_Color":
-        return copy(self)
-
-    def __str__(self) -> str:
-        return f"{self.bopjson_type_name}({self.red}, {self.green}, {self.blue}, {self.alpha})"
-
 
 class Bopimo_Vector3:
     bopjson_type_name: str = "Vector3F32"
@@ -101,6 +111,8 @@ class Bopimo_Vector3:
         self.x = x
         self.y = y
         self.z = z
+
+    ## PRIVATE METHODS
 
     @classmethod
     def __matrix_from_euler(cls, roll: float, pitch: float, yaw: float) -> NDArray[Any]:
@@ -129,6 +141,8 @@ class Bopimo_Vector3:
 
         return matrix
 
+    ## CLASS METHODS
+
     @classmethod
     def forward(cls, roll: float, pitch: float, yaw: float) -> Self:
         rotation_matrix = cls.__matrix_from_euler(roll, pitch, yaw)
@@ -138,6 +152,11 @@ class Bopimo_Vector3:
         )
 
         return cls(*forward_vector)
+
+    ## INSTANCE METHODS
+
+    def copy(self) -> "Bopimo_Vector3":
+        return copy(self)
 
     def to_degrees(self) -> "Bopimo_Vector3":
         return Bopimo_Vector3(
@@ -154,6 +173,19 @@ class Bopimo_Vector3:
 
     def json(self) -> dict[str, Any]:
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
+
+    ## DUNDER METHODS
+
+    def __copy__(self) -> "Bopimo_Vector3":
+        return Bopimo_Vector3(self.x, self.y, self.z)
+
+    def __iter__(self) -> Iterator[float]:
+        return iter((self.x, self.y, self.z))
+
+    def __str__(self) -> str:
+        return f"{self.bopjson_type_name}({self.x}, {self.y}, {self.z})"
+
+    ### OPERATOR METHODS
 
     def __add__(self, other: "Bopimo_Vector3") -> "Bopimo_Vector3":
         return Bopimo_Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
@@ -172,8 +204,7 @@ class Bopimo_Vector3:
     def __truediv__(self, other: int | float) -> "Bopimo_Vector3":
         return self.__div__(other)
 
-    def __iter__(self) -> Iterator[float]:
-        return iter((self.x, self.y, self.z))
+    ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_Vector3):
@@ -185,15 +216,6 @@ class Bopimo_Vector3:
             raise TypeError()
         return not (self == other)
 
-    def __copy__(self) -> "Bopimo_Vector3":
-        return Bopimo_Vector3(self.x, self.y, self.z)
-
-    def copy(self) -> "Bopimo_Vector3":
-        return copy(self)
-
-    def __str__(self) -> str:
-        return f"{self.bopjson_type_name}({self.x}, {self.y}, {self.z})"
-
 
 class Bopimo_Vector3Array:
     bopjson_type_name: str = Bopimo_Vector3.bopjson_type_name + "_Array"
@@ -201,11 +223,19 @@ class Bopimo_Vector3Array:
     def __init__(self, vector3_list: List[Bopimo_Vector3] = []):
         self._list = vector3_list
 
+    ## INSTANCE METHODS
+
     def add_vector(self, vector: Bopimo_Vector3):
         self._list.append(vector)
 
     def clear(self):
         self._list.clear()
+
+    # To make this more intuitive, this method will deep copy by default.
+    def copy(self, deep: bool = True) -> "Bopimo_Vector3Array":
+        if deep:
+            return deepcopy(self)
+        return copy(self)
 
     def get_vector(self, index: int) -> Bopimo_Vector3:
         return self._list[index]
@@ -225,6 +255,24 @@ class Bopimo_Vector3Array:
             obj["value"].append(vector3.to_obj())
         return obj
 
+    ## DUNDER METHODS
+
+    def __copy__(self) -> "Bopimo_Vector3Array":
+        return Bopimo_Vector3Array(copy(self._list))
+
+    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_Vector3Array":
+        return Bopimo_Vector3Array(deepcopy(self._list, memo))
+
+    def __str__(self) -> str:
+        s = "Vector3Array("
+        for vec in self._list:
+            s = s + str(vec)
+            if self._list[-1] != vec:
+                s = s + ", "
+        return s + ")"
+
+    ### ITERABLE METHODS
+
     def __iter__(self) -> Iterator[Bopimo_Vector3]:
         return iter(self._list)
 
@@ -233,6 +281,8 @@ class Bopimo_Vector3Array:
 
     def __len__(self) -> int:
         return len(self._list)
+
+    ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_Vector3Array):
@@ -253,26 +303,6 @@ class Bopimo_Vector3Array:
             raise TypeError()
         return not (self == other)
 
-    def __copy__(self) -> "Bopimo_Vector3Array":
-        return Bopimo_Vector3Array(copy(self._list))
-
-    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_Vector3Array":
-        return Bopimo_Vector3Array(deepcopy(self._list, memo))
-
-    # To make this more intuitive, this method will deep copy by default.
-    def copy(self, deep: bool = True) -> "Bopimo_Vector3Array":
-        if deep:
-            return deepcopy(self)
-        return copy(self)
-
-    def __str__(self) -> str:
-        s = "Vector3Array("
-        for vec in self._list:
-            s = s + str(vec)
-            if self._list[-1] != vec:
-                s = s + ", "
-        return s + ")"
-
 
 class Bopimo_ColorArray:
     bopjson_type_name: str = Bopimo_Color.bopjson_type_name + "_Array"
@@ -280,11 +310,18 @@ class Bopimo_ColorArray:
     def __init__(self, color_list: List[Bopimo_Color] = []):
         self._list = color_list
 
+    ## INSTANCE METHODS
+
     def add_color(self, vector: Bopimo_Color):
         self._list.append(vector)
 
     def clear(self):
         self._list.clear()
+
+    def copy(self, deep: bool = True) -> "Bopimo_ColorArray":
+        if deep:
+            return deepcopy(self)
+        return copy(self)
 
     def get_color(self, index: int) -> Bopimo_Color:
         return self._list[index]
@@ -304,6 +341,24 @@ class Bopimo_ColorArray:
             obj["value"].append(color.to_obj())
         return obj
 
+    ## DUNDER METHODS
+
+    def __copy__(self) -> "Bopimo_ColorArray":
+        return Bopimo_ColorArray(copy(self._list))
+
+    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_ColorArray":
+        return Bopimo_ColorArray(deepcopy(self._list, memo))
+
+    def __str__(self) -> str:
+        s = "ColorArray("
+        for col in self._list:
+            s = s + str(col)
+            if self._list[-1] != col:
+                s = s + ", "
+        return s + ")"
+
+    ### ITERABLE METHODS
+
     def __iter__(self) -> Iterator[Bopimo_Color]:
         return iter(self._list)
 
@@ -312,6 +367,8 @@ class Bopimo_ColorArray:
 
     def __len__(self) -> int:
         return len(self._list)
+
+    ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_ColorArray):
@@ -332,25 +389,6 @@ class Bopimo_ColorArray:
             raise TypeError()
         return not (self == other)
 
-    def __copy__(self) -> "Bopimo_ColorArray":
-        return Bopimo_ColorArray(copy(self._list))
-
-    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_ColorArray":
-        return Bopimo_ColorArray(deepcopy(self._list, memo))
-
-    def copy(self, deep: bool = True) -> "Bopimo_ColorArray":
-        if deep:
-            return deepcopy(self)
-        return copy(self)
-
-    def __str__(self) -> str:
-        s = "ColorArray("
-        for col in self._list:
-            s = s + str(col)
-            if self._list[-1] != col:
-                s = s + ", "
-        return s + ")"
-
 
 # This will come up often because though integers are technically acceptable, enums are more future-proof.
 type Bopimo_Integer = int | IntEnum
@@ -364,11 +402,18 @@ class Bopimo_IntArray:
     def __init__(self, int_list: List[Bopimo_Integer] = []):
         self._list = int_list
 
+    ## INSTANCE METHODS
+
     def add_int(self, integer: Bopimo_Integer):
         self._list.append(integer)
 
     def clear(self):
         self._list.clear()
+
+    def copy(self, deep: bool = True) -> Self:
+        if deep:
+            return deepcopy(self)
+        return copy(self)
 
     def get_int(self, index: int) -> Bopimo_Integer:
         return self._list[index]
@@ -388,6 +433,24 @@ class Bopimo_IntArray:
             values.append(value)
         return {"type": self.bopjson_type_name, "value": values}
 
+    ## DUNDER METHODS
+
+    def __copy__(self) -> Self:
+        return self.__class__(copy(self._list))
+
+    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+        return self.__class__(deepcopy(self._list, memo))
+
+    def __str__(self) -> str:
+        s = f"{self.bopjson_type_name}("
+        for num in self._list:
+            s = s + str(num)
+            if self._list[-1] != num:
+                s = s + ", "
+        return s + ")"
+
+    ### ITERABLE METHODS
+
     def __iter__(self) -> Iterator[int]:
         return iter(self._list)
 
@@ -396,6 +459,8 @@ class Bopimo_IntArray:
 
     def __len__(self) -> int:
         return len(self._list)
+
+    ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
@@ -415,25 +480,6 @@ class Bopimo_IntArray:
         if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
-
-    def __copy__(self) -> Self:
-        return self.__class__(copy(self._list))
-
-    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
-        return self.__class__(deepcopy(self._list, memo))
-
-    def copy(self, deep: bool = True) -> Self:
-        if deep:
-            return deepcopy(self)
-        return copy(self)
-
-    def __str__(self) -> str:
-        s = f"{self.bopjson_type_name}("
-        for num in self._list:
-            s = s + str(num)
-            if self._list[-1] != num:
-                s = s + ", "
-        return s + ")"
 
 
 class Bopimo_Int32Array(Bopimo_IntArray):
