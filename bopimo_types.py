@@ -7,14 +7,13 @@ from typing import Any, Iterator, List, Self
 
 
 class Bopimo_Color:
-    # Color with 8 bit depth with alpha channel
-    bopjson_type_name: str = "Color8A"
+    # Color with 8 bit depth
+    bopjson_type_name: str = "Color8"
 
-    def __init__(self, red: int, green: int, blue: int, alpha: int = 255):
+    def __init__(self, red: int, green: int, blue: int):
         self.red = red
         self.green = green
         self.blue = blue
-        self.alpha = alpha
         self.__clamp()
 
     ## PRIVATE METHODS
@@ -49,17 +48,16 @@ class Bopimo_Color:
         self.red = max(0, min(self.red, 255))
         self.green = max(0, min(self.green, 255))
         self.blue = max(0, min(self.blue, 255))
-        self.alpha = max(0, min(self.alpha, 255))
 
     ## CLASS METHODS
 
     @classmethod
     def from_hsv(
-        cls, hue: int = 0, saturation: float = 1, value: float = 1, alpha: int = 255
+        cls, hue: int = 0, saturation: float = 1, value: float = 1
     ) -> "Bopimo_Color":
         r, g, b = cls.__from_hs(hue, saturation)
         c = Bopimo_Color(
-            int(r * value * 255), int(g * value * 255), int(b * value * 255), alpha
+            int(r * value * 255), int(g * value * 255), int(b * value * 255)
         )
         c.__clamp()
         return c
@@ -73,18 +71,18 @@ class Bopimo_Color:
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
 
     def to_obj(self) -> dict[str, int]:
-        return {"r": self.red, "g": self.green, "b": self.blue, "a": self.alpha}
+        return {"r": self.red, "g": self.green, "b": self.blue}
 
     ## DUNDER METHODS
 
     def __iter__(self) -> Iterator[float]:
-        return iter((self.red, self.green, self.blue, self.alpha))
+        return iter((self.red, self.green, self.blue))
 
     def __copy__(self) -> "Bopimo_Color":
-        return Bopimo_Color(self.red, self.green, self.blue, self.alpha)
+        return Bopimo_Color(self.red, self.green, self.blue)
 
     def __str__(self) -> str:
-        return f"{self.bopjson_type_name}({self.red}, {self.green}, {self.blue}, {self.alpha})"
+        return f"{self.bopjson_type_name}({self.red}, {self.green}, {self.blue})"
 
     ### EQUALITY METHODS
 
@@ -95,7 +93,6 @@ class Bopimo_Color:
             (self.red == other.red)
             and (self.green == other.green)
             and (self.blue == other.blue)
-            and (self.alpha == other.alpha)
         )
 
     def __ne__(self, other: object) -> bool:
