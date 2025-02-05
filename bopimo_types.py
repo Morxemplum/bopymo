@@ -153,6 +153,26 @@ class Bopimo_Vector3:
 
         return cls(*forward_vector)
 
+    @classmethod
+    def up(cls, roll: float, pitch: float, yaw: float) -> Self:
+        rotation_matrix = cls.__matrix_from_euler(roll, pitch, yaw)
+
+        up_vector: tuple[float, float, float] = np.dot(
+            rotation_matrix, np.array([0, 1, 0])
+        )
+
+        return cls(*up_vector)
+
+    @classmethod
+    def left(cls, roll: float, pitch: float, yaw: float) -> Self:
+        rotation_matrix = cls.__matrix_from_euler(roll, pitch, yaw)
+
+        left_vector: tuple[float, float, float] = np.dot(
+            rotation_matrix, np.array([1, 0, 0])
+        )
+
+        return cls(*left_vector)
+
     ## INSTANCE METHODS
 
     @property
