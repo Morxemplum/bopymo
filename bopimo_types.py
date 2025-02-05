@@ -1,7 +1,7 @@
 import math
 from copy import copy, deepcopy
 from enum import IntEnum
-from typing import Any, List, Self
+from typing import Any, Iterator, List, Self
 
 
 class Bopimo_Color:
@@ -63,6 +63,9 @@ class Bopimo_Color:
 
     def json(self) -> dict[str, Any]:
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
+
+    def __iter__(self) -> Iterator[float]:
+        return iter((self.red, self.green, self.blue, self.alpha))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_Color):
@@ -130,6 +133,9 @@ class Bopimo_Vector3:
     def __truediv__(self, other: int | float) -> "Bopimo_Vector3":
         return self.__div__(other)
 
+    def __iter__(self) -> Iterator[float]:
+        return iter((self.x, self.y, self.z))
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Bopimo_Vector3):
             raise TypeError()
@@ -180,7 +186,7 @@ class Bopimo_Vector3Array:
             obj["value"].append(vector3.to_obj())
         return obj
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Bopimo_Vector3]:
         return iter(self._list)
 
     def __next__(self):
@@ -259,7 +265,7 @@ class Bopimo_ColorArray:
             obj["value"].append(color.to_obj())
         return obj
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Bopimo_Color]:
         return iter(self._list)
 
     def __next__(self):
@@ -343,7 +349,7 @@ class Bopimo_IntArray:
             values.append(value)
         return {"type": self.bopjson_type_name, "value": values}
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         return iter(self._list)
 
     def __next__(self):
