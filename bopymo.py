@@ -303,7 +303,7 @@ class Bopimo_Object:
         if self._position_travel_speed != 0:
             return self._position_points
         # If you are using the new system which involve travel times, you shouldn't get the actual points as they're linked with the time points.
-        return Bopimo_Vector3Array()
+        return Bopimo_Vector3Array([])
 
     @position_travel_speed.setter
     def position_travel_speed(self, value: float):
@@ -321,7 +321,7 @@ class Bopimo_Object:
         else:
             positions = points
         self._position_points = positions
-        self._position_travel_times = Bopimo_Float32Array([0] * len(positions))
+        self._position_travel_times = Bopimo_Float32Array([0.0] * len(positions))
         # Previous default value with 1.0.11-1.0.13
         if self._position_travel_speed is None:
             self.position_travel_speed = 5
@@ -335,21 +335,25 @@ class Bopimo_Object:
         else:
             if len(self._position_points) < 2:
                 self._position_travel_times.add_float(0)
-            else:
-                prev_pos: Bopimo_Vector3 = self._position_points.get_vector(
-                    len(self._position_points) - 2
-                )
-                distance: float = (position - prev_pos).magnitude
-                self._position_travel_times.add_float(
-                    distance / self.position_travel_speed
-                )
+                return
+            prev_pos: Bopimo_Vector3 = self._position_points.get_vector(
+                len(self._position_points) - 2
+            )
+            distance: float = (position - prev_pos).magnitude
+            self._position_travel_times.set_float(
+                len(self._position_points) - 2,
+                distance / self.position_travel_speed,
+            )
+            next_pos: Bopimo_Vector3 = self._position_points.get_vector(0)
+            distance: float = (next_pos - position).magnitude
+            self._position_travel_times.add_float(distance / self.position_travel_speed)
 
     def add_position_points(
         self, position_times: List[tuple[Bopimo_Vector3, float]] | List[Bopimo_Vector3]
     ):
         if not position_times:
             return
-        e: tuple[Bopimo_Vector3, float] | Bopimo_Vector3 = position_times[0]
+        e: tuple[Bopimo_Vector3, float] | Bopimo_Vector3 = position_times[-1]
         if isinstance(e, Bopimo_Vector3) and self.position_travel_speed == 0:
             raise TypeError(
                 "Attempted to give a plain position, but position_travel_speed is 0. Either set a travel speed, or provide a time in seconds."
@@ -358,12 +362,33 @@ class Bopimo_Object:
             raise TypeError(
                 "Attempted to give a position and time, but position_travel_speed is non-zero. Either set position_travel_speed to 0, or remove the time."
             )
-
         for element in position_times:
             if isinstance(element, Bopimo_Vector3):
-                self.add_position_point(element)
+                # We cannot rely on add_position_point here otherwise we will be needlessly calculating the beginning point's time. That'll be saved for the end
+                self._position_points.add_vector(element)
+                if len(self._position_points) < 2:
+                    self._position_travel_times.add_float(0)
+                    continue
+                prev_pos: Bopimo_Vector3 = self._position_points.get_vector(
+                    len(self._position_points) - 2
+                )
+                distance: float = (element - prev_pos).magnitude
+                self._position_travel_times.set_float(
+                    len(self._position_points) - 2,
+                    distance / self.position_travel_speed,
+                )
+                # Add a value which will be set next loop
+                self._position_travel_times.add_float(0)
             else:
                 self.add_position_point(*element)
+
+        if isinstance(e, Bopimo_Vector3):
+            next_pos: Bopimo_Vector3 = self._position_points.get_vector(0)
+            distance: float = (next_pos - e).magnitude
+            self._position_travel_times.set_float(
+                len(self._position_travel_times) - 1,
+                distance / self.position_travel_speed,
+            )
 
     def get_position_point(self, index: int) -> Bopimo_Vector3:
         return self._position_points.get_vector(index)
