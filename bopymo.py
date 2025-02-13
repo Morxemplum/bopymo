@@ -127,6 +127,7 @@ class Block_ID(IntEnum):
     FENCE = 1007
     TORCH = 1008
     STRING_LIGHTS = 1009
+    ROSE = 1014
     MESH = 1100
     CLOUD = 1101
     STATUE = 1102
@@ -1253,6 +1254,29 @@ class Bopimo_String_Lights(Bopimo_Object):
             "bulb_colors": self.bulb_colors.json(),
             "blink_speed": self.blink_speed,
         }
+
+
+class Bopimo_Rose(Bopimo_Tilable_Object):
+    MIN_VERSION = Game_Version(1, 0, 15)
+
+    def __init__(
+        self,
+        name: str = "Generated Rose",
+        bud_color: Bopimo_Color = Bopimo_Color(255, 0, 0),
+        stem_color: Bopimo_Color = Bopimo_Color(0, 153, 0),
+        damage: float = 1,
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        scale: Bopimo_Vector3 = Bopimo_Vector3(1, 3, 1),
+    ):
+        # NOTE: "Bud_color" uses block color, while "stem_color" uses the pattern color.
+        super().__init__(Block_ID.ROSE, name, bud_color, position, rotation, scale)
+        self.pattern_color = stem_color
+        self.damage: float = damage
+
+    def json(self) -> dict[str, Any]:
+        obj = super().json()
+        return obj | {"damage": self.damage}
 
 
 class Bopimo_Item_Mesh(Bopimo_Object):
