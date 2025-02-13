@@ -556,3 +556,89 @@ class Bopimo_Int64Array(Bopimo_IntArray):
                 )
             values.append(value)
         return {"type": self.bopjson_type_name, "value": values}
+
+
+class Bopimo_Float32Array:
+    bopjson_type_name: str = "Float32_Array"
+
+    def __init__(self, float_list: List[float] = []):
+        self._list = float_list
+
+    ## INSTANCE METHODS
+
+    def add_float(self, float: float):
+        self._list.append(float)
+
+    def clear(self):
+        self._list.clear()
+
+    def copy(self, deep: bool = True) -> Self:
+        if deep:
+            return deepcopy(self)
+        return copy(self)
+
+    def get_float(self, index: int) -> float:
+        return self._list[index]
+
+    def set_float(self, index: int, float: float):
+        self._list[index] = float
+
+    def is_empty(self) -> bool:
+        return len(self._list) == 0
+
+    def remove_float(self, index: int) -> float:
+        return self._list.pop(index)
+
+    def json(self) -> dict[str, Any]:
+        values: List[float] = []
+        for value in self._list:
+            values.append(value)
+        return {"type": self.bopjson_type_name, "value": values}
+
+    ## DUNDER METHODS
+
+    def __copy__(self) -> Self:
+        return self.__class__(copy(self._list))
+
+    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+        return self.__class__(deepcopy(self._list, memo))
+
+    def __str__(self) -> str:
+        s = f"{self.bopjson_type_name}("
+        for num in self._list:
+            s = s + str(num)
+            if self._list[-1] != num:
+                s = s + ", "
+        return s + ")"
+
+    ### ITERABLE METHODS
+
+    def __iter__(self) -> Iterator[float]:
+        return iter(self._list)
+
+    def __next__(self):
+        return next(self.__iter__())
+
+    def __len__(self) -> int:
+        return len(self._list)
+
+    ### EQUALITY METHODS
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            raise TypeError()
+        if len(self) != len(other):
+            return False
+        if self.is_empty():
+            return True
+
+        # Order matters for equality.
+        for num1, num2 in zip(self._list, other._list):
+            if num1 != num2:
+                return False
+        return True
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            raise TypeError()
+        return not (self == other)
