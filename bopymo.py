@@ -93,7 +93,7 @@ class Game_Version:
         return f"{self.major}.{self.minor}.{self.micro}"
 
 
-GAME_VERSION = Game_Version(1, 0, 13)
+GAME_VERSION = Game_Version(1, 0, 14)
 
 ### ENUMS
 
