@@ -256,7 +256,9 @@ class Bopimo_Vector3:
 class Bopimo_Vector3Array:
     bopjson_type_name: str = Bopimo_Vector3.bopjson_type_name + "_Array"
 
-    def __init__(self, vector3_list: List[Bopimo_Vector3] = []):
+    def __init__(self, vector3_list: List[Bopimo_Vector3] | None = None):
+        if vector3_list is None:
+            vector3_list = []
         self._list = vector3_list
 
     ## INSTANCE METHODS
@@ -353,7 +355,9 @@ class Bopimo_Vector3Array:
 class Bopimo_ColorArray:
     bopjson_type_name: str = Bopimo_Color.bopjson_type_name + "_Array"
 
-    def __init__(self, color_list: List[Bopimo_Color] = []):
+    def __init__(self, color_list: List[Bopimo_Color] | None = None):
+        if color_list is None:
+            color_list = []
         self._list = color_list
 
     ## INSTANCE METHODS
@@ -455,7 +459,9 @@ type Bopimo_Integer = int | IntEnum
 class Bopimo_IntArray:
     bopjson_type_name: str = "Int_Array"
 
-    def __init__(self, int_list: List[Bopimo_Integer] = []):
+    def __init__(self, int_list: List[Bopimo_Integer] | None = None):
+        if int_list is None:
+            int_list = []
         self._list = int_list
 
     ## INSTANCE METHODS
@@ -549,7 +555,9 @@ class Bopimo_IntArray:
 class Bopimo_Int32Array(Bopimo_IntArray):
     bopjson_type_name: str = "Int32_Array"
 
-    def __init__(self, int_list: List[Bopimo_Integer] = []):
+    def __init__(self, int_list: List[Bopimo_Integer] | None = None):
+        if int_list is None:
+            int_list = []
         self._list = int_list
         self.signed = False
 
@@ -569,7 +577,9 @@ class Bopimo_Int32Array(Bopimo_IntArray):
 class Bopimo_Int64Array(Bopimo_IntArray):
     bopjson_type_name: str = "Int64_Array"
 
-    def __init__(self, int_list: List[Bopimo_Integer] = []):
+    def __init__(self, int_list: List[Bopimo_Integer] | None = None):
+        if int_list is None:
+            int_list = []
         self._list = int_list
         self.signed = False
 
@@ -589,7 +599,9 @@ class Bopimo_Int64Array(Bopimo_IntArray):
 class Bopimo_Float32Array:
     bopjson_type_name: str = "Float32_Array"
 
-    def __init__(self, float_list: List[float] = []):
+    def __init__(self, float_list: List[float] | None = None):
+        if float_list is None:
+            float_list = []
         self._list = float_list
 
     ## INSTANCE METHODS
