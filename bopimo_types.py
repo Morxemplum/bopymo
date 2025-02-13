@@ -307,6 +307,16 @@ class Bopimo_Vector3Array:
                 s = s + ", "
         return s + ")"
 
+    ### OPERATOR METHODS
+
+    def __add__(
+        self, other: "Bopimo_Vector3Array" | List[Bopimo_Vector3]
+    ) -> "Bopimo_Vector3Array":
+        if isinstance(other, Bopimo_Vector3Array):
+            return Bopimo_Vector3Array(self._list + other._list)
+        else:
+            return Bopimo_Vector3Array(self._list + other)
+
     ### ITERABLE METHODS
 
     def __iter__(self) -> Iterator[Bopimo_Vector3]:
@@ -392,6 +402,16 @@ class Bopimo_ColorArray:
             if self._list[-1] != col:
                 s = s + ", "
         return s + ")"
+
+    ### OPERATOR METHODS
+
+    def __add__(
+        self, other: "Bopimo_ColorArray" | List[Bopimo_Color]
+    ) -> "Bopimo_ColorArray":
+        if isinstance(other, Bopimo_ColorArray):
+            return Bopimo_ColorArray(self._list + other._list)
+        else:
+            return Bopimo_ColorArray(self._list + other)
 
     ### ITERABLE METHODS
 
@@ -484,6 +504,14 @@ class Bopimo_IntArray:
             if self._list[-1] != num:
                 s = s + ", "
         return s + ")"
+
+    ### OPERATOR METHODS
+
+    def __add__(self, other: "Bopimo_IntArray" | List[int]) -> "Bopimo_IntArray":
+        if isinstance(other, Bopimo_IntArray):
+            return Bopimo_IntArray(self._list + other._list)
+        else:
+            return Bopimo_IntArray(self._list + other)
 
     ### ITERABLE METHODS
 
@@ -610,6 +638,16 @@ class Bopimo_Float32Array:
             if self._list[-1] != num:
                 s = s + ", "
         return s + ")"
+
+    ### OPERATOR METHODS
+
+    def __add__(
+        self, other: "Bopimo_Float32Array" | List[float]
+    ) -> "Bopimo_Float32Array":
+        if isinstance(other, Bopimo_Float32Array):
+            return Bopimo_Float32Array(self._list + other._list)
+        else:
+            return Bopimo_Float32Array(self._list + other)
 
     ### ITERABLE METHODS
 
