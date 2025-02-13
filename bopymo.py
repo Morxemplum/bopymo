@@ -247,6 +247,8 @@ class Bopimo_Property:
 
 
 class Bopimo_Object:
+    MIN_VERSION = Game_Version(1, 0, 14)
+
     def __init__(
         self,
         id: Block_ID | int = Block_ID.NULL,
@@ -559,6 +561,9 @@ class Bopimo_Level:
         self._blocks: dict[int, Bopimo_Object] = {}
 
     def __block_sanity_check(self, block: Bopimo_Object):
+        assert (
+            self.game_version >= block.MIN_VERSION
+        ), f'You are attempting to add a {block.__class__} instance, which requires a minimum Bopimo version of {block.MIN_VERSION}. Change your level\'s "game_version" (currently {self.game_version}) to match the version, or update Bopymo for the latest changes.'
         # Portal destinations sanity check
         if isinstance(block, Bopimo_Portal):
             for dest in block.destinations:
