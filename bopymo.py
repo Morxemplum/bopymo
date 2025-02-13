@@ -262,15 +262,108 @@ class Bopimo_Object:
         # TODO: Add "movement_flags". They're currently in the code, but not functional at the moment.
 
         self.position_enabled: bool = False
-        self.position_points: Bopimo_Vector3Array = Bopimo_Vector3Array()
+        self._position_points: Bopimo_Vector3Array = Bopimo_Vector3Array()
         # As of Bopimo 1.0.14, position_travel_speed no longer exists in bopjson. This attribute is now deprecated.
-        self.position_travel_speed: float | None = None
-        self.position_travel_times: Bopimo_Float32Array = Bopimo_Float32Array()
+        self.position_travel_speed: float = 0
+        self._position_travel_times: Bopimo_Float32Array = Bopimo_Float32Array()
 
         self.rotation_enabled: bool = False
         self.rotation_pivot_offset: Bopimo_Vector3 = Bopimo_Vector3.zero()
         self.rotation_direction: Bopimo_Vector3 = Bopimo_Vector3.zero()
         self.rotation_speed: float = 1
+
+    def add_position_point(self, position: Bopimo_Vector3, time: float = 0.0):
+        self._position_points.add_vector(position)
+        if self.position_travel_speed == 0:
+            self._position_travel_times.add_float(time)
+        else:
+            if len(self._position_points) < 2:
+                self._position_travel_times.add_float(0)
+            else:
+                prev_pos: Bopimo_Vector3 = self._position_points.get_vector(
+                    len(self._position_points) - 2
+                )
+                distance: float = (position - prev_pos).magnitude
+                self._position_travel_times.add_float(
+                    distance / self.position_travel_speed
+                )
+
+    def add_position_points(
+        self, position_times: List[tuple[Bopimo_Vector3, float]] | List[Bopimo_Vector3]
+    ):
+        if not position_times:
+            return
+        e: tuple[Bopimo_Vector3, float] | Bopimo_Vector3 = position_times[0]
+        if isinstance(e, Bopimo_Vector3) and self.position_travel_speed == 0:
+            raise TypeError(
+                "Attempted to give a plain position, but you don't have position_travel_speed set. Either set a travel speed, or provide a time in seconds."
+            )
+        elif isinstance(e, tuple) and self.position_travel_speed != 0:
+            raise TypeError(
+                "Attempted to give a position and time, but you have position_travel_speed set. Either set position_travel_speed to None, or remove the time."
+            )
+
+        for element in position_times:
+            if isinstance(element, Bopimo_Vector3):
+                self.add_position_point(element)
+            else:
+                self.add_position_point(*element)
+
+    def get_position_point(self, index: int) -> Bopimo_Vector3:
+        return self._position_points.get_vector(index)
+
+    def set_position_point(
+        self, index: int, position: Bopimo_Vector3, time: float = 0.0
+    ):
+        self._position_points.set_vector(index, position)
+        if self.position_travel_speed == 0:
+            self._position_travel_times.set_float(index, time)
+        else:
+            if len(self._position_points) < 2:
+                self._position_travel_times.set_float(index, 0)
+            prev_pos: Bopimo_Vector3 = self._position_points.get_vector(index - 1)
+            distance: float = (position - prev_pos).magnitude
+            self._position_travel_times.set_float(
+                index, distance / self.position_travel_speed
+            )
+            if index < len(self._position_points) - 1:
+                next_pos: Bopimo_Vector3 = self._position_points.get_vector(index + 1)
+                distance: float = (next_pos - position).magnitude
+                self._position_travel_times.set_float(
+                    index + 1, distance / self.position_travel_speed
+                )
+
+    def remove_position_point(
+        self, index: int
+    ) -> Bopimo_Vector3 | tuple[Bopimo_Vector3, float]:
+        if self.position_travel_speed == 0:
+            return (
+                self._position_points.remove_vector(index),
+                self._position_travel_times.remove_float(index),
+            )
+        else:
+            return self._position_points.remove_vector(index)
+
+    def copy(self, deep_copy: bool = True, **kwargs: Any) -> Self:
+        return self.__copy__(deep_copy, **kwargs)
+
+    def json(self) -> dict[str, Any]:
+        return {
+            "block_id": self.id,
+            "block_name": self.name,
+            "nametag": self.nametag,
+            "block_color": self.color.json(),
+            "block_position": self.position.json(),
+            "block_rotation": self.rotation.json(),
+            "block_scale": self.scale.json(),
+            "position_enabled": self.position_enabled,
+            "position_points": self._position_points.json(),
+            "position_travel_times": self._position_travel_times.json(),
+            "rotation_enabled": self.rotation_enabled,
+            "rotation_pivot_offset": self.rotation_pivot_offset.json(),
+            "rotation_direction": self.rotation_direction.json(),
+            "rotation_speed": self.rotation_speed,
+        }
 
     # Only keyword arguments are supported, because you should be using keyword arguments anyway when quickhanding Bopymo objects
     def __copy__(self, deep_copy: bool = True, **kwargs: Any) -> Self:
@@ -305,27 +398,6 @@ class Bopimo_Object:
             copied_object.__dict__[attribute] = value
 
         return copied_object
-
-    def copy(self, deep_copy: bool = True, **kwargs: Any) -> Self:
-        return self.__copy__(deep_copy, **kwargs)
-
-    def json(self) -> dict[str, Any]:
-        return {
-            "block_id": self.id,
-            "block_name": self.name,
-            "nametag": self.nametag,
-            "block_color": self.color.json(),
-            "block_position": self.position.json(),
-            "block_rotation": self.rotation.json(),
-            "block_scale": self.scale.json(),
-            "position_enabled": self.position_enabled,
-            "position_points": self.position_points.json(),
-            "position_travel_times": self.position_travel_times.json(),
-            "rotation_enabled": self.rotation_enabled,
-            "rotation_pivot_offset": self.rotation_pivot_offset.json(),
-            "rotation_direction": self.rotation_direction.json(),
-            "rotation_speed": self.rotation_speed,
-        }
 
 
 class Bopimo_Tilable_Object(Bopimo_Object):
