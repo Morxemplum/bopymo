@@ -13,6 +13,7 @@ from enum import IntEnum
 import logging
 import math
 from numpy import dot
+from numpy.typing import NDArray
 import json
 import random
 import time
@@ -91,6 +92,15 @@ class Game_Version:
 GAME_VERSION = Game_Version(1, 0, 13)
 
 ### ENUMS
+
+
+class Block_Direction(IntEnum):
+    FORWARD = 0
+    UP = 1
+    LEFT = 2
+    BACKWARD = 3
+    DOWN = 4
+    RIGHT = 5
 
 
 class Block_ID(IntEnum):
@@ -305,6 +315,23 @@ class Bopimo_Object:
 
     def copy(self, deep_copy: bool = True, **kwargs: Any) -> Self:
         return self.__copy__(deep_copy, **kwargs)
+
+    def look_vector(
+        self, direction: Block_Direction = Block_Direction.FORWARD
+    ) -> Bopimo_Vector3:
+        match direction:
+            case Block_Direction.FORWARD:
+                return Bopimo_Vector3.forward(*self.rotation.to_radians())
+            case Block_Direction.UP:
+                return Bopimo_Vector3.up(*self.rotation.to_radians())
+            case Block_Direction.LEFT:
+                return Bopimo_Vector3.left(*self.rotation.to_radians())
+            case Block_Direction.BACKWARD:
+                return -Bopimo_Vector3.forward(*self.rotation.to_radians())
+            case Block_Direction.DOWN:
+                return -Bopimo_Vector3.up(*self.rotation.to_radians())
+            case Block_Direction.RIGHT:
+                return -Bopimo_Vector3.left(*self.rotation.to_radians())
 
     def json(self) -> dict[str, Any]:
         return {
@@ -1311,6 +1338,32 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         # Oftentimes, images are not properly centered. Use this to center images.
         self.offset = Bopimo_Vector3(0, 0, 0)
 
+    def __get_rotation_matrix(self, rotation: Bopimo_Vector3) -> NDArray[Any]:
+        cos_x: float = math.cos(rotation.x)
+        sin_x: float = math.sin(rotation.x)
+        cos_y: float = math.cos(rotation.y)
+        sin_y: float = math.sin(rotation.y)
+        cos_z: float = math.cos(rotation.z)
+        sin_z: float = math.sin(rotation.z)
+
+        MATRIX_X: tuple[List[float], List[float], List[float]] = (
+            [1, 0, 0],
+            [0, cos_x, -sin_x],
+            [0, sin_x, cos_x],
+        )
+        MATRIX_Y: tuple[List[float], List[float], List[float]] = (
+            [cos_y, 0, sin_y],
+            [0, 1, 0],
+            [-sin_y, 0, cos_y],
+        )
+        MATRIX_Z: tuple[List[float], List[float], List[float]] = (
+            [cos_z, -sin_z, 0],
+            [sin_z, cos_z, 0],
+            [0, 0, 1],
+        )
+
+        return dot(dot(MATRIX_Y, MATRIX_X), MATRIX_Z)
+
     def calculate_size(self) -> Bopimo_Vector3:
         if self.scale.z > 0.1:
             logging.warning(
@@ -1330,25 +1383,6 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
                     self.scale.y * self.PANTS_HEIGHT_RATIO,
                     self.scale.z,
                 )
-
-    def __get_rotation_matrix(self, rotation: Bopimo_Vector3) -> List[List[float]]:
-        MATRIX_X: tuple[List[float], List[float], List[float]] = (
-            [1, 0, 0],
-            [0, math.cos(rotation.x), -math.sin(rotation.x)],
-            [0, math.sin(rotation.x), math.cos(rotation.x)],
-        )
-        MATRIX_Y: tuple[List[float], List[float], List[float]] = (
-            [math.cos(rotation.y), 0, math.sin(rotation.y)],
-            [0, 1, 0],
-            [-math.sin(rotation.y), 0, math.cos(rotation.y)],
-        )
-        MATRIX_Z: tuple[List[float], List[float], List[float]] = (
-            [math.cos(rotation.z), -math.sin(rotation.z), 0],
-            [math.sin(rotation.z), math.cos(rotation.z), 0],
-            [0, 0, 1],
-        )
-
-        return dot(dot(MATRIX_Y, MATRIX_X), MATRIX_Z)
 
     def calculate_center_vector(self, scale: Bopimo_Vector3) -> Bopimo_Vector3:
         if self.type == Decal_Type.SHIRT:
@@ -1387,3 +1421,23 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
             obj["block_rotation"] = fixed_rotation.json()
 
         return obj
+
+    def wrap_object(self, object: Bopimo_Object, direction: Block_Direction):
+        unit = object.look_vector(direction)
+        match direction:
+            case Block_Direction.FORWARD:
+                self.rotation = object.rotation
+                self.position = object.position + unit * (object.scale.z / 2 + 0.01)
+                self.scale = Bopimo_Vector3(object.scale.x, object.scale.y, 0.01)
+            case Block_Direction.UP:
+                # self.rotation = self.__matrix_to_euler(rot_matrix).to_degrees()
+                self.position = object.position + unit * (object.scale.y / 2 + 0.01)
+                self.scale = Bopimo_Vector3(object.scale.x, object.scale.z, 0.01)
+            case Block_Direction.LEFT:
+                pass
+            case Block_Direction.BACKWARD:
+                pass
+            case Block_Direction.DOWN:
+                pass
+            case Block_Direction.RIGHT:
+                pass
