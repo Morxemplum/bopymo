@@ -120,23 +120,22 @@ class Bopimo_Vector3:
         cos_y: float = math.cos(yaw)
         sin_y: float = math.sin(yaw)
 
-        matrix: NDArray[Any] = np.array(
-            [
-                [
-                    cos_y * cos_p,
-                    cos_y * sin_p * sin_r - sin_y * cos_r,
-                    cos_y * sin_p * cos_r + sin_y * sin_r,
-                ],
-                [
-                    sin_y * cos_p,
-                    sin_y * sin_p * sin_r + cos_y * cos_r,
-                    sin_y * sin_p * cos_r - cos_y * sin_r,
-                ],
-                [-sin_p, cos_p * sin_r, cos_p * cos_r],
-            ]
+        MATRIX_R: tuple[List[float], List[float], List[float]] = (
+            [1, 0, 0],
+            [0, cos_r, -sin_r],
+            [0, sin_r, cos_r],
         )
-
-        return matrix
+        MATRIX_P: tuple[List[float], List[float], List[float]] = (
+            [cos_p, 0, sin_p],
+            [0, 1, 0],
+            [-sin_p, 0, cos_p],
+        )
+        MATRIX_Y: tuple[List[float], List[float], List[float]] = (
+            [cos_y, -sin_y, 0],
+            [sin_y, cos_y, 0],
+            [0, 0, 1],
+        )
+        return np.dot(np.dot(MATRIX_P, MATRIX_R), MATRIX_Y)
 
     ## CLASS METHODS
 
