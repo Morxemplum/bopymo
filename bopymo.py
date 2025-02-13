@@ -2,6 +2,7 @@ from bopimo_types import (
     Bopimo_Color,
     Bopimo_Vector3,
     Bopimo_Vector3Array,
+    Bopimo_Float32Array,
     Bopimo_Int32Array,
     Bopimo_Int64Array,
     Bopimo_ColorArray,
@@ -262,7 +263,9 @@ class Bopimo_Object:
 
         self.position_enabled: bool = False
         self.position_points: Bopimo_Vector3Array = Bopimo_Vector3Array()
-        self.position_travel_speed: float = 5
+        # As of Bopimo 1.0.14, position_travel_speed no longer exists in bopjson. This attribute is now deprecated.
+        self.position_travel_speed: float | None = None
+        self.position_travel_times: Bopimo_Float32Array = Bopimo_Float32Array()
 
         self.rotation_enabled: bool = False
         self.rotation_pivot_offset: Bopimo_Vector3 = Bopimo_Vector3.zero()
@@ -317,7 +320,7 @@ class Bopimo_Object:
             "block_scale": self.scale.json(),
             "position_enabled": self.position_enabled,
             "position_points": self.position_points.json(),
-            "position_travel_speed": self.position_travel_speed,
+            "position_travel_times": self.position_travel_times.json(),
             "rotation_enabled": self.rotation_enabled,
             "rotation_pivot_offset": self.rotation_pivot_offset.json(),
             "rotation_direction": self.rotation_direction.json(),
