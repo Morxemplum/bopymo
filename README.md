@@ -31,7 +31,7 @@ There's a couple of reasons why I chose Python as the language for my wrapper:
 ## How to use Bopymo
 
 > [!WARNING]
-> Bopymo requires a Bopimo version of 1.0.11 or newer to use. To write levels for 1.0.8 or earlier, there are legacy modules in the `legacy` folder you can use.
+> Bopymo 0.2 requires a Bopimo version of 1.0.14 or newer to use. To write levels for earlier versions, there are earlier releases of Bopymo available on the releases page.
 
 > [!TIP]
 > It is recommended that you use a type checker, such as Pylance, Pyright, or MyPy. Bopymo has careful type annotations that can help you catch type errors.

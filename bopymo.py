@@ -530,8 +530,8 @@ class Bopimo_Level:
         self.time_of_save: datetime.datetime = datetime.datetime.now(datetime.UTC)
 
         assert self.game_version >= Game_Version(
-            1, 0, 11
-        ), "Bopymo requires a minimum Bopjson version of 1.0.11 to work correctly."
+            1, 0, 14
+        ), "Bopymo 0.2 requires a minimum Bopjson version of 1.0.14 to work correctly."
 
         # LEVEL INFORMATION
         self.name: str = name
