@@ -169,6 +169,14 @@ class Bopimo_Vector3:
 
         return cls(*left_vector)
 
+    @classmethod
+    def zero(cls) -> Self:
+        return cls(0, 0, 0)
+
+    @classmethod
+    def one(cls) -> Self:
+        return cls(1, 1, 1)
+
     ## INSTANCE METHODS
 
     @property

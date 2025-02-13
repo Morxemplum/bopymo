@@ -246,8 +246,8 @@ class Bopimo_Object:
         id: Block_ID | int = Block_ID.NULL,
         name: str = "Object",
         color: Bopimo_Color = Bopimo_Color(0, 0, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         self.id: Block_ID | int = id
@@ -265,8 +265,8 @@ class Bopimo_Object:
         self.position_travel_speed: float = 5
 
         self.rotation_enabled: bool = False
-        self.rotation_pivot_offset: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0)
-        self.rotation_direction: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0)
+        self.rotation_pivot_offset: Bopimo_Vector3 = Bopimo_Vector3.zero()
+        self.rotation_direction: Bopimo_Vector3 = Bopimo_Vector3.zero()
         self.rotation_speed: float = 1
 
     # Only keyword arguments are supported, because you should be using keyword arguments anyway when quickhanding Bopymo objects
@@ -331,8 +331,8 @@ class Bopimo_Tilable_Object(Bopimo_Object):
         id: Block_ID | int = Block_ID.CUBE,
         name: str = "Tilable Object",
         color: Bopimo_Color = Bopimo_Color(0, 0, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(id, name, color, position, rotation, scale)
@@ -484,8 +484,8 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         id: Block_ID | int = Block_ID.CUBE,
         name: str = "Generated Block",
         color: Bopimo_Color = Bopimo_Color(34, 139, 34),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(id, name, color, position, rotation, scale)
@@ -511,8 +511,8 @@ class Bopimo_Spawn(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Spawn",
         color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(4, 1, 4),
     ):
         super().__init__(Block_ID.SPAWN, name, color, position, rotation, scale)
@@ -526,8 +526,8 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Checkpoint",
         color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 4, 2),
     ):
         super().__init__(Block_ID.CHECKPOINT, name, color, position, rotation, scale)
@@ -543,8 +543,8 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Completion Star",
         color: Bopimo_Color = Bopimo_Color(94, 0, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(4, 4, 4),
     ):
         super().__init__(
@@ -574,8 +574,8 @@ class Bopimo_Spring(Bopimo_Object):
         self,
         name: str = "Generated Spring",
         color: Bopimo_Color = Bopimo_Color(227, 181, 4),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.SPRING, name, color, position, rotation, scale)
@@ -597,8 +597,8 @@ class Bopimo_Lava(Bopimo_Object):
         name: str = "Generated Lava",
         color: Bopimo_Color = Bopimo_Color(183, 14, 0),
         pattern_color: Bopimo_Color = Bopimo_Color(255, 162, 73),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
         damage: float = 25,
     ):
@@ -620,8 +620,8 @@ class Bopimo_Water(Bopimo_Tilable_Object):
         name: str = "Generated Water",
         color: Bopimo_Color = Bopimo_Color(71, 130, 255),
         foam_color: Bopimo_Color = Bopimo_Color(255, 255, 255),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(4, 4, 4),
     ):
         super().__init__(Block_ID.WATER, name, color, position, rotation, scale)
@@ -637,8 +637,8 @@ class Bopimo_Ladder(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Ladder",
         color: Bopimo_Color = Bopimo_Color(78, 52, 46),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 1),
     ):
         super().__init__(Block_ID.LADDER, name, color, position, rotation, scale)
@@ -655,8 +655,8 @@ class Bopimo_Token(Bopimo_Object):
         self,
         name: str = "Generated Token",
         color: Bopimo_Color = Bopimo_Color(236, 126, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.TOKEN, name, color, position, rotation, scale)
@@ -681,8 +681,8 @@ class Bopimo_Disappearing_Block(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Disappearing Block",
         color: Bopimo_Color = Bopimo_Color(122, 9, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(
@@ -708,8 +708,8 @@ class Bopimo_Grates(Bopimo_Object):
         self,
         name: str = "Generated Grates",
         color: Bopimo_Color = Bopimo_Color(0, 10, 18),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(4, 1, 4),
     ):
         super().__init__(Block_ID.GRATES, name, color, position, rotation, scale)
@@ -723,8 +723,8 @@ class Bopimo_Speed_Panel(Bopimo_Object):
         self,
         name: str = "Generated Speed Panel",
         color: Bopimo_Color = Bopimo_Color(27, 0, 32),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(3, 1, 3),
         speed: float = 30,
         duration: float = 10,
@@ -743,8 +743,8 @@ class Bopimo_Boost_Panel(Bopimo_Object):
         self,
         name: str = "Generated Boost Panel",
         color: Bopimo_Color = Bopimo_Color(0, 2, 34),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(3, 1, 3),
     ):
         super().__init__(Block_ID.BOOST_PANEL, name, color, position, rotation, scale)
@@ -761,8 +761,8 @@ class Bopimo_Ice(Bopimo_Object):
         self,
         name: str = "Generated Ice",
         color: Bopimo_Color = Bopimo_Color(138, 220, 223),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.ICE, name, color, position, rotation, scale)
@@ -778,8 +778,8 @@ class Bopimo_Breakable_Block(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Breakable Block",
         color: Bopimo_Color = Bopimo_Color(129, 0, 40),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(
@@ -802,8 +802,8 @@ class Bopimo_Cannon(Bopimo_Object):
         self,
         name: str = "Generated Cannon",
         color: Bopimo_Color = Bopimo_Color(42, 2, 47),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
         power: float = 50,
     ):
@@ -822,8 +822,8 @@ class Bopimo_Portal(Bopimo_Object):
         self,
         name: str = "Generated Portal",
         color: Bopimo_Color = Bopimo_Color(0, 105, 182),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(10, 10, 2),
     ):
         super().__init__(Block_ID.PORTAL, name, color, position, rotation, scale)
@@ -845,8 +845,8 @@ class Bopimo_Web(Bopimo_Object):
         self,
         name: str = "Generated Web",
         color: Bopimo_Color = Bopimo_Color(255, 255, 255),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(6, 1, 6),
     ):
         super().__init__(Block_ID.WEB, name, color, position, rotation, scale)
@@ -862,8 +862,8 @@ class Bopimo_Missile_Launcher(Bopimo_Object):
         self,
         name: str = "Generated Missile Launcher",
         color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(
@@ -899,8 +899,8 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Flower",
         color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.FLOWER, name, color, position, rotation, scale)
@@ -914,8 +914,8 @@ class Bopimo_Fence(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Fence",
         color: Bopimo_Color = Bopimo_Color(121, 85, 72),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 4, 1),
     ):
         super().__init__(Block_ID.FENCE, name, color, position, rotation, scale)
@@ -930,8 +930,8 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Pine Tree",
         color: Bopimo_Color = Bopimo_Color(0, 88, 36),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(5, 10, 5),
     ):
         super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
@@ -945,8 +945,8 @@ class Bopimo_Pine_Tree_Snow(Bopimo_Pine_Tree):
         self,
         name: str = "Generated Pine Tree Snow",
         color: Bopimo_Color = Bopimo_Color(0, 88, 36),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(5, 10, 5),
     ):
         super().__init__(name, color, position, rotation, scale)
@@ -961,8 +961,8 @@ class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Palm Tree",
         color: Bopimo_Color = Bopimo_Color(94, 214, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(8, 8, 8),
     ):
         super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
@@ -976,8 +976,8 @@ class Bopimo_Street_Lamp(Bopimo_Object):
         self,
         name: str = "Generated Street Lamp",
         color: Bopimo_Color = Bopimo_Color(255, 160, 30),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 10, 2),
     ):
         super().__init__(Block_ID.STREET_LAMP, name, color, position, rotation, scale)
@@ -993,8 +993,8 @@ class Bopimo_Torch(Bopimo_Object):
         self,
         name: str = "Generated Torch",
         color: Bopimo_Color = Bopimo_Color(73, 48, 42),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(1, 2, 1),
     ):
         super().__init__(Block_ID.TORCH, name, color, position, rotation, scale)
@@ -1013,8 +1013,8 @@ class Bopimo_Logo(Bopimo_Object):
         primary_color: Bopimo_Color = Bopimo_Color(130, 12, 155),
         secondary_color: Bopimo_Color = Bopimo_Color(175, 85, 217),
         tertiary_color: Bopimo_Color = Bopimo_Color(141, 62, 229),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(6, 2.5, 2),
     ):
         super().__init__(Block_ID.LOGO, name, primary_color, position, rotation, scale)
@@ -1033,8 +1033,8 @@ class Bopimo_Logo_Icon(Bopimo_Logo):
         primary_color: Bopimo_Color = Bopimo_Color(130, 12, 155),
         secondary_color: Bopimo_Color = Bopimo_Color(175, 85, 217),
         tertiary_color: Bopimo_Color = Bopimo_Color(141, 62, 229),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(6, 2.5, 2),
     ):
         super().__init__(
@@ -1066,8 +1066,8 @@ class Bopimo_String_Lights(Bopimo_Object):
                 Bopimo_Color(255, 0, 255),
             ]
         ),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(6, 2.5, 2),
     ):
         # NOTE: "Wire color" uses the "Block color" attribute
@@ -1090,8 +1090,8 @@ class Bopimo_Item_Mesh(Bopimo_Object):
         self,
         name: str = "Generated Item Mesh",
         color: Bopimo_Color = Bopimo_Color(255, 255, 255),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.MESH, name, color, position, rotation, scale)
@@ -1108,8 +1108,8 @@ class Bopimo_Cloud(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Cloud",
         color: Bopimo_Color = Bopimo_Color(255, 255, 255),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(8, 2, 8),
     ):
         super().__init__(Block_ID.CLOUD, name, color, position, rotation, scale)
@@ -1124,8 +1124,8 @@ class Bopimo_Statue(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Analog Clock",
         color: Bopimo_Color = Bopimo_Color(246, 156, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(3, 5, 2),
     ):
         super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
@@ -1140,8 +1140,8 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Bopi Spawner",
         color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 0.5, 2),
     ):
         super().__init__(Block_ID.BOPI_SPAWNER, name, color, position, rotation, scale)
@@ -1216,8 +1216,8 @@ class Bopimo_Analog_Clock(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Analog Clock",
         color: Bopimo_Color = Bopimo_Color(160, 29, 175),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.ANALOG_CLOCK, name, color, position, rotation, scale)
@@ -1231,8 +1231,8 @@ class Bopimo_Bleeding_Eye(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Bleeding Eye",
         color: Bopimo_Color = Bopimo_Color(237, 0, 8),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
@@ -1246,8 +1246,8 @@ class Bopimo_Hyacinth(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Hyacinth Flower",
         color: Bopimo_Color = Bopimo_Color(20, 126, 172),
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.HYACINTH, name, color, position, rotation, scale)
@@ -1293,8 +1293,8 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         name: str = "Generated Decal",
         type: Decal_Type = Decal_Type.SHIRT,
         image_id: int = 3372,
-        position: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3(0, 0, 0),
+        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         width: float = 2,
         height: float = 2,
     ):
@@ -1309,7 +1309,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         self.item_id = image_id
         self.type = type
         # Oftentimes, images are not properly centered. Use this to center images.
-        self.offset = Bopimo_Vector3(0, 0, 0)
+        self.offset = Bopimo_Vector3.zero()
 
     def calculate_size(self) -> Bopimo_Vector3:
         if self.scale.z > 0.1:
@@ -1353,7 +1353,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
     def calculate_center_vector(self, scale: Bopimo_Vector3) -> Bopimo_Vector3:
         if self.type == Decal_Type.SHIRT:
             # Shirts are already centered
-            return Bopimo_Vector3(0, 0, 0)
+            return Bopimo_Vector3.zero()
         direction = 1
         if self.type == Decal_Type.PANTS_FRONT_RIGHT:
             direction *= -1
