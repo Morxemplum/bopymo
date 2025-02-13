@@ -263,14 +263,70 @@ class Bopimo_Object:
 
         self.position_enabled: bool = False
         self._position_points: Bopimo_Vector3Array = Bopimo_Vector3Array()
-        # As of Bopimo 1.0.14, position_travel_speed no longer exists in bopjson. This attribute is now deprecated.
-        self.position_travel_speed: float = 0
+        # As of Bopimo 1.0.14, position_travel_speed no longer exists in bopjson. This value is now None, which indicates it is disabled. To get the previous default value, you'll need to set position_points
+        # Setting this value to 0 will also re-enable the time-based kinematic system.
+        self._position_travel_speed: float | None = None
         self._position_travel_times: Bopimo_Float32Array = Bopimo_Float32Array()
 
         self.rotation_enabled: bool = False
         self.rotation_pivot_offset: Bopimo_Vector3 = Bopimo_Vector3.zero()
         self.rotation_direction: Bopimo_Vector3 = Bopimo_Vector3.zero()
         self.rotation_speed: float = 1
+
+    def __refresh_constant_travel_speed_times(self):
+        if self._position_travel_speed is None:
+            return
+        for i, position in enumerate(self._position_points):
+            next_pos: Bopimo_Vector3
+            if i == len(self._position_points) - 1:
+                next_pos = self._position_points.get_vector(0)
+            else:
+                next_pos = self._position_points.get_vector(i + 1)
+            distance: float = (next_pos - position).magnitude
+            self._position_travel_times.set_float(
+                i, distance / self._position_travel_speed
+            )
+
+    @property
+    def position_travel_speed(self) -> float:
+        if self._position_travel_speed is None:
+            return 0
+        return self._position_travel_speed
+
+    @property
+    def position_points(self) -> Bopimo_Vector3Array:
+        if self._position_travel_speed is None:
+            logging.warning(
+                "You are grabbing position_points directly before declaring a constant travel speed. Setting speed to 5."
+            )
+            self.position_travel_speed = 5
+        if self._position_travel_speed != 0:
+            return self._position_points
+        # If you are using the new system which involve travel times, you shouldn't get the actual points as they're linked with the time points.
+        return Bopimo_Vector3Array()
+
+    @position_travel_speed.setter
+    def position_travel_speed(self, value: float):
+        self._position_travel_speed = value
+        if value != 0:
+            self.__refresh_constant_travel_speed_times()
+
+    @position_points.setter
+    def position_points(self, points: Bopimo_Vector3Array):
+        # Bopimo 1.0.11-1.0.13 would implicitly declare the object's position (locally 0, 0, 0) as the starting position.
+        # The times system requires this to be explicitly declared. So if the start is not (0, 0, 0), add it for reverse compatibility.
+        positions: Bopimo_Vector3Array
+        if not points.is_empty() and points.get_vector(0) != Bopimo_Vector3.zero():
+            positions = Bopimo_Vector3Array([Bopimo_Vector3.zero()]) + points
+        else:
+            positions = points
+        self._position_points = positions
+        self._position_travel_times = Bopimo_Float32Array([0] * len(positions))
+        # Previous default value with 1.0.11-1.0.13
+        if self._position_travel_speed is None:
+            self.position_travel_speed = 5
+        if self._position_travel_speed != 0:
+            self.__refresh_constant_travel_speed_times()
 
     def add_position_point(self, position: Bopimo_Vector3, time: float = 0.0):
         self._position_points.add_vector(position)
@@ -296,11 +352,11 @@ class Bopimo_Object:
         e: tuple[Bopimo_Vector3, float] | Bopimo_Vector3 = position_times[0]
         if isinstance(e, Bopimo_Vector3) and self.position_travel_speed == 0:
             raise TypeError(
-                "Attempted to give a plain position, but you don't have position_travel_speed set. Either set a travel speed, or provide a time in seconds."
+                "Attempted to give a plain position, but position_travel_speed is 0. Either set a travel speed, or provide a time in seconds."
             )
         elif isinstance(e, tuple) and self.position_travel_speed != 0:
             raise TypeError(
-                "Attempted to give a position and time, but you have position_travel_speed set. Either set position_travel_speed to None, or remove the time."
+                "Attempted to give a position and time, but position_travel_speed is non-zero. Either set position_travel_speed to 0, or remove the time."
             )
 
         for element in position_times:
