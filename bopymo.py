@@ -23,6 +23,10 @@ from typing import Any, List, Self
 LOG_LEVEL = logging.INFO
 LOG_FMT = "[%(levelname)s] - %(message)s"
 logging.basicConfig(level=LOG_LEVEL, format=LOG_FMT)
+DEPRECATION_WARNINGS: dict[str, bool] = {
+    "Getting position_points directly": False,
+    "Setting position_points directly": False,
+}
 
 
 class Game_Version:
@@ -263,7 +267,7 @@ class Bopimo_Object:
 
         self.position_enabled: bool = False
         self._position_points: Bopimo_Vector3Array = Bopimo_Vector3Array()
-        # As of Bopimo 1.0.14, position_travel_speed no longer exists in bopjson. This value is now None, which indicates it is disabled. To get the previous default value, you'll need to set position_points
+        # As of Bopimo 1.0.14, position_travel_speed no longer exists in bopjson. This value is now None, which indicates it is disabled.
         # Setting this value to 0 will also re-enable the time-based kinematic system.
         self._position_travel_speed: float | None = None
         self._position_travel_times: Bopimo_Float32Array = Bopimo_Float32Array()
@@ -295,6 +299,11 @@ class Bopimo_Object:
 
     @property
     def position_points(self) -> Bopimo_Vector3Array:
+        if not DEPRECATION_WARNINGS["Getting position_points directly"]:
+            logging.warning(
+                "Getting position_points directly is deprecated. This will be removed in a future version of Bopymo. Please use methods to access position points instead."
+            )
+            DEPRECATION_WARNINGS["Getting position_points directly"] = True
         if self._position_travel_speed is None:
             logging.warning(
                 "You are grabbing position_points directly before declaring a constant travel speed. Setting speed to 5."
@@ -313,6 +322,11 @@ class Bopimo_Object:
 
     @position_points.setter
     def position_points(self, points: Bopimo_Vector3Array):
+        if not DEPRECATION_WARNINGS["Setting position_points directly"]:
+            logging.warning(
+                "Setting position_points directly is deprecated. This will be removed in a future version of Bopymo. Please use methods to set position points instead."
+            )
+            DEPRECATION_WARNINGS["Setting position_points directly"] = True
         # Bopimo 1.0.11-1.0.13 would implicitly declare the object's position (locally 0, 0, 0) as the starting position.
         # The times system requires this to be explicitly declared. So if the start is not (0, 0, 0), add it for reverse compatibility.
         positions: Bopimo_Vector3Array
