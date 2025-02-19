@@ -23,6 +23,7 @@ from typing import Any, List, Self
 LOG_LEVEL = logging.INFO
 LOG_FMT = "[%(levelname)s] - %(message)s"
 logging.basicConfig(level=LOG_LEVEL, format=LOG_FMT)
+# Here's a quick way to see what features are deprecated, and also ensure to only send one warning per deprecation.
 DEPRECATION_WARNINGS: dict[str, bool] = {
     "Getting position_points directly": False,
     "Setting position_points directly": False,
@@ -30,6 +31,17 @@ DEPRECATION_WARNINGS: dict[str, bool] = {
 
 
 class Game_Version:
+    '''
+    This class represents the semantic versioning structure that Bopimo uses. 
+    This is used to not only mark the bopjson version in the metadata, but is
+    integral to version checking to ensure that attributes and objects are
+    being used in appropriate version.
+
+    Attributes:
+        major (int): The major number of a version
+        minor (int): The minor number of a version
+        micro (int): The micro (or patch) number of a version
+    '''
     def __init__(self, major: int, minor: int, micro: int):
         self.major = major
         self.minor = minor
@@ -92,13 +104,19 @@ class Game_Version:
     def __str__(self) -> str:
         return f"{self.major}.{self.minor}.{self.micro}"
 
-
+# This is a constant that is used to represent the latest version of Bopimo
+# If your level doesn't specify a version, this value will be used by default
 GAME_VERSION = Game_Version(1, 0, 15)
 
 ### ENUMS
 
 
 class Block_ID(IntEnum):
+    '''
+    Bopimo differentiates their objects through a numeric ID. This enum makes
+    it easy to see what the different IDs for objects are. Cube should be the
+    default, but invalid IDs will be resolved to NULL (-1)
+    '''
     NULL = -1
 
     # PRIMITIVES
@@ -164,6 +182,13 @@ class Block_ID(IntEnum):
 
 
 class Block_Pattern(IntEnum):
+    '''
+    Bopimo objects with patterns will represent their patterns use a numeric
+    ID. By default, objects will use the checkerboard pattern (0).
+
+    If you are aiming for no pattern, the easiest way to do so is by matching
+    the pattern color with the block color.
+    '''
     CHECKERBOARD = 0
     HEX = 1
     STRIPES = 2
@@ -184,6 +209,11 @@ class Block_Pattern(IntEnum):
 
 
 class Sky(IntEnum):
+    '''
+    Bopimo offers various different skyboxes that help set the basic atmosphere
+    for the level. This is represented by a numeric ID and this contains all
+    of the skyboxes you can choose from.
+    '''
     DAY = 0
     SUNSET = 1
     NIGHT = 2
@@ -204,6 +234,11 @@ class Sky(IntEnum):
 
 
 class Weather(IntEnum):
+    '''
+    You can introduce weather into your Bopimo level to enhance the atmosphere
+    of the level. This enum contains all of the different types of weather you
+    can choose from. By default, there will be no weather (CLEAR)
+    '''
     CLEAR = 0
     SNOW = 1
     RAIN = 2
@@ -212,6 +247,11 @@ class Weather(IntEnum):
 
 
 class Music(IntEnum):
+    '''
+    Bopimo has its own unique soundtrack that is produced by the developers.
+    This enum gives you all of the different song names and their associated
+    numeric IDs.
+    '''
     SERENE = 0
     SWAYING_DREAMS = 1
     PLAYFUL_WALTZ = 2
@@ -247,6 +287,69 @@ class Bopimo_Property:
 
 
 class Bopimo_Object:
+    '''
+    This is the superclass that represents all Bopimo objects. Every block or
+    object that you plan on putting into a level will inherit from this class,
+    hence this class includes all the basic attributes and methods that you can
+    call from any object.
+
+    Class attributes:
+        MIN_VERSION (Game_Version): 
+            A constant representing the earliest version the object can be used
+            in a level.
+    Instance attributes:
+        id (Block_ID | int): 
+            The identifier that establishes the type of object the object will
+            represent from.
+        name (str): 
+            The name of the object
+        nametag (bool): 
+            If true, displays the name of the object as text above the object.
+            Useful for conveying information.
+        color (Bopimo_Color): 
+            The color of the object
+        position (Bopimo_Vector3): 
+            The position of the object in 3D space
+        rotation (Bopimo_Vector3): 
+            The rotation of the object represented as euler angles. Rotation is
+            in degrees.
+        scale (Bopimo_Vector3):
+            The size of the object in 3D space
+
+        movement_flags (int):
+            <INTERNAL> <NON-FUNCTIONAL> <UNIMPLEMENTED>
+            A value that, if non-zero, can restrict what kinds of movement a
+            player can make if they interact with this object.
+
+        position_enabled (bool): 
+            If true, will enable position kinematics.
+        position_points (Bopimo_Vector3Array): 
+            A sequence of position points the object will travel to in order.
+            Positions are relative to the origin of the object.
+        position_travel_speed (float): 
+            <REVERSE_COMPAT>
+            A constant speed the object will move to each position point. This
+            was the legacy method of position kinematics and was replaced with
+            time-based kinematics in Bopimo 1.0.14. However, this has full
+            reverse compatibility.
+        position_travel_times (Bopimo_Float32Array):
+            A sequence of durations (in seconds) it takes to get from the
+            current point to the next one (or in the case of the last, getting
+            back to the beginning). This is meant to stay in sync with the
+            position points array, so it will have the same length as position
+            points.
+        
+        rotation_enabled (bool):
+            If true, will enable rotation kinematics
+        rotation_pivot_offset (Bopimo_Vector3):
+            Represents how much to move the center of rotation of the pivot.
+            Position is relative to the origin of the object.
+        rotation_direction (Bopimo_Vector3):
+            A normal unit vector that represents the axis of rotation the
+            object will rotate on
+        rotation_speed (float):
+            How fast the object will rotate, in a constant speed.
+    '''
     MIN_VERSION = Game_Version(1, 0, 14)
 
     def __init__(
@@ -281,6 +384,13 @@ class Bopimo_Object:
         self.rotation_speed: float = 1
 
     def __refresh_constant_travel_speed_times(self):
+        '''
+        <PRIVATE>
+        If a position_travel_speed has a declared value and non-zero, will go 
+        through all of the position points and calculates the travel times 
+        based on the given speed. This method is crucial for ensuring reverse 
+        compatibility with the previous speed-based kinematic system.
+        '''
         if self._position_travel_speed is None:
             return
         for i, position in enumerate(self._position_points):
@@ -296,12 +406,29 @@ class Bopimo_Object:
 
     @property
     def position_travel_speed(self) -> float:
+        '''
+        A getter method for the position_travel_speed attribute.
+
+        Returns:
+            float:
+                The object's position travel speed.
+        '''
         if self._position_travel_speed is None:
             return 0
         return self._position_travel_speed
 
     @property
     def position_points(self) -> Bopimo_Vector3Array:
+        '''
+        <DEPRECATED>
+        A getter method for the position_points attribute. This getter method
+        is ONLY meant to be used with speed-based kinematics, as the primary
+        purpose of this function is reverse compatibility.
+
+        Returns:
+            Bopimo_Vector3Array: 
+                The sequence of the object's position points
+        '''
         if not DEPRECATION_WARNINGS["Getting position_points directly"]:
             logging.warning(
                 "Getting position_points directly is deprecated. This will be removed in a future version of Bopymo. Please use methods to access position points instead."
@@ -319,12 +446,31 @@ class Bopimo_Object:
 
     @position_travel_speed.setter
     def position_travel_speed(self, value: float):
+        '''
+        A setter method for the position_travel_speed attribute.
+
+        Parameters:
+            value (float): 
+                The new value for position_travel_speed
+        '''
         self._position_travel_speed = value
         if value != 0:
             self.__refresh_constant_travel_speed_times()
 
     @position_points.setter
     def position_points(self, points: Bopimo_Vector3Array):
+        '''
+        <DEPRECATED>
+        A setter method for the position_points attribute. This setter method
+        is ONLY meant to be used with speed-based kinematics, as the primary
+        purpose of this function is reverse compatibility. If a position travel
+        speed is not already specified, one will be provided (the previous
+        default value of 5).
+
+        Parameters:
+            points (Bopimo_Vector3Array): 
+                A new sequence of position points
+        '''
         if not DEPRECATION_WARNINGS["Setting position_points directly"]:
             logging.warning(
                 "Setting position_points directly is deprecated. This will be removed in a future version of Bopymo. Please use methods to set position points instead."
@@ -346,6 +492,22 @@ class Bopimo_Object:
             self.__refresh_constant_travel_speed_times()
 
     def add_position_point(self, position: Bopimo_Vector3, time: float = 0.0):
+        '''
+        Adds a position point to the object's position points, along with an
+        associated travel time. If a position travel speed has been given to
+        the object, the travel time will be ignored.
+
+        Parameters:
+            position (Bopimo_Vector3): 
+                A position relative to the object's origin, to be added to the
+                sequence of position points.
+            time (float):
+                A travel time (in seconds) that will be paired with the 
+                position, to get from the given position to either the next 
+                position, or the start position if it is the last in the 
+                sequence. This parameter is optional. so if you're using 
+                speed-based kinematics you can omit this parameter.
+        '''
         self._position_points.add_vector(position)
         if self.position_travel_speed == 0:
             self._position_travel_times.add_float(time)
@@ -368,6 +530,23 @@ class Bopimo_Object:
     def add_position_points(
         self, position_times: List[tuple[Bopimo_Vector3, float]] | List[Bopimo_Vector3]
     ):
+        '''
+        Adds a list of position points to the object's position points, given
+        in tuple pairs of the position, and the associated travel time. If a 
+        position travel speed has been given to the object, you can just give
+        the stand-alone position instead of a tuple.
+
+        If you are using speed-based kinematics and need to bulk add positions,
+        it is recommended to use this method as it cuts down on redundant
+        operations that would be performed to calculate the final travel time.
+
+        Parameters:
+            position_times (List[ tuple[Bopimo_Vector3, float] ]
+                            | List[Bopimo_Vector3]): 
+                A sequence of position point and time range pairs to add to the
+                object's position points and travel times. If doing speed-based
+                kinematics, just a sequence of position points.
+        '''
         if not position_times:
             return
         e: tuple[Bopimo_Vector3, float] | Bopimo_Vector3 = position_times[-1]
@@ -408,11 +587,41 @@ class Bopimo_Object:
             )
 
     def get_position_point(self, index: int) -> Bopimo_Vector3:
+        '''
+        Given an index, gets a position point of an object's position sequence
+
+        Parameters:
+            index (int): 
+                An index in the position point array
+        
+        Returns:
+            Bopimo_Vector3: 
+                The position point at the given position. Position is relative
+                to the origin of the object.
+        '''
         return self._position_points.get_vector(index)
 
     def set_position_point(
         self, index: int, position: Bopimo_Vector3, time: float = 0.0
     ):
+        '''
+        Sets a position point in the object's position points, along with an
+        associated travel time, at the given index. If a position travel speed 
+        has been given to the object, the travel time will be ignored.
+
+        Parameters:
+            index (int): 
+                An index in the position point array
+            position (Bopimo_Vector3): 
+                A position relative to the object's origin, to be added to the
+                sequence of position points.
+            time (float):
+                A travel time (in seconds) that will be paired with the 
+                position, to get from the given position to either the next 
+                position, or the start position if it is the last in the 
+                sequence. This parameter is optional. so if you're using 
+                speed-based kinematics you can omit this parameter.
+        '''
         self._position_points.set_vector(index, position)
         if self.position_travel_speed == 0:
             self._position_travel_times.set_float(index, time)
@@ -434,6 +643,20 @@ class Bopimo_Object:
     def remove_position_point(
         self, index: int
     ) -> Bopimo_Vector3 | tuple[Bopimo_Vector3, float]:
+        '''
+        Given an index, removes the position point and associated travel time 
+        of an object's position points.
+
+        Parameters:
+            index (int): 
+                An index in the position point array
+        
+        Returns:
+            tuple[Bopimo_Vector3, float]: 
+                The position and travel time in a tuple pair. Position is
+                relative to the origin of the object. If using speed-based
+                kinematics, time is calculated based on speed and distance.
+        '''
         if self.position_travel_speed == 0:
             return (
                 self._position_points.remove_vector(index),
@@ -443,9 +666,35 @@ class Bopimo_Object:
             return self._position_points.remove_vector(index)
 
     def copy(self, deep_copy: bool = True, **kwargs: Any) -> Self:
+        '''
+        Makes a copy of the Bopimo object, retaining the instance attributes.
+        This method allows level makers to copy objects without the need to
+        import the copy module.
+
+        Parameters:
+            deep_copy (bool): 
+                Takes mutable attributes and deep copies them. This is enabled
+                by default as it is much more intuitive to level makers to
+                deep copy. However, if you want a true shallow copy, set this
+                to False.
+            **kwargs (Any):
+                Any available object attributes can be specified to quickhand
+                modifications to a copy.
+        
+        Returns:
+            Self: 
+                A copied object, with the exact same attributes as the original
+        '''
         return self.__copy__(deep_copy, **kwargs)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Converts the object to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the Bopimo Object
+        '''
         return {
             "block_id": self.id,
             "block_name": self.name,
@@ -499,6 +748,20 @@ class Bopimo_Object:
 
 
 class Bopimo_Tilable_Object(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+    Inherited from Bopimo_Object, this is also meant to be a superclass that
+    encompasses nearly all Bopimo Objects. What makes this class different is
+    the addition of pattern related attributes that many Bopimo objects have.
+    If the Bopimo object has a tilable pattern or contains pattern attributes,
+    the object will inherit from this class instead of Bopimo_Object.
+
+    Instance Attributes:
+        pattern (Block_Pattern | int): 
+            The tilable pattern that the object uses.
+        pattern_color (Bopimo_Color):
+            The color of the tilable pattern
+    '''
     def __init__(
         self,
         id: Block_ID | int = Block_ID.CUBE,
@@ -513,6 +776,13 @@ class Bopimo_Tilable_Object(Bopimo_Object):
         self.pattern_color: Bopimo_Color = Bopimo_Color(0, 0, 0)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Converts the object to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the Bopimo Object
+        '''
         obj = super().json()
         return obj | {
             "block_pattern": self.pattern,
@@ -521,6 +791,88 @@ class Bopimo_Tilable_Object(Bopimo_Object):
 
 
 class Bopimo_Level:
+    '''
+    This class represents the entire Bopimo level, and the highest order of 
+    information. All your level information is encapsulated in this class. In 
+    addition, this class has additional responsibilities, including handling 
+    block UIDs, performing higher level sanity checks, and performing the I/O 
+    of the module.
+
+    Class Attributes:
+        SERVER_BLOCK_LIMIT (int):
+            A constant integer representing the block limit imposed by Bopimo's
+            servers. While you are allowed to generate levels that pass this
+            limit, you will not be able to import it in an online session and
+            publish the level. In addition, some functionality may not work as
+            intended past this limit.
+
+            A warning will be thrown in the console if you export a level past
+            this limit.
+    
+    Instance Attributes:
+        game_version (Game_Version):
+            The Bopimo version that the level will report when importing into
+            Bopimo. By default, this will try to keep up-to-date with the
+            latest version, but if you have a bunch of code that relies on
+            older Bopimo features, set this attribute to the desired version.
+        time_of_save (datetime.datetime):
+            The time that this file was created. The time is determined upon
+            generation of the file and written there.
+        name (str):
+            The name of the level
+        description (str):
+            The description describing the level
+        music (Bopimo_Int32Array):
+            An array of different integers representing various Bopimo tracks.
+            It is highly recommended that you use the Music enum for choosing
+            tracks, as this is more readable and future-proof.
+        lives (int):
+            The amount of lives that a player will have when starting an
+            attempt. Each time a player dies, they will lose a life. If a
+            player runs out of lives, they fail their attempt and the level
+            completely restarts. Set this to 0 for infinite lives.
+        player_damage_players (bool):
+            If true, PvP is enabled and players can damage each other, directly
+            or indirectly. By default, this is set to true.
+        sky (int | Sky):
+            The skybox that the level will use. It is highly recommended to use
+            the Sky enum for choosing a skybox, as this is more readable and
+            future-proof.
+        sky_energy (float):
+            A positive value that represents the level's gamma/brightness. A
+            higher energy will lead to a brighter level
+        ambient_color (Bopimo_Color):
+            A color that represents the final color of a level's shadows. Be
+            wary that the ambient color takes slight influence from a level's
+            sky.
+        weather (int | Weather):
+            The weather that the level uses, represented by client-side
+            particles. Set to clear to have no particles. It is highly
+            recommended to use the Weather enum for choosing weather, as this
+            is more readable and future-proof.
+        fog_enabled (bool):
+            If enabled, will set the level in a fog, limiting the player's
+            vision
+        fog_distance (int):
+            Set how far the fog will end. A smaller value resembles a closer
+            fog.
+        fog_color (Bopimo_Color):
+            Set the color of the fog. Ideally, you'd want to match the fog to
+            compliment your skybox.
+        gravity (float):
+            <INTERNAL>
+            Set's the gravity of the level.
+        death_plane (float):
+            A (usually negative) value that, if a player's Y position falls 
+            below, will instantly kill them (unless a builder has enabled 
+            Invincibility).
+        blocks (dict[int, Bopimo_Object])
+            <INTERNAL>
+            A dictionary that contains all of a level's objects. The keys are
+            the UIDs of an object, a unique randomly-generated integer that
+            allows to identify an object. UIDs are not meant to be set by the
+            level maker.
+    '''
     SERVER_BLOCK_LIMIT = 2048
 
     def __init__(
@@ -542,13 +894,12 @@ class Bopimo_Level:
         self.music: Bopimo_Int32Array = Bopimo_Int32Array(
             [Music.SERENE, Music.SWAYING_DREAMS, Music.PLAYFUL_WALTZ]
         )
-        # 0 means infinite lives
         self.lives: int = 0
         self.players_damage_players: bool = True
 
         # ATMOSPHERE
         self.sky: Sky | int = Sky.DAY
-        self.sky_energy: float = 1  # Another way of saying "Level brightness"
+        self.sky_energy: float = 1
         self.ambient_color: Bopimo_Color = Bopimo_Color(0, 0, 0)
         self.weather: Weather | int = Weather.CLEAR
         self.fog_enabled: bool = False
@@ -561,6 +912,16 @@ class Bopimo_Level:
         self._blocks: dict[int, Bopimo_Object] = {}
 
     def __block_sanity_check(self, block: Bopimo_Object):
+        '''
+        <PRIVATE>
+        This method is meant to encompass all of the additional sanity checks
+        that can not easily be performed within the object itself. This ensures
+        there are no logical errors in the final export.
+
+        Parameters:
+            block (Bopimo_Object):
+                The object to perform sanity checks on.
+        '''
         assert (
             self.game_version >= block.MIN_VERSION
         ), f'You are attempting to add a {block.__class__} instance, which requires a minimum Bopimo version of {block.MIN_VERSION}. Change your level\'s "game_version" (currently {self.game_version}) to match the version, or update Bopymo for the latest changes.'
@@ -577,26 +938,72 @@ class Bopimo_Level:
                     )
 
     def remove_object(self, uid: int) -> Bopimo_Object:
+        '''
+        Removes an object with the associated UID from the level
+
+        Parameters:
+            uid (int):
+                The UID of the object to delete
+
+        Returns:
+            Bopimo_Object: 
+                The object found with the given UID, and removed from the level
+        '''
         if uid not in self._blocks:
             raise KeyError(f"Bopimo Level does not contain an object with uid {uid}")
         return self._blocks.pop(uid)
 
     def get_object(self, uid: int) -> Bopimo_Object | None:
+        '''
+        Gets an object with the associated UID from the level, if it exists.
+        
+        Parameters:
+            uid (int):
+                The UID to search for an object
+        
+        Returns:
+            Bopimo_Object:
+                The object found with the given UID
+            None:
+                If no object was found
+        '''
         if uid not in self._blocks:
             return None
         return self._blocks[uid]
 
     def add_object(self, obj: Bopimo_Object) -> int:
+        '''
+        Adds an object to the level.
+
+        Parameters:
+            obj (Bopimo_Object):
+                The object that will be added to the level
+        
+        Returns:
+            int:
+                The newly generated UID associated with the object
+        '''
         uid: int = random.randrange(1, 2**32)
         # If we encounter collisions, regenerate the uid
         while uid in self._blocks:
             uid = random.randrange(1, 2**32)
         self.__block_sanity_check(obj)
         self._blocks[uid] = obj
-        # Return the UID in case the user wants a direct reference to the object in the level
         return uid
 
     def add_objects(self, obj_list: List[Bopimo_Object]) -> List[int]:
+        '''
+        Adds multiple objects to the level.
+
+        Parameters:
+            obj_list (List[Bopimo_Object]):
+                A list of objects that will be added to the level
+        
+        Returns:
+            List[int]:
+                A list of newly generated UIDs, ordered by the objects in the 
+                input list
+        '''
         uid_list: List[int] = []
         for obj in obj_list:
             uid = self.add_object(obj)
@@ -604,6 +1011,13 @@ class Bopimo_Level:
         return uid_list
 
     def json(self) -> dict[str, Any]:
+        '''
+        Converts the level to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the level
+        '''
         obj: dict[str, Any] = {
             "GAME_VERSION": str(self.game_version),
             "TIME_OF_SAVE": self.time_of_save.strftime("%Y-%m-%d %H:%M:%S"),
@@ -635,6 +1049,14 @@ class Bopimo_Level:
     # TODO: Add a function that can import a bopjson file.
 
     def export(self, file_path: str):
+        '''
+        Exports the Bopimo level to a bopjson file. This function will perform
+        level-wide sanity checks, and also time the exporting process.
+
+        Parameters:
+            file_path (str):
+                The file path, including the file name, of the bopjson file.
+        '''
         start = time.perf_counter()
         if len(self._blocks) > Bopimo_Level.SERVER_BLOCK_LIMIT:
             logging.warning(
@@ -655,6 +1077,27 @@ class Bopimo_Level:
 
 
 class Bopimo_Block(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    The class that embodies all Bopimo primitives. Whether it's cubes, ramps,
+    cylinders, or anything similar, you'll declare them with this class.
+
+    This is the only class where a Block ID can be explicitly declared upon
+    instantiation, meant to declare IDs for primitives.
+
+    Instance Attributes:
+        transparency_enabled (bool):
+            If enabled, turns on transparency, allowing users to see partially
+            or completely through the block
+        transparency (int):
+            The level of transparency of the block. Lower values indicate
+            higher transparency, with 0 being the lowest value (full
+            transparency)
+        collision_enabled (bool):
+            Toggles collision with other objects. If disabled, objects will
+            clip through them.
+    '''
     def __init__(
         self,
         id: Block_ID | int = Block_ID.CUBE,
@@ -671,6 +1114,13 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         self.collision_enabled: bool = True
 
     def json(self) -> dict[str, Any]:
+        '''
+        Converts the block to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the level
+        '''
         obj = super().json()
         return obj | {
             "transparency": self.transparency,
@@ -683,6 +1133,14 @@ class Bopimo_Block(Bopimo_Tilable_Object):
 
 
 class Bopimo_Spawn(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A plate-shaped object that players will spawn above at the beginning of a 
+    new attempt, or respawn if the player has not touched a checkpoint. If a 
+    level has multiple spawn objects, a spawn is picked at random for a player 
+    to (re)spawn
+    '''
     def __init__(
         self,
         name: str = "Generated Spawn",
@@ -694,10 +1152,25 @@ class Bopimo_Spawn(Bopimo_Tilable_Object):
         super().__init__(Block_ID.SPAWN, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the spawn to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the spawn
+        '''
         return super().json()
 
 
 class Bopimo_Checkpoint(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A flag-shaped object that players will respawn above if they touch it. 
+    Respawning at a checkpoint will not reset the attempt. If a player chooses
+    to restart the level, runs out of lives, or they touch another checkpoint,
+    they will no longer respawn at their previous checkpoint.
+    '''
     def __init__(
         self,
         name: str = "Generated Checkpoint",
@@ -709,10 +1182,46 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
         super().__init__(Block_ID.CHECKPOINT, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the checkpoint to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the checkpoint
+        '''
         return super().json()
 
-
+# TODO: Consider moving star_id and counter to Bopimo_Level. This implementation doesn't do well when a script is handling multiple levels.
+# TODO: Also consider making star_id a constant.
 class Bopimo_Completion_Star(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    An object resembling the main objective of a game mode "Star Collection",
+    where players must collect all stars to complete the level. Players obtain
+    a star by touching it. In "Free Roam", stars have no functionality and are
+    purely decorative.
+
+    Class Attributes:
+        star_counter (int):
+            <BOPYMO_ONLY> <PRIVATE>
+            An internal counter for how many star objects there are. This
+            ensures all completion stars have unique star IDs.
+    
+    Instance Attributes:
+        mute (bool):
+            By default, stars emit a sound when a player is nearby. Enabling
+            this will mute that sound and make them silent.
+        float_height (float):
+            Stars have a movement animation that helps distinguish them from
+            regular objects. Changing this value will affect how much the star
+            will move with the animation.
+        star_id (int):
+            <INTERNAL> <PRIVATE>
+            The additional ID that helps the engine identify which star it is.
+            Presumably, this is used to assist with anti-tamper, so this value
+            is not meant to be changed.
+    '''
     _star_counter: int = 0
 
     def __init__(
@@ -728,15 +1237,28 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
         )
         self.mute: bool = False
         self.float_height: float = 1.5
-        # Star ID should NOT be changed! The id is tied to how many there are
         self._star_id: int = self._star_counter
         self._star_counter += 1
 
     @classmethod
     def get_star_count(cls) -> int:
+        '''
+        Gets the total number of star instances that have been created.
+
+        Returns:
+            int: A count of star instances created. Not necessarily reflective
+                 of how many there are in a level.
+        '''
         return cls._star_counter
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the star to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the star
+        '''
         obj = super().json()
         return obj | {
             "mute": self.mute,
@@ -744,8 +1266,24 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
             "float_height": self.float_height,
         }
 
-
 class Bopimo_Spring(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    An object that propels players in the upwards direction of the spring upon 
+    contact. If a player is holding the jump key, they will get a slight boost
+    from the spring. If a player is performing a long jump, a spring will 
+    greatly assist them in covering long distances.
+
+    Instance Attributes:
+        bounce_force (float):
+            Affects how much the spring will propel the player. A higher value
+            will propel the player farther.
+        can_ground_pound (bool):
+            Determines whether a player's ground pound will cancel the effects
+            of a spring. If set to false, the player will bounce while ground 
+            pounding.
+    '''
     def __init__(
         self,
         name: str = "Generated Spring",
@@ -760,14 +1298,40 @@ class Bopimo_Spring(Bopimo_Object):
         self.can_ground_pound: bool = True
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the spring to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the spring
+        '''
         obj = super().json()
         return obj | {
             "bounce_force": self.bounce_force,
             "can_ground_pound": self.can_ground_pound,
         }
 
-
+# TODO: Clamp damage_amount to a non-negative value
 class Bopimo_Lava(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    One of the primary avoidances of a player. Upon touching lava, players will
+    take damage and will repeatedly take damage until either the player ceases
+    contact, or the player dies.
+
+    While it is inherited from Bopimo_Object, Lava does have a pattern_color
+    attribute which is only seen in a Tilable_Object. However, lava has a
+    custom block pattern that can not be replicated or modified.
+
+    Instance Attributes:
+        pattern_color (Bopimo_Color):
+            The color of the lava pattern
+        damage_amount (float):
+            The amount of damage that will be dealt to a player upon contact.
+            Setting this value to 100 or more will make the lava immediately
+            kill the player upon contact.
+    '''
     def __init__(
         self,
         name: str = "Generated Lava",
@@ -783,14 +1347,40 @@ class Bopimo_Lava(Bopimo_Object):
         self.damage_amount: float = damage
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the lava to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the lava
+        '''
         obj = super().json()
         return obj | {
             "block_pattern_color": self.pattern_color.json(),
             "damage_amount": self.damage_amount,
         }
 
-
+# TODO: Make Bopimo_Water inherit from Bopimo_Object instead to match consistency with Bopimo_Lava
 class Bopimo_Water(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A fluid whose primary purpose is to let the player swim inside. While 
+    swimming, movement is heavily dampened, and certain movements are 
+    restricted (e.g. jumping, crouching, ground pounding).
+
+    Players can choose to dive in the water, which gives them a small speed
+    boost which lets them swim faster. Players cannot drown in water and take
+    damage.
+
+    Similar to Lava, water has a custom block pattern which can not be
+    replicated or modified. The block_pattern attribute will be ignored.
+
+    Instance Attributes:
+        foam_color (Bopimo_Color):
+            <ALIAS pattern_color>
+            The color of the foam pattern in the water.
+    '''
     def __init__(
         self,
         name: str = "Generated Water",
@@ -801,14 +1391,33 @@ class Bopimo_Water(Bopimo_Tilable_Object):
         scale: Bopimo_Vector3 = Bopimo_Vector3(4, 4, 4),
     ):
         super().__init__(Block_ID.WATER, name, color, position, rotation, scale)
-        # NOTE: "Foam Color" is basically "Pattern Color" with a different name
         self.pattern_color = foam_color
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the water to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the water
+        '''
         return super().json()
 
 
 class Bopimo_Ladder(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A specialized mesh object where players can climb upwards upon touching the
+    ladder and moving, or downwards by not moving. Useful for getting up tall 
+    surfaces.
+
+    Instance Attributes:
+        climbing_speed (float):
+            <INTERNAL> <NON-FUNCTIONAL>
+            A speed multiplier of how fast the player climbs up the ladder
+            compared to their walking speed. 
+    '''
     def __init__(
         self,
         name: str = "Generated Ladder",
@@ -818,15 +1427,43 @@ class Bopimo_Ladder(Bopimo_Tilable_Object):
         scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 1),
     ):
         super().__init__(Block_ID.LADDER, name, color, position, rotation, scale)
-        # This is a hidden property and can't be found in the level editor
         self.climbing_speed: float = 1
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the ladder to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the ladder
+        '''
         obj = super().json()
         return obj | {"climbing_speed": self.climbing_speed}
 
-
 class Bopimo_Token(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A coin-shaped object that players can collect. On the bottom left screen, a
+    token counter is present that shows how many tokens a player has collected
+    in their current attempt.
+
+    The primary function of a token is that collecting them will heal the 
+    player any lost health. Tokens can also be used by level makers to help
+    guide players around a level (e.g. through a line of coins).
+
+    Instance Attributes:
+        heal_amount (float):
+            How much HP to heal the player upon collection
+        regeneration_time (float):
+            How much time (in seconds) it takes for the token to respawn after
+            being collected.
+        worth (int):
+            How many tokens are granted to the player when collected.
+        model (int):
+            <INTERNAL> <NON-FUNCTIONAL>
+            The mesh ID that the token's appearance will mimic
+    '''
     def __init__(
         self,
         name: str = "Generated Token",
@@ -839,10 +1476,16 @@ class Bopimo_Token(Bopimo_Object):
         self.heal_amount: float = 5
         self.regeneration_time: float = 45
         self.worth: int = 1
-        # This is a hidden property and can't be found in the level editor
         self.model: int = 0
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the token to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the token
+        '''
         obj = super().json()
         return obj | {
             "heal_amount": self.heal_amount,
@@ -853,6 +1496,25 @@ class Bopimo_Token(Bopimo_Object):
 
 
 class Bopimo_Disappearing_Block(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A special type of block where after prolonged contact, will "fall" and 
+    disable collision, making anything fall through it. Disappearing blocks are
+    usually indicated by the shaky animation they play while they are being 
+    touched. 
+
+    Instance Attributes:
+        disappears_after (float):
+            A duration (in seconds) of how long they can be touched before they
+            disappear.
+        regeneration_time (float):
+            A duration (in seconds) of how long it takes for the block to
+            reappear after disappearing.
+        players_only (bool):
+            Determines whether only players will trigger the block and make it
+            disappear. If false, NPCs can also trigger the block.
+    '''
     def __init__(
         self,
         name: str = "Generated Disappearing Block",
@@ -870,6 +1532,14 @@ class Bopimo_Disappearing_Block(Bopimo_Tilable_Object):
         self.players_only: bool = False
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the disappearing block to JSON, as part of the exporting 
+        process
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the disappearing block
+        '''
         obj = super().json()
         return obj | {
             "disappears_after": self.disappears_after,
@@ -880,6 +1550,16 @@ class Bopimo_Disappearing_Block(Bopimo_Tilable_Object):
 
 
 class Bopimo_Grates(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A see-through block that is meant to resemble a set of grates. Grates
+    can be grabbed from underneath by players; they can hang and move while
+    gripped. 
+
+    Grates use their own block pattern which cannot be replicated or modified,
+    making them not tilable.
+    '''
     def __init__(
         self,
         name: str = "Generated Grates",
@@ -891,10 +1571,31 @@ class Bopimo_Grates(Bopimo_Object):
         super().__init__(Block_ID.GRATES, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the grates to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the grates
+        '''
         return super().json()
 
 
 class Bopimo_Speed_Panel(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+    
+    A panel that players can step on to temporarily alter their speed (usually
+    making them move faster).
+
+    Instance Attributes:
+        new_speed (float):
+            The new speed that is granted to the player upon collision.
+        duration (float):
+            How long (in seconds) the granted speed will last before reverting
+            back to normal. This can be set to a high value for an indefinite
+            speed change.
+    '''
     def __init__(
         self,
         name: str = "Generated Speed Panel",
@@ -910,11 +1611,34 @@ class Bopimo_Speed_Panel(Bopimo_Object):
         self.duration: float = duration
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the speed panel to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the speed panel
+        '''
         obj = super().json()
         return obj | {"new_speed": self.new_speed, "duration": self.duration}
 
 
 class Bopimo_Boost_Panel(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A panel that players can step on, and similar to a spring, will propel the
+    user forward and upwards. Jumping does NOT grant an additional boost on a 
+    boost panel. 
+    
+    Boost panels are often used in the context of rolling, where you can 
+    jumpstart a roll and design obstacles based on rolling.
+
+    Instance Attributes:
+        boost (float):
+            How much the player should be boosted forward
+        vertical_boost (float):
+            How much the player should be boosted upward
+    '''
     def __init__(
         self,
         name: str = "Generated Boost Panel",
@@ -928,11 +1652,31 @@ class Bopimo_Boost_Panel(Bopimo_Object):
         self.vertical_boost: float = 15
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the boost panel to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the boost panel
+        '''
         obj = super().json()
         return obj | {"boost": self.boost, "vertical_boost": self.vertical_boost}
 
 
 class Bopimo_Ice(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A reflective, slightly transparent surface notable for its slipperiness,
+    which can often make movement more difficult for players. Most slipperiness
+    can be counteracted by jumping, so use wisely.
+
+    Instance Attributes:
+        slipperiness (float):
+            A positive number that indicates how slippery the ice is upon
+            contact. 0 will cancel out the slipperiness completely, while a
+            high value will further reduce friction and dampen movement.
+    '''
     def __init__(
         self,
         name: str = "Generated Ice",
@@ -945,11 +1689,34 @@ class Bopimo_Ice(Bopimo_Object):
         self.slipperiness: float = 1
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the ice to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the ice
+        '''
         obj = super().json()
         return obj | {"slipperiness": self.slipperiness}
 
 
 class Bopimo_Breakable_Block(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A special block where the block is destructable. The block is typically
+    destroyed by having players deal damage to it through punching, diving,
+    or ground pounding. The block tends to be used to separate sections of
+    a level or can be hidden in plain sight.
+    
+    Instance Attributes:
+        max_health (float):
+            The health of the block. The higher the health, the more hits and
+            damage players will have to deal to break the block.
+        regeneration_time (float):
+            A duration (in seconds) for how the block will take after it has
+            been destroyed before it regenerates.
+    '''
     def __init__(
         self,
         name: str = "Generated Breakable Block",
@@ -966,6 +1733,13 @@ class Bopimo_Breakable_Block(Bopimo_Tilable_Object):
         self.regeneration_time: float = 10
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the breakable block to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the breakable block
+        '''
         obj = super().json()
         return obj | {
             "max_health": self.max_health,
@@ -974,6 +1748,24 @@ class Bopimo_Breakable_Block(Bopimo_Tilable_Object):
 
 
 class Bopimo_Cannon(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    An object where players can enter, and be launched in the air. Cannons are
+    typically used by level makers to help back track, make one-way routes,
+    or send players to a specific point. Trajectories are created by a cannon's
+    rotation and power.
+
+    Cannons are especially useful because while being launched, players can not
+    move in the air and most movements are restricted to stop players from
+    diverging from the cannon's trajectory. The only way for a player to cancel
+    a cannon's effects is by ground pounding.
+
+    Instance attributes:
+        power (float):
+            How much distance a cannon can launch a player. A higher value will
+            shoot the player much faster, covering larger distances.
+    '''
     def __init__(
         self,
         name: str = "Generated Cannon",
@@ -987,13 +1779,43 @@ class Bopimo_Cannon(Bopimo_Object):
         self.power: float = power
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the cannon to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the cannon
+        '''
         obj = super().json()
         return obj | {"power": self.power}
 
 
-# WARNING: This is a hidden block, not available in the level editor. It is functional, but has unfinished features.
-#          This class is subject to change.
 class Bopimo_Portal(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object> <UPCOMING>
+
+    An object where players can enter and be instantaneously teleported from
+    one place to another. Portals often fulfill many of the previous roles of a
+    cannon more efficiently and effectively.
+
+    Portals can be one-way or two-way; portals can also have multiple
+    destinations. If a portal has multiple destinations, a random one is chosen
+    whenever a player enters a portal.
+
+    Portals are the only object without a visible mesh; they rely on particles
+    for their visibility.
+
+    Instance Attributes:
+        transparency (int):
+            <NON-FUNCTIONAL>
+            The underlying transparency of the portal object. This attribute
+            may be scrapped.
+        destinations (Bopimo_Int64Array):
+            <INTERNAL>
+            A list of destinations the player may teleport to upon entering.
+            Destinations are linked through a portal's corresponding UID, which
+            can be obtained through Bopimo_Level.add_object.
+    '''
     def __init__(
         self,
         name: str = "Generated Portal",
@@ -1003,12 +1825,17 @@ class Bopimo_Portal(Bopimo_Object):
         scale: Bopimo_Vector3 = Bopimo_Vector3(10, 10, 2),
     ):
         super().__init__(Block_ID.PORTAL, name, color, position, rotation, scale)
-        # Currently this attribute is non-functional. I will update it when it works properly
         self.transparency: int = 224
-        # Destinations work based on Object UIDs. Bopimo_Level.add_object returns an object's UID, so use that to make this work.
         self.destinations: Bopimo_Int64Array = Bopimo_Int64Array([])
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the portal to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the portal
+        '''
         obj = super().json()
         return obj | {
             "transparency": self.transparency,
@@ -1017,6 +1844,18 @@ class Bopimo_Portal(Bopimo_Object):
 
 
 class Bopimo_Web(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+    
+    An object that inhibits player movement upon contact. Often used to stop
+    movement or deter players from pursuing a particular direction.
+
+    Instance Attributes:
+        stickiness (float):
+            How much should be movement be inhibited by the web. A higher value
+            will be more effective at stopping movement, but will make overall
+            movement slower.
+    '''
     def __init__(
         self,
         name: str = "Generated Web",
@@ -1029,11 +1868,49 @@ class Bopimo_Web(Bopimo_Object):
         self.stickiness: float = 0.5
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the web to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the web
+        '''
         obj = super().json()
         return obj | {"stickiness": self.stickiness}
 
 
 class Bopimo_Missile_Launcher(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+    
+    A weapon that shoots missiles in a given direction. Upon contact with a 
+    surface or player, the missile will explode and deal damage to any nearby
+    players.
+
+    The missile launcher is often used as another avoidance that can kill the
+    player. However, since missiles only explode whenever the front collides,
+    players can stand on missiles and use them as a method of transportation
+    not involving kinematics. 
+
+    Instance Attributes:
+        delay (float):
+            A duration (in seconds) that the launcher waits between shooting
+            missiles
+        missile_size (float):
+            The size of the missile compared to the launcher
+        explosion_damage (float):
+            The amount of damage to deal to players upon contact or being in
+            the explosion's area of effect
+        explosion_force (float):
+            How much force the explosion pushes back the player if they are in
+            the explosion's area of effect
+        explosion_size (float):
+            The size of the area of effect of a missile's explosion. A bigger
+            size leads to a bigger area of effect.
+        model (int):
+            <INTERNAL> <NON-FUNCTIONAL>
+            The mesh ID that the missile's appearance will mimic
+    '''
     def __init__(
         self,
         name: str = "Generated Missile Launcher",
@@ -1051,10 +1928,16 @@ class Bopimo_Missile_Launcher(Bopimo_Object):
         self.explosion_damage: float = 50
         self.explosion_force: float = 10
         self.explosion_size: float = 5
-        # This is a hidden property and can't be found in the level editor
         self.model: int = 0
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the missile launcher to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the missile launcher
+        '''
         obj = super().json()
         return obj | {
             "delay": self.delay,
@@ -1071,6 +1954,11 @@ class Bopimo_Missile_Launcher(Bopimo_Object):
 
 
 class Bopimo_Flower(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A simple flower with petals, reminiscent of a daisy or dandelion.
+    '''
     def __init__(
         self,
         name: str = "Generated Flower",
@@ -1082,10 +1970,22 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
         super().__init__(Block_ID.FLOWER, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the flower to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the flower
+        '''
         return super().json()
 
 
 class Bopimo_Fence(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A tiling mesh object that resembles a wooden picket fence.
+    '''
     def __init__(
         self,
         name: str = "Generated Fence",
@@ -1098,10 +1998,22 @@ class Bopimo_Fence(Bopimo_Tilable_Object):
         self.pattern = Block_Pattern.PLANKS
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the fence to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the fence
+        '''
         return super().json()
 
 
 class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A pine tree with leaves that resemble a cone-like structure.
+    '''
     def __init__(
         self,
         name: str = "Generated Pine Tree",
@@ -1113,10 +2025,22 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
         super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the pine tree to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the pine tree
+        '''
         return super().json()
 
 
 class Bopimo_Pine_Tree_Snow(Bopimo_Pine_Tree):
+    '''
+    <INHERITED Bopimo_Pine_Tree>
+
+    A snowy variant of the pine tree. Usually used in cold or winter levels.
+    '''
     def __init__(
         self,
         name: str = "Generated Pine Tree Snow",
@@ -1129,10 +2053,22 @@ class Bopimo_Pine_Tree_Snow(Bopimo_Pine_Tree):
         self.id = Block_ID.PINE_TREE_SNOW
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the pine tree to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the pine tree
+        '''
         return super().json()
 
 
 class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A tall palm tree. Usually best used in a desert or beach setting.
+    '''
     def __init__(
         self,
         name: str = "Generated Palm Tree",
@@ -1144,10 +2080,32 @@ class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
         super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the palm tree to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the palm tree
+        '''
         return super().json()
 
 
 class Bopimo_Street_Lamp(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A street light that is reminiscent of a vintage, germanic lantern hung on a
+    pole. This decoration emits a point light, which can be useful to light
+    dark areas.
+
+    Considering the dark mesh, it is an ideal candidate if you want to pull off
+    standalone point lights in Bopimo. To do this, set the street lamp size to
+    the smallest size allowed in Bopimo.
+
+    Instance Attributes:
+        light_range (float): 
+            How far the light should illuminate from its source.
+    '''
     def __init__(
         self,
         name: str = "Generated Street Lamp",
@@ -1160,11 +2118,36 @@ class Bopimo_Street_Lamp(Bopimo_Object):
         self.light_range: float = 25
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the street lamp to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the street lamp
+        '''
         obj = super().json()
         return obj | {"light_range": self.light_range}
 
 
 class Bopimo_Torch(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A torch that is remiscent of a handheld torch. This decoration emits a
+    point light, which can be usef to light dark areas. 
+
+    This mesh includes a customizable fire animation, which can be configured
+    through its "pattern_color" attribute. The torch's file can be utilized for
+    other purposes outside of a torch. It would not make a great candidate for
+    a standalone point light.
+
+    Instance Attributes:
+        flame_color (float):
+            <ALIAS pattern_color>
+            The color of the fire burning in the torch
+        light_range (float): 
+            How far the light should illuminate from its source.
+    '''
     def __init__(
         self,
         name: str = "Generated Torch",
@@ -1178,11 +2161,33 @@ class Bopimo_Torch(Bopimo_Object):
         self.light_range: float = 25
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the torch to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the torch
+        '''
         obj = super().json()
         return obj | {"light_range": self.light_range}
 
 
 class Bopimo_Logo(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A specialized mesh resembling the "Bopimo!" logo. By default, it is colored
+    in their signature purple shades, but it can be customly colored.
+
+    Instance Attributes:
+        primary_color (Bopimo_Color):
+            <ALIAS color>
+            The outline color of the logo mesh.
+        secondary_color (Bopimo_Color):
+            The fill color of the logo's letters
+        tertiary_color (Bopimo_Color):
+            The fill color of the exclamation point
+    '''
     def __init__(
         self,
         name: str = "Generated Logo",
@@ -1198,11 +2203,24 @@ class Bopimo_Logo(Bopimo_Object):
         self.tertiary_color: Bopimo_Color = tertiary_color
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the logo to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the logo
+        '''
         obj = super().json()
         return obj | {"color2": self.secondary_color, "color3": self.tertiary_color}
 
 
 class Bopimo_Logo_Icon(Bopimo_Logo):
+    '''
+    <INHERITED Bopimo_Logo>
+
+    A variant of the "Bopimo!" logo where it closely resembles the iconized
+    version (b!). Similar to the logo mesh, it is also recolorable.
+    '''
     def __init__(
         self,
         name: str = "Generated Logo Icon",
@@ -1225,10 +2243,38 @@ class Bopimo_Logo_Icon(Bopimo_Logo):
         self.id = Block_ID.LOGO_ICON
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the icon to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the icon
+        '''
         return super().json()
 
 
 class Bopimo_String_Lights(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A set of colored lights that are meant to resemble Christmas lights. This
+    item was added to Bopimo 1.0.9 during the holidays, and is a tilable mesh.
+
+    Contrary to their name, this decoration does NOT emit a point light, and
+    can't be used to illuminate dark areas. Lights can cycle colors through
+    "blinking"
+
+    Instance Attributes:
+        wire_color (Bopimo_Color):
+            <ALIAS color>
+            The color of the wire attaching all the string lights
+        bulb_colors (Bopimo_ColorArray):
+            An ordered sequence of the colors that the string lights will
+            illuminate. The sequence is looped through when rendering
+            individual bulbs, and when the lights "blink" through the sequence.
+        blink_speed (float):
+            The speed at which individual bulbs cycle through the bulb colors.
+    '''
     def __init__(
         self,
         name: str = "Generated String Lights",
@@ -1246,7 +2292,6 @@ class Bopimo_String_Lights(Bopimo_Object):
         rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(6, 2.5, 2),
     ):
-        # NOTE: "Wire color" uses the "Block color" attribute
         super().__init__(
             Block_ID.STRING_LIGHTS, name, wire_color, position, rotation, scale
         )
@@ -1254,6 +2299,13 @@ class Bopimo_String_Lights(Bopimo_Object):
         self.blink_speed: float = 0
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the string lights to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the string lights
+        '''
         obj = super().json()
         return obj | {
             "bulb_colors": self.bulb_colors.json(),
@@ -1262,6 +2314,32 @@ class Bopimo_String_Lights(Bopimo_Object):
 
 
 class Bopimo_Rose(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A special type of flower that resembles a rose. Roses were added in Bopimo
+    1.0.15 as part of the Bopimo Valentine's Day event. Considering the thorns
+    that are attached to roses, players that touch them will take 1 HP worth of
+    damage upon contacting them by default.
+
+    Roses possess a unique use case. Since roses only have a damage collider
+    and players can walk through them, they can be used as a method of
+    un-collidable lava. They also can be modified to heal the player instead of
+    damaging them, offering an alternative method of healing.
+
+    Instance attributes:
+        bud_color (Bopimo_Color):
+            <ALIAS color>
+            The color of the rose petals
+        stem_color (Bopimo_Color):
+            <ALIAS pattern_color>
+            The color of the rose's stem (and by extension thorns)
+        damage (float):
+            The amount of damage that can be dealt to a player upon contact.
+            Set this to 0 if you don't want players taking damage from touching
+            roses. Set this to a negative value if you want players to heal
+            upon contact.
+    '''
     MIN_VERSION = Game_Version(1, 0, 15)
 
     def __init__(
@@ -1274,17 +2352,41 @@ class Bopimo_Rose(Bopimo_Tilable_Object):
         rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         scale: Bopimo_Vector3 = Bopimo_Vector3(1, 3, 1),
     ):
-        # NOTE: "Bud_color" uses block color, while "stem_color" uses the pattern color.
         super().__init__(Block_ID.ROSE, name, bud_color, position, rotation, scale)
         self.pattern_color = stem_color
         self.damage: float = damage
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the rose to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the rose
+        '''
         obj = super().json()
         return obj | {"damage": self.damage}
 
 
 class Bopimo_Item_Mesh(Bopimo_Object):
+    '''
+    <INHERITED Bopimo_Object>
+
+    A customizable mesh object that level makers can use to insert items into
+    their levels. The mesh ID can contain the ID based on any item in the
+    Bopimo catalog, including hats, toys, faces, and even user-made clothing.
+
+    For faces and user clothing, bopi models do not render when selecting these
+    types of assets.
+
+    Instance attributes:
+        item_id (int):
+            The ID the mesh will be using. Visit this link to reference assets:
+            (https://www.bopimo.com/shop?category=all&order=oldest)
+        shaded (bool):
+            Whether the mesh is can receive shadow maps. This does NOT stop the
+            mesh from casting shadows.
+    '''
     def __init__(
         self,
         name: str = "Generated Item Mesh",
@@ -1298,11 +2400,23 @@ class Bopimo_Item_Mesh(Bopimo_Object):
         self.shaded: bool = True
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the item mesh to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the item mesh
+        '''
         obj = super().json()
         return obj | {"item_id": self.item_id, "shaded": self.shaded}
 
-
+# TODO: Consider inheriting from Bopimo_Object instead. The pattern has no functionality to the mesh itself.
 class Bopimo_Cloud(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    An animated mesh that resembles a cloud.
+    '''
     def __init__(
         self,
         name: str = "Generated Cloud",
@@ -1314,11 +2428,25 @@ class Bopimo_Cloud(Bopimo_Tilable_Object):
         super().__init__(Block_ID.CLOUD, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the cloud to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the cloud
+        '''
         return super().json()
 
-
-# WARNING: This is a hidden block and is very likely unfinished. This class is subject to change.
 class Bopimo_Statue(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object> <INTERNAL>
+
+    A standstill mesh of the default Bopi character, the character which all 
+    players are based from.
+
+    This decoration is likely unfinished and may be subject to additional
+    changes.
+    '''
     def __init__(
         self,
         name: str = "Generated Analog Clock",
@@ -1330,11 +2458,92 @@ class Bopimo_Statue(Bopimo_Tilable_Object):
         super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the statue to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the statue
+        '''
         return super().json()
 
 
 ## NPC BLOCKS
 class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object>
+
+    A spawner that is bound to spawn a customizable Bopi NPC. The NPC by
+    default will try to path find and attack players who come near it. However,
+    the spawner can be modified as a standstill representation of custom Bopis.
+
+    By default, NPCs will have their names visible, and will have an icon next
+    to their name to indicate they are an NPC. Players can attack NPCs and deal
+    damage to them, allowing players to fight back and kill attackers. Upon
+    dying, NPCs will respawn above their respective spawner. 
+
+    Spawners will only permit one NPC at a time, and cannot spawn multiple
+    Bopis simultaneously.
+
+    Instance Attributes:
+        max_health (float):
+            The maximum health that an NPC can start out with. A higher health
+            will make the NPC harder to kill
+        attack_damage (float):
+            How much damage the NPC will deal to players when punching them.
+        move_speed (float):
+            How fast the NPC can walk. A higher value leads to a faster NPC
+            and can be more difficult to out maneuver.
+        targeting_radius (float):
+            How far a player has to be from the NPC to start chasing the player
+            and dealing damage. It is specifically from the NPC, not the
+            spawner!
+        stun_time (float):
+            When stunned as a result of being ground pounded by a player,
+            how long (in seconds) the NPC will remain stunned until they
+            recover.
+        return_to_spawner (bool):
+            If the player goes outside the targeting radius, determines whether
+            the NPC will return to their spawner. If false, the NPC will stand
+            still in their last chasing position.
+        sleep_time (float):
+            A threshold (in seconds). If the NPC has been standing still past
+            this threshold, the NPC will start falling asleep. Useful to give
+            players a headstart on a chase.
+
+        head_color (Bopimo_Color):
+            The skin color of the NPC's head
+        torso_color (Bopimo_Color):
+            The skin color of the NPC's torso
+        left_arm_color (Bopimo_Color):
+            The skin color of the NPC's left arm
+        left_hand_color (Bopimo_Color):
+            The skin color of the NPC's left hand
+        right_arm_color (Bopimo_Color):
+            The skin color of the NPC's right arm
+        right_hand_color (Bopimo_Color):
+            The skin color of the NPC's right hand
+        left_leg_color (Bopimo_Color):
+            The skin color of the NPC's left leg
+        left_foot_color (Bopimo_Color):
+            The skin color of the NPC's left foot
+        right_leg_color (Bopimo_Color):
+            The skin color of the NPC's right leg
+        right_foot_color (Bopimo_Color):
+            The skin color of the NPC's right foot
+        hats (Bopimo_Int32Array):
+            A list of IDs of valid hats that the NPC will wear
+        face (int):
+            An ID of a valid face the NPC will have
+        shirt (int):
+            An ID of a valid shirt the NPC will wear
+        pants (int):
+            An ID of valid pants the NPC will wear
+        shoes (int):
+            An ID of valid shoes the NPC will wear
+        toy (int):
+            An ID of a valid toy the NPC will be holding
+    '''
     def __init__(
         self,
         name: str = "Generated Bopi Spawner",
@@ -1372,6 +2581,13 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
     # TODO: Add a function that recreates the level editor feature of putting in a username to resolve the avatar
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the Bopi spawner to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the Bopi spawner
+        '''
         obj = super().json()
         return obj | {
             "max_health": self.max_health,
@@ -1411,6 +2627,13 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
 
 
 class Bopimo_Analog_Clock(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object> <INTERNAL>
+
+    A mesh that will render the second, minute, and hour hands of a physical
+    clock. The hands will animate, and try to align with the user's system
+    time.
+    '''
     def __init__(
         self,
         name: str = "Generated Analog Clock",
@@ -1422,10 +2645,25 @@ class Bopimo_Analog_Clock(Bopimo_Tilable_Object):
         super().__init__(Block_ID.ANALOG_CLOCK, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the analog clock to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the analog clock
+        '''
         return super().json()
 
 
 class Bopimo_Bleeding_Eye(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object> <INTERNAL>
+
+    A 2D sprite of a bleeding hand-drawn eye, which will always orient itself
+    to face the player's camera. While it is non-collidable and has no
+    functionality, it will constantly emit a low humming sound whenever a 
+    player is near it.
+    '''
     def __init__(
         self,
         name: str = "Generated Bleeding Eye",
@@ -1437,10 +2675,24 @@ class Bopimo_Bleeding_Eye(Bopimo_Tilable_Object):
         super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the bleeding eye to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the bleeding eye
+        '''
         return super().json()
 
 
 class Bopimo_Hyacinth(Bopimo_Tilable_Object):
+    '''
+    <INHERITED Bopimo_Tilable_Object> <INTERNAL>
+
+    A flower decoration that is almost identical to Bopimo_Flower. However,
+    the Hyacinth has a different default color. This decoration is very likely
+    a placeholder for another flower type and unfinished.
+    '''
     def __init__(
         self,
         name: str = "Generated Hyacinth Flower",
@@ -1452,6 +2704,13 @@ class Bopimo_Hyacinth(Bopimo_Tilable_Object):
         super().__init__(Block_ID.HYACINTH, name, color, position, rotation, scale)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the hyacinth to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the hyacinth
+        '''
         return super().json()
 
 
@@ -1463,11 +2722,21 @@ class Bopimo_Hyacinth(Bopimo_Tilable_Object):
 #          behind them break or an official implementation succeed these
 #          workarounds.
 
-
-# Decals can be made using either shirts or pants, each with their tradeoffs
-# Shirts: Has better resolution, but at the cost of warping if you rely on the corners
-# Pants: Has less warping, but you'll have a lower resolution.
 class Decal_Type(IntEnum):
+    '''
+    Decal uploaders will often upload their textures in three popular formats.
+    The two major articles of clothing, shirts and pants, both have their own
+    pros and cons.
+
+    Shirts will have a better pixel resolution and should be the case if
+    resolution is important. However, be careful with the corners, as the
+    corners will warp in the final decal.
+
+    Pants have significantly less warping artifacts, but they will have a lower
+    resolution. In addition, there are two variants of pants decals, depending
+    on which leg the decal maker chooses to put their texture. Make sure to
+    select the appropriate leg so the transformations will apply correctly.
+    '''
     SHIRT = 0
     PANTS_FRONT_LEFT = 1  # Left Leg
     PANTS_FRONT_RIGHT = 2  # Right Leg
@@ -1475,7 +2744,53 @@ class Decal_Type(IntEnum):
 
 # Decals are made using transparent clothing items with images on specific faces.
 class Bopimo_Decal(Bopimo_Item_Mesh):
-    # The image will not match the actual object size. These constants will convert our size so it visually matches
+    '''
+    <INHERITED Bopimo_Item_Mesh> <NONSTANDARD>
+
+    Taking advantage of bopis not rendering with their clothing items and alpha
+    channels in textures, you are able to recreate custom decals in the game and
+    use it to pull off custom aesthetics that you can't achieve with Bopimo's
+    official objects.
+
+    Class Attributes:
+        SHIRT_WIDTH_RATIO (float):
+            The calculated value that will have a texture's width equal a
+            block's width.
+        SHIRT_HEIGHT_RATIO (float):
+            The calculated value that will have a texture's height equal a
+            block's height.
+        PANTS_TILT_FIX (int):
+            The rotation (in degrees) that will be applied to a pants decal to
+            correct rotation warping
+        PANTS_X_ADJUST (float):
+            The adjustment of the position of a pants decal to center its
+            texture in the X axis.
+        PANTS_Y_ADJUST (float):
+            The adjustment of the position of a pants decal to center its
+            tecture in the Y axis.
+        PANTS_WIDTH_RATIO (float):
+            The calculated value that will have a texture's width equal a
+            block's width.
+        PANTS_HEIGHT_RATIO (float):
+            The calculated value that will have a texture's height equal a
+            block's height.
+
+    Instance Attributes:
+        width (float):
+            The width of the texture, in units
+        height (float):
+            The height of the texture, in units
+        image_id (int):
+            <ALIAS item_id>
+            The ID of the decal texture
+        type (Decal_Type):
+            The type of clothing the texture is hosted on
+        offset (Bopimo_Vector3):
+            How much offset in the X and Y position to shift the texture.
+            Useful if the decal maker didn't properly center their decal.
+            The Z attribute will be ignored.
+    '''
+    # FIXME: Add type hints to Decal class constants.
     # Shirt aspect ratio is 16:17
     SHIRT_WIDTH_RATIO = 10 / 8
     SHIRT_HEIGHT_RATIO = 20 / 17
@@ -1506,11 +2821,20 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
             Bopimo_Vector3(width, height, 0.01),
         )
         self.item_id = image_id
+        # FIXME: Fix collision with reserved Python keyword
         self.type = type
+        # FIXME: Add type hinting to offset
         # Oftentimes, images are not properly centered. Use this to center images.
         self.offset = Bopimo_Vector3.zero()
 
     def calculate_size(self) -> Bopimo_Vector3:
+        '''
+        Take the decal's texture size, and calculate the mesh's size.
+
+        Returns:
+            Bopimo_Vector3:
+                The mesh size needed for the texture to match its size.
+        '''
         if self.scale.z > 0.1:
             logging.warning(
                 "You set a Decal's Z scale to a non-zero value, which defeats the purpose of a Decal. "
@@ -1531,6 +2855,19 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
                 )
 
     def __get_rotation_matrix(self, rotation: Bopimo_Vector3) -> List[List[float]]:
+        '''
+        <PRIVATE>
+        Given euler angles represented by a Vector3, calculate the rotation
+        matrix behind the rotation.
+
+        Parameters:
+            rotation (Bopimo_Vector3):
+                A Vector3 of the euler angles to calculate a rotation matrix
+        
+        Returns:
+            List[List[float]]:
+                A rotation matrix of the input rotation
+        '''
         MATRIX_X: tuple[List[float], List[float], List[float]] = (
             [1, 0, 0],
             [0, math.cos(rotation.x), -math.sin(rotation.x)],
@@ -1550,8 +2887,24 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         return dot(dot(MATRIX_Y, MATRIX_X), MATRIX_Z)
 
     def calculate_center_vector(self, scale: Bopimo_Vector3) -> Bopimo_Vector3:
+        '''
+        Given an input scale (usually the fixed mesh size), calculate the
+        vector that will be used to translate the texture into a mesh position.
+
+        If the decal is based on a shirt, this method returns a zero vector,
+        as decals don't need their position shifted.
+
+        Parameters:
+            scale (Bopimo_Vector3):
+                The input scale of the final mesh. This is needed as it needs
+                the mesh scale, not the texture scale.
+        
+        Returns:
+            Bopimo_Vector3:
+                The translation vector needed to convert texture position into
+                mesh position.
+        '''
         if self.type == Decal_Type.SHIRT:
-            # Shirts are already centered
             return Bopimo_Vector3.zero()
         direction = 1
         if self.type == Decal_Type.PANTS_FRONT_RIGHT:
@@ -1565,6 +2918,15 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         return Bopimo_Vector3(x, y, z)
 
     def json(self) -> dict[str, Any]:
+        '''
+        Convert the decal to JSON, as part of the exporting process. This
+        process involves taking the texture transformations and converting them
+        to mesh transformations, so they can be perfectly displayed in-game.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the decal
+        '''
         obj = super().json()
         fixed_scale = self.calculate_size()
         obj["block_scale"] = fixed_scale.json()
