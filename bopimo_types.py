@@ -1124,16 +1124,20 @@ class Bopimo_Int64Array(Bopimo_IntArray):
         return {"type": self.bopjson_type_name, "value": values}
 
 
-# FIXME: Use numpy and their 32-bit float to ensure precision correctness.
 class Bopimo_Float32Array:
     """
     A custom data structure that is meant to resemble an array of floating
     point numbers.
 
-    Keep in mind that even though this data structure is meant to represent
-    32-bit floating point numbers (IEEE 754 32-bit), most machines will use
-    double floating point numbers in Python (IEEE 754 64-bit). As a result,
-    some precision will be lost in the final conversion.
+    While this class will accept Python floats for construction and arguments,
+    all Python floats will be converted to Numpy's 32-bit floating point number
+    type. This is to ensure correctness with the precision when translating to
+    JSON, as most machines will make Python floats "double-precision floating
+    point numbers" (IEEE 754 64-bit). During this conversion, some precision
+    may be lost.
+
+    In addition, when retrieving a value from this structure, you will always get
+    a Python float to ensure the best compatibility.
 
     Class Attributes:
         bopjson_type_name (str):
@@ -1146,22 +1150,37 @@ class Bopimo_Float32Array:
 
     bopjson_type_name: str = "Float32_Array"
 
-    def __init__(self, float_list: List[float] | None = None):
+    def __init__(
+        self,
+        float_list: List[float] | List[np.float32] | NDArray[np.float32] | None = None,
+    ):
+        self._list: List[np.float32]
         if float_list is None:
             float_list = []
-        self._list = float_list
+        if isinstance(float_list, List):
+            self._list = []
+            for f in float_list:
+                # I would write this more cleanly to distinguish numpy floats from Python floats, but Pylance sucks
+                if isinstance(f, float) or isinstance(f, int):
+                    self._list.append(np.float32(f))
+                else:
+                    self._list.append(f)
+        else:
+            self._list = float_list.tolist()
 
     ## INSTANCE METHODS
 
-    def add_float(self, float: float):
+    def add_float(self, f: float | np.float32):
         """
         Adds a float into the array
 
         Parameters:
-            float (float):
+            f (float | numpy.float32):
                 The float to be added into the array
         """
-        self._list.append(float)
+        if isinstance(f, float) or isinstance(f, int):
+            f = np.float32(f)
+        self._list.append(f)
 
     def clear(self):
         """
@@ -1201,19 +1220,21 @@ class Bopimo_Float32Array:
             float:
                 The float at the given index
         """
-        return self._list[index]
+        return self._list[index].item()
 
-    def set_float(self, index: int, float: float):
+    def set_float(self, index: int, f: float | np.float32):
         """
         Replace a float in the array with a new one.
 
         Parameters:
             index (int):
                 The position in the list to set a float in
-            float (float):
+            f (float | numpy.float32):
                 The new float to replace in the array
         """
-        self._list[index] = float
+        if isinstance(f, float) or isinstance(f, int):
+            f = np.float32(f)
+        self._list[index] = f
 
     def is_empty(self) -> bool:
         """
@@ -1237,7 +1258,7 @@ class Bopimo_Float32Array:
             float:
                 The removed float from the list
         """
-        return self._list.pop(index)
+        return self._list.pop(index).item()
 
     def json(self) -> dict[str, Any]:
         """
@@ -1249,7 +1270,7 @@ class Bopimo_Float32Array:
         """
         values: List[float] = []
         for value in self._list:
-            values.append(value)
+            values.append(value.item())
         return {"type": self.bopjson_type_name, "value": values}
 
     ## DUNDER METHODS
@@ -1271,16 +1292,27 @@ class Bopimo_Float32Array:
     ### OPERATOR METHODS
 
     def __add__(
-        self, other: "Bopimo_Float32Array" | List[float]
-    ) -> "Bopimo_Float32Array":
+        self,
+        other: (
+            "Bopimo_Float32Array" | List[float] | List[np.float32] | NDArray[np.float32]
+        ),
+    ) -> Self:
         if isinstance(other, Bopimo_Float32Array):
-            return Bopimo_Float32Array(self._list + other._list)
+            return self.__class__(self._list + other._list)
+        elif isinstance(other, List):
+            o: List[np.float32] = []
+            for f in other:
+                if isinstance(f, float) or isinstance(f, int):
+                    o.append(np.float32(f))
+                else:
+                    o.append(f)
+            return self.__class__(self._list + o)
         else:
-            return Bopimo_Float32Array(self._list + other)
+            return self.__class__(np.append(arr=self._list, values=other))
 
     ### ITERABLE METHODS
 
-    def __iter__(self) -> Iterator[float]:
+    def __iter__(self) -> Iterator[np.float32]:
         return iter(self._list)
 
     def __next__(self):
