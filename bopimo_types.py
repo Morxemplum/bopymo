@@ -201,10 +201,9 @@ class Bopimo_Vector3:
     bopjson_type_name: str = "Vector3F32"
 
     def __init__(self, x: float, y: float, z: float):
-        # FIXME: Add type hints to the attributes
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x: float = x
+        self.y: float = y
+        self.z: float = z
 
     ## PRIVATE METHODS
 

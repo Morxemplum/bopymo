@@ -2881,17 +2881,16 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
             The Z attribute will be ignored.
     """
 
-    # FIXME: Add type hints to Decal class constants.
     # Shirt aspect ratio is 16:17
-    SHIRT_WIDTH_RATIO = 10 / 8
-    SHIRT_HEIGHT_RATIO = 20 / 17
+    SHIRT_WIDTH_RATIO: float = 10 / 8
+    SHIRT_HEIGHT_RATIO: float = 20 / 17
 
-    PANTS_TILT_FIX = 2
-    PANTS_X_ADJUST = 41 / 200
-    PANTS_Y_ADJUST = 25 / 2000
+    PANTS_TILT_FIX: float = 2
+    PANTS_X_ADJUST: float = 41 / 200
+    PANTS_Y_ADJUST: float = 25 / 2000
     # Pants aspect ratio is 12:21
-    PANTS_WIDTH_RATIO = 10 / 3
-    PANTS_HEIGHT_RATIO = 40 / 21
+    PANTS_WIDTH_RATIO: float = 10 / 3
+    PANTS_HEIGHT_RATIO: float = 40 / 21
 
     def __init__(
         self,
@@ -2914,9 +2913,8 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         self.item_id = image_id
         # FIXME: Fix collision with reserved Python keyword
         self.type = type
-        # FIXME: Add type hinting to offset
         # Oftentimes, images are not properly centered. Use this to center images.
-        self.offset = Bopimo_Vector3.zero()
+        self.offset: Bopimo_Vector3 = Bopimo_Vector3.zero()
 
     def calculate_size(self) -> Bopimo_Vector3:
         """
