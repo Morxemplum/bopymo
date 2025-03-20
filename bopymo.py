@@ -884,11 +884,19 @@ class Bopimo_Level:
             below, will instantly kill them (unless a builder has enabled
             Invincibility).
         blocks (dict[int, Bopimo_Object])
-            <INTERNAL>
+            <PRIVATE>
             A dictionary that contains all of a level's objects. The keys are
             the UIDs of an object, a unique randomly-generated integer that
             allows to identify an object. UIDs are not meant to be set by the
             level maker.
+        star_amount (int)
+            <READ_ONLY>
+            An attribute detailing how many completion stars are in the level.
+        completion_stars (List[int])
+            <PRIVATE>
+            A list that contains UID references to all of the level's
+            completion stars. The order that the stars are in are associated
+            with their "star ID" in a level.
     """
 
     SERVER_BLOCK_LIMIT = 2048
@@ -928,6 +936,16 @@ class Bopimo_Level:
         # MAP INFORMATION
         self.death_plane: float = -1000
         self._blocks: dict[int, Bopimo_Object] = {}
+
+        # COMPLETION STAR MANAGEMENT
+        self._completion_stars: List[int] = []
+
+    @property
+    def star_amount(self) -> int:
+        """
+        Retrieves the total number of stars in a level
+        """
+        return len(self._completion_stars)
 
     def __block_sanity_check(self, block: Bopimo_Object):
         """
@@ -969,6 +987,8 @@ class Bopimo_Level:
         """
         if uid not in self._blocks:
             raise KeyError(f"Bopimo Level does not contain an object with uid {uid}")
+        if isinstance(self._blocks[uid], Bopimo_Completion_Star):
+            self._completion_stars.remove(uid)
         return self._blocks.pop(uid)
 
     def get_object(self, uid: int) -> Bopimo_Object | None:
@@ -1007,6 +1027,8 @@ class Bopimo_Level:
             uid = random.randrange(1, 2**32)
         self.__block_sanity_check(obj)
         self._blocks[uid] = obj
+        if isinstance(obj, Bopimo_Completion_Star):
+            self._completion_stars.append(uid)
         return uid
 
     def add_objects(self, obj_list: List[Bopimo_Object]) -> List[int]:
@@ -1060,7 +1082,15 @@ class Bopimo_Level:
         block: Bopimo_Object
         for uid, block in self._blocks.items():
             self.__block_sanity_check(block)
-            obj["level_blocks"]["value"].append({"uid": uid} | block.json())
+            match block:
+                # Completion Stars are a special case as they have an additional ID system
+                case Bopimo_Completion_Star():
+                    star_id: int = self._completion_stars.index(uid)
+                    obj["level_blocks"]["value"].append(
+                        {"uid": uid} | block.json(star_id)
+                    )
+                case _:
+                    obj["level_blocks"]["value"].append({"uid": uid} | block.json())
 
         return obj
 
@@ -1213,8 +1243,6 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
         return super().json()
 
 
-# TODO: Consider moving star_id and counter to Bopimo_Level. This implementation doesn't do well when a script is handling multiple levels.
-# TODO: Also consider making star_id a constant.
 class Bopimo_Completion_Star(Bopimo_Tilable_Object):
     """
     <INHERITED Bopimo_Tilable_Object>
@@ -1224,11 +1252,9 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
     a star by touching it. In "Free Roam", stars have no functionality and are
     purely decorative.
 
-    Class Attributes:
-        star_counter (int):
-            <BOPYMO_ONLY> <PRIVATE>
-            An internal counter for how many star objects there are. This
-            ensures all completion stars have unique star IDs.
+    Completion stars are also unique because alongside a UID, they also have a
+    "Star ID", a sequential ID system to uniquely identify a star in a level.
+    Star IDs are managed by Bopimo_Level.
 
     Instance Attributes:
         mute (bool):
@@ -1238,14 +1264,7 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
             Stars have a movement animation that helps distinguish them from
             regular objects. Changing this value will affect how much the star
             will move with the animation.
-        star_id (int):
-            <INTERNAL> <PRIVATE>
-            The additional ID that helps the engine identify which star it is.
-            Presumably, this is used to assist with anti-tamper, so this value
-            is not meant to be changed.
     """
-
-    _star_counter: int = 0
 
     def __init__(
         self,
@@ -1260,23 +1279,15 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
         )
         self.mute: bool = False
         self.float_height: float = 1.5
-        self._star_id: int = self._star_counter
-        self._star_counter += 1
 
-    @classmethod
-    def get_star_count(cls) -> int:
-        """
-        Gets the total number of star instances that have been created.
-
-        Returns:
-            int: A count of star instances created. Not necessarily reflective
-                 of how many there are in a level.
-        """
-        return cls._star_counter
-
-    def json(self) -> dict[str, Any]:
+    def json(self, star_id: int = 0) -> dict[str, Any]:
         """
         Convert the star to JSON, as part of the exporting process.
+
+        Parameters:
+            star_id (int):
+                An internal ID that uniquely identifies the completion star
+                to the level
 
         Returns:
             dict[str, Any]:
@@ -1285,7 +1296,7 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
         obj = super().json()
         return obj | {
             "mute": self.mute,
-            "star_id": self._star_id,
+            "star_id": star_id,
             "float_height": self.float_height,
         }
 
