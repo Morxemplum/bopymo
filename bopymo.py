@@ -1348,7 +1348,6 @@ class Bopimo_Spring(Bopimo_Object):
         }
 
 
-# TODO: Clamp damage_amount to a non-negative value
 class Bopimo_Lava(Bopimo_Object):
     """
     <INHERITED Bopimo_Object>
@@ -1382,7 +1381,25 @@ class Bopimo_Lava(Bopimo_Object):
     ):
         super().__init__(Block_ID.LAVA, name, color, position, rotation, scale)
         self.pattern_color: Bopimo_Color = pattern_color
-        self.damage_amount: float = damage
+        self._damage_amount: float = damage
+        self.__clamp()
+
+    @property
+    def damage_amount(self) -> float:
+        return self._damage_amount
+
+    @damage_amount.setter
+    def damage_amount(self, value: float):
+        self.damage_amount = value
+        self.__clamp()
+
+    def __clamp(self):
+        """
+        <PRIVATE>
+        A clamping function that serves as an internal sanity check, stopping
+        attributes from having out of range values
+        """
+        self.damage_amount = max(0, self.damage_amount)
 
     def json(self) -> dict[str, Any]:
         """
