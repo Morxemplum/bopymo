@@ -1390,7 +1390,7 @@ class Bopimo_Lava(Bopimo_Object):
 
     @damage_amount.setter
     def damage_amount(self, value: float):
-        self.damage_amount = value
+        self._damage_amount = value
         self.__clamp()
 
     def __clamp(self):
@@ -1399,7 +1399,7 @@ class Bopimo_Lava(Bopimo_Object):
         A clamping function that serves as an internal sanity check, stopping
         attributes from having out of range values
         """
-        self.damage_amount = max(0, self.damage_amount)
+        self._damage_amount = max(0, self.damage_amount)
 
     def json(self) -> dict[str, Any]:
         """
