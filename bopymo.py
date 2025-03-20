@@ -1416,10 +1416,9 @@ class Bopimo_Lava(Bopimo_Object):
         }
 
 
-# TODO: Make Bopimo_Water inherit from Bopimo_Object instead to match consistency with Bopimo_Lava
-class Bopimo_Water(Bopimo_Tilable_Object):
+class Bopimo_Water(Bopimo_Object):
     """
-    <INHERITED Bopimo_Tilable_Object>
+    <INHERITED Bopimo_Object>
 
     A fluid whose primary purpose is to let the player swim inside. While
     swimming, movement is heavily dampened, and certain movements are
@@ -2493,8 +2492,7 @@ class Bopimo_Item_Mesh(Bopimo_Object):
         return obj | {"item_id": self.item_id, "shaded": self.shaded}
 
 
-# TODO: Consider inheriting from Bopimo_Object instead. The pattern has no functionality to the mesh itself.
-class Bopimo_Cloud(Bopimo_Tilable_Object):
+class Bopimo_Cloud(Bopimo_Object):
     """
     <INHERITED Bopimo_Tilable_Object>
 
