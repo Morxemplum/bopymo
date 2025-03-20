@@ -692,8 +692,7 @@ class Bopimo_ColorArray:
         self._list = color_list
 
     ## INSTANCE METHODS
-    # FIXME: Rename the parameter to the correct name
-    def add_color(self, vector: Bopimo_Color):
+    def add_color(self, color: Bopimo_Color):
         """
         Adds a color into the array
 
@@ -701,7 +700,7 @@ class Bopimo_ColorArray:
             color (Bopimo_Color):
                 The Bopimo color to be added into the array
         """
-        self._list.append(vector)
+        self._list.append(color)
 
     def clear(self):
         """
