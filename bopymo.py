@@ -2895,7 +2895,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
     def __init__(
         self,
         name: str = "Generated Decal",
-        type: Decal_Type = Decal_Type.SHIRT,
+        decal_type: Decal_Type = Decal_Type.SHIRT,
         image_id: int = 3372,
         position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
         rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
@@ -2911,8 +2911,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
             Bopimo_Vector3(width, height, 0.01),
         )
         self.item_id = image_id
-        # FIXME: Fix collision with reserved Python keyword
-        self.type = type
+        self.decal_type: Decal_Type = decal_type
         # Oftentimes, images are not properly centered. Use this to center images.
         self.offset: Bopimo_Vector3 = Bopimo_Vector3.zero()
 
@@ -2929,7 +2928,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
                 "You set a Decal's Z scale to a non-zero value, which defeats the purpose of a Decal. "
                 "Consider using a Bopimo_Item_Mesh instead."
             )
-        match self.type:
+        match self.decal_type:
             case Decal_Type.SHIRT:
                 return Bopimo_Vector3(
                     self.scale.x * self.SHIRT_WIDTH_RATIO,
@@ -2993,10 +2992,10 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
                 The translation vector needed to convert texture position into
                 mesh position.
         """
-        if self.type == Decal_Type.SHIRT:
+        if self.decal_type == Decal_Type.SHIRT:
             return Bopimo_Vector3.zero()
         direction = 1
-        if self.type == Decal_Type.PANTS_FRONT_RIGHT:
+        if self.decal_type == Decal_Type.PANTS_FRONT_RIGHT:
             direction *= -1
 
         x_adjust = self.PANTS_X_ADJUST * scale.x * -direction + self.offset.x
@@ -3027,10 +3026,10 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         else:
             fixed_position = self.position + translation
             obj["block_position"] = fixed_position.json()
-        if self.type != Decal_Type.SHIRT:
+        if self.decal_type != Decal_Type.SHIRT:
             tilt_fix = (
                 self.PANTS_TILT_FIX
-                if self.type == Decal_Type.PANTS_FRONT_RIGHT
+                if self.decal_type == Decal_Type.PANTS_FRONT_RIGHT
                 else -self.PANTS_TILT_FIX
             )
             fixed_rotation = self.rotation + Bopimo_Vector3(0, 0, tilt_fix)
