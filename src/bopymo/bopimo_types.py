@@ -5,8 +5,9 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import Any, Iterator, List, Self
 
+## TYPES
 
-class Bopimo_Color:
+class Color:
     """
     A bopimo type that is meant to represent 8-bit RGB color. Responsible for
     giving objects and textures their visual color.
@@ -91,7 +92,7 @@ class Bopimo_Color:
     @classmethod
     def from_hsv(
         cls, hue: int = 0, saturation: float = 1, value: float = 1
-    ) -> "Bopimo_Color":
+    ) -> Self:
         """
         <CONSTRUCTOR>
         Given HSV values, convert them to RGB and create a color object.
@@ -111,7 +112,7 @@ class Bopimo_Color:
                 A newly created color object, converted from HSV
         """
         r, g, b = cls.__from_hs(hue, saturation)
-        c = Bopimo_Color(
+        c = cls(
             int(r * value * 255), int(g * value * 255), int(b * value * 255)
         )
         c.__clamp()
@@ -119,7 +120,7 @@ class Bopimo_Color:
 
     ## INSTANCE METHODS
 
-    def copy(self) -> "Bopimo_Color":
+    def copy(self) -> Self:
         """
         Creates an identical copy of itself. A dedicated method in case level
         makers don't want to import the copy module.
@@ -156,8 +157,8 @@ class Bopimo_Color:
     def __iter__(self) -> Iterator[float]:
         return iter((self.red, self.green, self.blue))
 
-    def __copy__(self) -> "Bopimo_Color":
-        return Bopimo_Color(self.red, self.green, self.blue)
+    def __copy__(self) -> Self:
+        return self.__class__(self.red, self.green, self.blue)
 
     def __str__(self) -> str:
         return f"{self.bopjson_type_name}({self.red}, {self.green}, {self.blue})"
@@ -165,7 +166,7 @@ class Bopimo_Color:
     ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_Color):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         return (
             (self.red == other.red)
@@ -174,12 +175,12 @@ class Bopimo_Color:
         )
 
     def __ne__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_Color):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
 
 
-class Bopimo_Vector3:
+class Vector3:
     """
     A Bopimo type that represents a specialized three element array, used to
     represent 3D coordinates or values in 3D space, for the X, Y, and Z axes
@@ -378,7 +379,7 @@ class Bopimo_Vector3:
         """
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
-    def copy(self) -> "Bopimo_Vector3":
+    def copy(self) -> Self:
         """
         Creates an identical copy of itself. A dedicated method in case level
         makers don't want to import the copy module.
@@ -389,7 +390,7 @@ class Bopimo_Vector3:
         """
         return copy(self)
 
-    def to_degrees(self) -> "Bopimo_Vector3":
+    def to_degrees(self) -> Self:
         """
         Given euler angles (in radians) represented in a Vector, give an
         equivalent vector in degrees.
@@ -398,11 +399,11 @@ class Bopimo_Vector3:
             Bopimo_Vector3:
                 The vector converted to degrees.
         """
-        return Bopimo_Vector3(
+        return self.__class__(
             math.degrees(self.x), math.degrees(self.y), math.degrees(self.z)
         )
 
-    def to_radians(self) -> "Bopimo_Vector3":
+    def to_radians(self) -> Self:
         """
         Given euler angles (in degrees) represented in a Vector, give an
         equivalent vector in radians.
@@ -411,7 +412,7 @@ class Bopimo_Vector3:
             Bopimo_Vector3:
                 The vector converted to radians.
         """
-        return Bopimo_Vector3(
+        return self.__class__(
             math.radians(self.x), math.radians(self.y), math.radians(self.z)
         )
 
@@ -438,8 +439,8 @@ class Bopimo_Vector3:
 
     ## DUNDER METHODS
 
-    def __copy__(self) -> "Bopimo_Vector3":
-        return Bopimo_Vector3(self.x, self.y, self.z)
+    def __copy__(self) -> Self:
+        return self.__class__(self.x, self.y, self.z)
 
     def __iter__(self) -> Iterator[float]:
         return iter((self.x, self.y, self.z))
@@ -449,45 +450,45 @@ class Bopimo_Vector3:
 
     ### OPERATOR METHODS
 
-    def __add__(self, other: "Bopimo_Vector3") -> "Bopimo_Vector3":
-        return Bopimo_Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
+    def __add__(self, other: Self) -> Self:
+        return self.__class__(self.x + other.x, self.y + other.y, self.z + other.z)
 
-    def __sub__(self, other: "Bopimo_Vector3") -> "Bopimo_Vector3":
-        return Bopimo_Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+    def __sub__(self, other: Self) -> Self:
+        return self.__class__(self.x - other.x, self.y - other.y, self.z - other.z)
 
-    def __mul__(self, other: int | float) -> "Bopimo_Vector3":
-        return Bopimo_Vector3(self.x * other, self.y * other, self.z * other)
+    def __mul__(self, other: int | float) -> Self:
+        return self.__class__(self.x * other, self.y * other, self.z * other)
 
-    def __div__(self, other: int | float) -> "Bopimo_Vector3":
+    def __div__(self, other: int | float) -> Self:
         if other == 0:
             raise ZeroDivisionError()
-        return Bopimo_Vector3(self.x / other, self.y / other, self.z / other)
+        return self.__class__(self.x / other, self.y / other, self.z / other)
 
-    def __truediv__(self, other: int | float) -> "Bopimo_Vector3":
+    def __truediv__(self, other: int | float) -> Self:
         return self.__div__(other)
 
-    def __divmod__(self, other: int | float) -> "Bopimo_Vector3":
+    def __divmod__(self, other: int | float) -> Self:
         if other == 0:
             raise ZeroDivisionError()
-        return Bopimo_Vector3(self.x % other, self.y % other, self.z % other)
+        return self.__class__(self.x % other, self.y % other, self.z % other)
 
-    def __neg__(self) -> "Bopimo_Vector3":
-        return Bopimo_Vector3(-self.x, -self.y, -self.z)
+    def __neg__(self) -> Self:
+        return self.__class__(-self.x, -self.y, -self.z)
 
     ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_Vector3):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         return (self.x == other.x) and (self.y == other.y) and (self.z == other.z)
 
     def __ne__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_Vector3):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
 
 
-class Bopimo_Vector3Array:
+class Vector3Array:
     """
     A custom data structure that is meant to resemble an array of Vector
     objects. This is primarily done to abstract away any underlying details
@@ -502,16 +503,16 @@ class Bopimo_Vector3Array:
             The underlying data structure that stores the vectors
     """
 
-    bopjson_type_name: str = Bopimo_Vector3.bopjson_type_name + "_Array"
+    bopjson_type_name: str = Vector3.bopjson_type_name + "_Array"
 
-    def __init__(self, vector3_list: List[Bopimo_Vector3] | None = None):
+    def __init__(self, vector3_list: List[Vector3] | None = None):
         if vector3_list is None:
             vector3_list = []
         self._list = vector3_list
 
     ## INSTANCE METHODS
 
-    def add_vector(self, vector: Bopimo_Vector3):
+    def add_vector(self, vector: Vector3):
         """
         Adds a vector into the array
 
@@ -527,7 +528,7 @@ class Bopimo_Vector3Array:
         """
         self._list.clear()
 
-    def copy(self, deep: bool = True) -> "Bopimo_Vector3Array":
+    def copy(self, deep: bool = True) -> Self:
         """
         Copies all of the elements in a new array without having to import
         the copy module.
@@ -547,7 +548,7 @@ class Bopimo_Vector3Array:
             return deepcopy(self)
         return copy(self)
 
-    def get_vector(self, index: int) -> Bopimo_Vector3:
+    def get_vector(self, index: int) -> Vector3:
         """
         Get a vector from the array, given an index
 
@@ -561,7 +562,7 @@ class Bopimo_Vector3Array:
         """
         return self._list[index]
 
-    def set_vector(self, index: int, vector: Bopimo_Vector3):
+    def set_vector(self, index: int, vector: Vector3):
         """
         Replace a vector in the array with a new one.
 
@@ -583,7 +584,7 @@ class Bopimo_Vector3Array:
         """
         return len(self) == 0
 
-    def remove_vector(self, index: int) -> Bopimo_Vector3:
+    def remove_vector(self, index: int) -> Vector3:
         """
         Removes a vector from the array, given an index
 
@@ -612,11 +613,11 @@ class Bopimo_Vector3Array:
 
     ## DUNDER METHODS
 
-    def __copy__(self) -> "Bopimo_Vector3Array":
-        return Bopimo_Vector3Array(copy(self._list))
+    def __copy__(self) -> Self:
+        return self.__class__(copy(self._list))
 
-    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_Vector3Array":
-        return Bopimo_Vector3Array(deepcopy(self._list, memo))
+    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+        return self.__class__(deepcopy(self._list, memo))
 
     def __str__(self) -> str:
         s = "Vector3Array("
@@ -629,16 +630,16 @@ class Bopimo_Vector3Array:
     ### OPERATOR METHODS
 
     def __add__(
-        self, other: "Bopimo_Vector3Array" | List[Bopimo_Vector3]
-    ) -> "Bopimo_Vector3Array":
-        if isinstance(other, Bopimo_Vector3Array):
-            return Bopimo_Vector3Array(self._list + other._list)
+        self, other: "Vector3Array" | List[Vector3]
+    ) -> "Vector3Array":
+        if isinstance(other, Vector3Array):
+            return Vector3Array(self._list + other._list)
         else:
-            return Bopimo_Vector3Array(self._list + other)
+            return Vector3Array(self._list + other)
 
     ### ITERABLE METHODS
 
-    def __iter__(self) -> Iterator[Bopimo_Vector3]:
+    def __iter__(self) -> Iterator[Vector3]:
         return iter(self._list)
 
     def __next__(self):
@@ -650,7 +651,7 @@ class Bopimo_Vector3Array:
     ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_Vector3Array):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         if len(self) != len(other):
             return False
@@ -664,12 +665,12 @@ class Bopimo_Vector3Array:
         return True
 
     def __ne__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_Vector3Array):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
 
 
-class Bopimo_ColorArray:
+class ColorArray:
     """
     A custom data structure that is meant to resemble an array of Color
     objects. This is primarily done to abstract away any underlying details
@@ -684,15 +685,15 @@ class Bopimo_ColorArray:
             The underlying data structure that stores the color
     """
 
-    bopjson_type_name: str = Bopimo_Color.bopjson_type_name + "_Array"
+    bopjson_type_name: str = Color.bopjson_type_name + "_Array"
 
-    def __init__(self, color_list: List[Bopimo_Color] | None = None):
+    def __init__(self, color_list: List[Color] | None = None):
         if color_list is None:
             color_list = []
         self._list = color_list
 
     ## INSTANCE METHODS
-    def add_color(self, color: Bopimo_Color):
+    def add_color(self, color: Color):
         """
         Adds a color into the array
 
@@ -708,7 +709,7 @@ class Bopimo_ColorArray:
         """
         self._list.clear()
 
-    def copy(self, deep: bool = True) -> "Bopimo_ColorArray":
+    def copy(self, deep: bool = True) -> Self:
         """
         Copies all of the elements in a new array without having to import
         the copy module.
@@ -728,7 +729,7 @@ class Bopimo_ColorArray:
             return deepcopy(self)
         return copy(self)
 
-    def get_color(self, index: int) -> Bopimo_Color:
+    def get_color(self, index: int) -> Color:
         """
         Get a color from the array, given an index
 
@@ -742,7 +743,7 @@ class Bopimo_ColorArray:
         """
         return self._list[index]
 
-    def set_color(self, index: int, color: Bopimo_Color):
+    def set_color(self, index: int, color: Color):
         """
         Replace a color in the array with a new one.
 
@@ -764,7 +765,7 @@ class Bopimo_ColorArray:
         """
         return len(self._list) == 0
 
-    def remove_color(self, index: int) -> Bopimo_Color:
+    def remove_color(self, index: int) -> Color:
         """
         Removes a color from the array, given an index
 
@@ -793,11 +794,11 @@ class Bopimo_ColorArray:
 
     ## DUNDER METHODS
 
-    def __copy__(self) -> "Bopimo_ColorArray":
-        return Bopimo_ColorArray(copy(self._list))
+    def __copy__(self) -> Self:
+        return self.__class__(copy(self._list))
 
-    def __deepcopy__(self, memo: dict[Any, Any]) -> "Bopimo_ColorArray":
-        return Bopimo_ColorArray(deepcopy(self._list, memo))
+    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+        return self.__class__(deepcopy(self._list, memo))
 
     def __str__(self) -> str:
         s = "ColorArray("
@@ -810,16 +811,16 @@ class Bopimo_ColorArray:
     ### OPERATOR METHODS
 
     def __add__(
-        self, other: "Bopimo_ColorArray" | List[Bopimo_Color]
-    ) -> "Bopimo_ColorArray":
-        if isinstance(other, Bopimo_ColorArray):
-            return Bopimo_ColorArray(self._list + other._list)
+        self, other: "ColorArray" | List[Color]
+    ) -> "ColorArray":
+        if isinstance(other, ColorArray):
+            return ColorArray(self._list + other._list)
         else:
-            return Bopimo_ColorArray(self._list + other)
+            return ColorArray(self._list + other)
 
     ### ITERABLE METHODS
 
-    def __iter__(self) -> Iterator[Bopimo_Color]:
+    def __iter__(self) -> Iterator[Color]:
         return iter(self._list)
 
     def __next__(self):
@@ -831,7 +832,7 @@ class Bopimo_ColorArray:
     ### EQUALITY METHODS
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_ColorArray):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         if len(self) != len(other):
             return False
@@ -845,7 +846,7 @@ class Bopimo_ColorArray:
         return True
 
     def __ne__(self, other: object) -> bool:
-        if not isinstance(other, Bopimo_ColorArray):
+        if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
 
@@ -854,7 +855,7 @@ class Bopimo_ColorArray:
 type Bopimo_Integer = int | IntEnum
 
 
-class Bopimo_IntArray:
+class IntArray:
     """
     A custom data structure that is meant to resemble an array of integers.
     This is primarily done to abstract away any underlying details of the data
@@ -999,11 +1000,11 @@ class Bopimo_IntArray:
 
     ### OPERATOR METHODS
 
-    def __add__(self, other: "Bopimo_IntArray" | List[int]) -> "Bopimo_IntArray":
-        if isinstance(other, Bopimo_IntArray):
-            return Bopimo_IntArray(self._list + other._list)
+    def __add__(self, other: "IntArray" | List[int]) -> "IntArray":
+        if isinstance(other, IntArray):
+            return IntArray(self._list + other._list)
         else:
-            return Bopimo_IntArray(self._list + other)
+            return IntArray(self._list + other)
 
     ### ITERABLE METHODS
 
@@ -1038,9 +1039,9 @@ class Bopimo_IntArray:
         return not (self == other)
 
 
-class Bopimo_Int32Array(Bopimo_IntArray):
+class Int32Array(IntArray):
     """
-    <INHERITED Bopimo_IntArray>
+    <INHERITED IntArray>
 
     The 32-bit variant of an integer array that is meant to resemble 32-bit
     integers.
@@ -1081,9 +1082,9 @@ class Bopimo_Int32Array(Bopimo_IntArray):
         return {"type": self.bopjson_type_name, "value": values}
 
 
-class Bopimo_Int64Array(Bopimo_IntArray):
+class Int64Array(IntArray):
     """
-    <INHERITED Bopimo_IntArray>
+    <INHERITED IntArray>
 
     The 64-bit variant of an integer array that is meant to resemble 64-bit
     integers.
@@ -1124,7 +1125,7 @@ class Bopimo_Int64Array(Bopimo_IntArray):
         return {"type": self.bopjson_type_name, "value": values}
 
 
-class Bopimo_Float32Array:
+class Float32Array:
     """
     A custom data structure that is meant to resemble an array of floating
     point numbers.
@@ -1294,10 +1295,10 @@ class Bopimo_Float32Array:
     def __add__(
         self,
         other: (
-            "Bopimo_Float32Array" | List[float] | List[np.float32] | NDArray[np.float32]
+            "Float32Array" | List[float] | List[np.float32] | NDArray[np.float32]
         ),
     ) -> Self:
-        if isinstance(other, Bopimo_Float32Array):
+        if isinstance(other, Float32Array):
             return self.__class__(self._list + other._list)
         elif isinstance(other, List):
             o: List[np.float32] = []
@@ -1341,3 +1342,14 @@ class Bopimo_Float32Array:
         if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
+
+## ALIASES FOR REVERSE COMPATIBILITY
+
+Bopimo_Color = Color
+Bopimo_Vector3 = Vector3
+Bopimo_Vector3Array = Vector3Array
+Bopimo_ColorArray = ColorArray
+Bopimo_IntArray = IntArray
+Bopimo_Int32Array = Int32Array
+Bopimo_Int64Array = Int64Array
+Bopimo_Float32Array = Float32Array
