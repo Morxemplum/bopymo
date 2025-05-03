@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling >= 1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bopymo"
+version = "0.3-beta1"
+authors = [
+    { name="Synth Morxemplum", email="morxemplum+github@gmail.com"}
+]
+description = "Python translation layer for the bopjson format in Bopimo!"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E"]
+
+[project.urls]
+Homepage = "https://github.com/Morxemplum/bopymo"
+Issues = "https://github.com/Morxemplum/bopymo/issues"
+Wiki = "https://github.com/Morxemplum/bopymo/wiki"
