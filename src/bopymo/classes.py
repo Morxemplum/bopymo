@@ -1,5 +1,5 @@
-from bopimo_types import Color, Vector3, Vector3Array, Float32Array, Int32Array, Int64Array, ColorArray
-from enumerators import Block_ID, Block_Pattern, Decal_Type, Music, Sky, Weather
+from bopymo.bopimo_types import Color, Vector3, Vector3Array, Float32Array, Int32Array, Int64Array, ColorArray
+from bopymo.enumerators import Block_ID, Block_Pattern, Decal_Type, Music, Sky, Weather
 
 from copy import deepcopy
 import datetime
