@@ -1,6 +1,6 @@
 # Written using Bopymo 0.3 and Python 3.13.3
 from typing import List
-from bopymo.bopimo_types import Bopimo_Color, Bopimo_Int32Array, Bopimo_Vector3
+from bopymo.bopimo_types import Color, Int32Array, Vector3
 from bopymo.classes import Bopimo_Block, Bopimo_Completion_Star, Bopimo_Level, Bopimo_Object, Bopimo_Spawn
 from bopymo.enumerators import Block_ID, Music, Sky
 import math
@@ -15,8 +15,8 @@ def easeOutQuad(x: float) -> float:
     return 1 - x * x
 
 
-BASE_COLOR = Bopimo_Color(110, 110, 110)
-STAR_COLOR = Bopimo_Color(255, 213, 0)
+BASE_COLOR = Color(110, 110, 110)
+STAR_COLOR = Color(255, 213, 0)
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     )
     level.death_plane = -20
     level.sky = Sky.DULL
-    level.music = Bopimo_Int32Array(
+    level.music = Int32Array(
         [
             Music.SIXTY_FOUR,
             Music.SICILIAN_STREET,
@@ -40,13 +40,13 @@ def main():
         id=Block_ID.CYLINDER,
         name="Baseplate",
         color=BASE_COLOR,
-        scale=Bopimo_Vector3(250, 6, 250),
+        scale=Vector3(250, 6, 250),
     )
     level.add_object(baseplate)
 
     spawns: List[Bopimo_Object] = [
-        Bopimo_Spawn(position=Bopimo_Vector3(110, 3.5, 0)),
-        Bopimo_Spawn(position=Bopimo_Vector3(-110, 3.5, 0)),
+        Bopimo_Spawn(position=Vector3(110, 3.5, 0)),
+        Bopimo_Spawn(position=Vector3(-110, 3.5, 0)),
     ]
     level.add_objects(spawns)
 
@@ -57,15 +57,15 @@ def main():
             platform = Bopimo_Block(
                 id=Block_ID.CUBE,
                 name="Moving Platform",
-                position=Bopimo_Vector3(0, 2, 0),
-                rotation=Bopimo_Vector3(0, r, 0),
-                scale=Bopimo_Vector3(20, 2, 20),
+                position=Vector3(0, 2, 0),
+                rotation=Vector3(0, r, 0),
+                scale=Vector3(20, 2, 20),
             )
-            color = Bopimo_Color.from_hsv(15 * i, 1, 1)
+            color = Color.from_hsv(15 * i, 1, 1)
             platform.color = color
             platform.rotation_enabled = True
-            platform.rotation_direction = Bopimo_Vector3(0, 1, 0)
-            platform.rotation_pivot_offset = Bopimo_Vector3(130 + i * 20, 0, 0)
+            platform.rotation_direction = Vector3(0, 1, 0)
+            platform.rotation_pivot_offset = Vector3(130 + i * 20, 0, 0)
             platform.rotation_speed = lerp(25, 4, easeOutQuad(i / 18.0)) * (
                 (i % 2) * 2 - 1
             )
@@ -80,8 +80,8 @@ def main():
             id=Block_ID.CYLINDER,
             name="Platform",
             color=BASE_COLOR,
-            position=Bopimo_Vector3(0, 6.5 + i * 7, 0),
-            scale=Bopimo_Vector3(diameter, 7, diameter),
+            position=Vector3(0, 6.5 + i * 7, 0),
+            scale=Vector3(diameter, 7, diameter),
         )
         platforms.append(platform)
     level.add_objects(platforms)
@@ -91,16 +91,16 @@ def main():
         platform = Bopimo_Block(
             id=Block_ID.CYLINDER,
             name="Moving Inner Platform",
-            position=Bopimo_Vector3(0, 6.5, 0),
-            rotation=Bopimo_Vector3(0, i, 0),
-            scale=Bopimo_Vector3(10, 7, 10),
+            position=Vector3(0, 6.5, 0),
+            rotation=Vector3(0, i, 0),
+            scale=Vector3(10, 7, 10),
         )
-        color = Bopimo_Color.from_hsv(i, 1, 1)
+        color = Color.from_hsv(i, 1, 1)
         platform.color = color
         platform.pattern_color = color
         platform.rotation_enabled = True
-        platform.rotation_direction = Bopimo_Vector3(0, 1, 0)
-        platform.rotation_pivot_offset = Bopimo_Vector3(75, 0, 0)
+        platform.rotation_direction = Vector3(0, 1, 0)
+        platform.rotation_pivot_offset = Vector3(75, 0, 0)
         platform.rotation_speed = 25
         level.add_object(platform)
 
@@ -109,57 +109,57 @@ def main():
         platform = Bopimo_Block(
             id=Block_ID.CYLINDER,
             name="Moving Inner Platform",
-            position=Bopimo_Vector3(0, 10, 0),
-            rotation=Bopimo_Vector3(0, i, 0),
-            scale=Bopimo_Vector3(10, 14, 10),
+            position=Vector3(0, 10, 0),
+            rotation=Vector3(0, i, 0),
+            scale=Vector3(10, 14, 10),
         )
         color = int(math.fabs((180 - i) / 180) * 255)
-        platform.color = Bopimo_Color(color, color, color)
+        platform.color = Color(color, color, color)
         platform.pattern_color = platform.color
         platform.rotation_enabled = True
-        platform.rotation_direction = Bopimo_Vector3(0, 1, 0)
-        platform.rotation_pivot_offset = Bopimo_Vector3(60, 0, 0)
+        platform.rotation_direction = Vector3(0, 1, 0)
+        platform.rotation_pivot_offset = Vector3(60, 0, 0)
         platform.rotation_speed = -25
         level.add_object(platform)
 
-    rgb = [Bopimo_Color(255, 0, 0), Bopimo_Color(0, 255, 0), Bopimo_Color(0, 0, 255)]
+    rgb = [Color(255, 0, 0), Color(0, 255, 0), Color(0, 0, 255)]
     # RGB
     for i in range(0, 18):
         platform = Bopimo_Block(
             id=Block_ID.CYLINDER,
             name="Moving Inner Platform",
             color=rgb[i % 3],
-            position=Bopimo_Vector3(0, 13.5, 0),
-            rotation=Bopimo_Vector3(0, i * 20, 0),
-            scale=Bopimo_Vector3(10, 21, 10),
+            position=Vector3(0, 13.5, 0),
+            rotation=Vector3(0, i * 20, 0),
+            scale=Vector3(10, 21, 10),
         )
         platform.pattern_color = platform.color
         platform.rotation_enabled = True
-        platform.rotation_direction = Bopimo_Vector3(0, 1, 0)
-        platform.rotation_pivot_offset = Bopimo_Vector3(45, 0, 0)
+        platform.rotation_direction = Vector3(0, 1, 0)
+        platform.rotation_pivot_offset = Vector3(45, 0, 0)
         platform.rotation_speed = 25
         level.add_object(platform)
 
     cmyk = [
-        Bopimo_Color(0, 255, 255),
-        Bopimo_Color(255, 0, 255),
-        Bopimo_Color(255, 255, 0),
-        Bopimo_Color(0, 0, 0),
+        Color(0, 255, 255),
+        Color(255, 0, 255),
+        Color(255, 255, 0),
+        Color(0, 0, 0),
     ]
     # CMYK
     for i in range(0, 12):
         platform = Bopimo_Block(
             id=Block_ID.CYLINDER,
             name="Moving Inner Platform",
-            position=Bopimo_Vector3(0, 17, 0),
-            rotation=Bopimo_Vector3(0, i * 30, 0),
-            scale=Bopimo_Vector3(10, 28, 10),
+            position=Vector3(0, 17, 0),
+            rotation=Vector3(0, i * 30, 0),
+            scale=Vector3(10, 28, 10),
         )
         platform.color = cmyk[i % 4]
         platform.pattern_color = platform.color
         platform.rotation_enabled = True
-        platform.rotation_direction = Bopimo_Vector3(0, 1, 0)
-        platform.rotation_pivot_offset = Bopimo_Vector3(30, 0, 0)
+        platform.rotation_direction = Vector3(0, 1, 0)
+        platform.rotation_pivot_offset = Vector3(30, 0, 0)
         platform.rotation_speed = -25
         level.add_object(platform)
 
@@ -167,28 +167,28 @@ def main():
     stars: List[Bopimo_Object] = [
         Bopimo_Completion_Star(
             color=STAR_COLOR,
-            position=Bopimo_Vector3(0, 35, 0),
-            scale=Bopimo_Vector3(5, 5, 5),
+            position=Vector3(0, 35, 0),
+            scale=Vector3(5, 5, 5),
         ),
         Bopimo_Completion_Star(
             color=STAR_COLOR,
-            position=Bopimo_Vector3(290, 7, 0),
-            scale=Bopimo_Vector3(5, 5, 5),
+            position=Vector3(290, 7, 0),
+            scale=Vector3(5, 5, 5),
         ),
         Bopimo_Completion_Star(
             color=STAR_COLOR,
-            position=Bopimo_Vector3(470, 7, 0),
-            scale=Bopimo_Vector3(5, 5, 5),
+            position=Vector3(470, 7, 0),
+            scale=Vector3(5, 5, 5),
         ),
         Bopimo_Completion_Star(
             color=STAR_COLOR,
-            position=Bopimo_Vector3(-290, 7, 0),
-            scale=Bopimo_Vector3(5, 5, 5),
+            position=Vector3(-290, 7, 0),
+            scale=Vector3(5, 5, 5),
         ),
         Bopimo_Completion_Star(
             color=STAR_COLOR,
-            position=Bopimo_Vector3(-470, 7, 0),
-            scale=Bopimo_Vector3(5, 5, 5),
+            position=Vector3(-470, 7, 0),
+            scale=Vector3(5, 5, 5),
         ),
     ]
     for star in stars:
