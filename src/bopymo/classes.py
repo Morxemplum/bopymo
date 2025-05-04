@@ -1,16 +1,8 @@
-from bopimo_types import (
-    Bopimo_Color,
-    Bopimo_Vector3,
-    Bopimo_Vector3Array,
-    Bopimo_Float32Array,
-    Bopimo_Int32Array,
-    Bopimo_Int64Array,
-    Bopimo_ColorArray,
-)
+from bopymo.bopimo_types import Color, Vector3, Vector3Array, Float32Array, Int32Array, Int64Array, ColorArray
+from bopymo.enumerators import Block_ID, Block_Pattern, Decal_Type, Music, Sky, Weather
 
 from copy import deepcopy
 import datetime
-from enum import IntEnum
 import logging
 import math
 from numpy import dot
@@ -110,188 +102,7 @@ class Game_Version:
 # If your level doesn't specify a version, this value will be used by default
 GAME_VERSION = Game_Version(1, 0, 15)
 
-### ENUMS
-
-
-class Block_ID(IntEnum):
-    """
-    Bopimo differentiates their objects through a numeric ID. This enum makes
-    it easy to see what the different IDs for objects are. Cube should be the
-    default, but invalid IDs will be resolved to NULL (-1)
-    """
-
-    NULL = -1
-
-    # PRIMITIVES
-    CUBE = 0
-    RAMP = 1
-    CYLINDER = 2
-    SPHERE = 5
-    CORNER_RAMP = 7
-    CONE = 8
-    PYRAMID = 12
-    PYRAMID_CORNER = 13
-    ROUNDED_RAMP = 15
-    HOLE = 20
-    ARCH = 21
-    HALF_ARCH = 22
-    LOOP = 32
-
-    # DECORATION
-    PINE_TREE = 1000
-    PINE_TREE_SNOW = 1001
-    LOGO = 1002
-    LOGO_ICON = 1003
-    PALM_TREE = 1004
-    STREET_LAMP = 1005
-    FLOWER = 1006
-    FENCE = 1007
-    TORCH = 1008
-    STRING_LIGHTS = 1009
-    ROSE = 1014
-    MESH = 1100
-    CLOUD = 1101
-    STATUE = 1102
-
-    # ACTION
-    SPRING = 2000
-    WATER = 2001
-    SPAWN = 2002
-    CHECKPOINT = 2003
-    TOKEN = 2004
-    LADDER = 2005
-    ICE = 2006
-    COMPLETION_STAR = 2007
-    LAVA = 2008
-    BOOST_PANEL = 2009
-    SPEED_PANEL = 2010
-    GRATES = 2011
-    DISAPPEARING_BLOCK = 2012
-    MISSILE_LAUNCHER = 2013
-    BREAKABLE_BLOCK = 2014
-    CANNON = 2015
-    PORTAL = 2016
-    WEB = 2025
-
-    # NPC
-    BOPI_SPAWNER = 3000
-
-    # HIDDEN
-    HYACINTH = 1010
-    ANALOG_CLOCK = 1012
-    GLOOMLIGHT_SPAWNER = 3100
-    ITEM_GRANTER = 60000
-    BLEEDING_EYE = 61366
-
-
-class Block_Pattern(IntEnum):
-    """
-    Bopimo objects with patterns will represent their patterns use a numeric
-    ID. By default, objects will use the checkerboard pattern (0).
-
-    If you are aiming for no pattern, the easiest way to do so is by matching
-    the pattern color with the block color.
-    """
-
-    CHECKERBOARD = 0
-    HEX = 1
-    STRIPES = 2
-    PLANKS = 3
-    ZIG_ZAG = 4
-    CIRCLES = 5
-    DIAMONDS = 6
-    LARGE_DIAMONDS = 7
-    BRICKS = 8
-    LARGE_BRICKS = 9
-    WAVES = 10
-    CHEVRON = 11
-    GEOMETRIC = 12
-    HORIZONTAL_STRIPES = 13
-    VERTICAL_STRIPES = 14
-    X = 15
-    HEARTS = 17
-
-
-class Sky(IntEnum):
-    """
-    Bopimo offers various different skyboxes that help set the basic atmosphere
-    for the level. This is represented by a numeric ID and this contains all
-    of the skyboxes you can choose from.
-    """
-
-    DAY = 0
-    SUNSET = 1
-    NIGHT = 2
-    RAINDROP = 3
-    ALIEN = 4
-    DULL = 5
-    WINTER = 6
-    INFERNAL = 7
-    FLAME = 8
-    GOLDEN = 9
-    VIOLET = 10
-    THE_SUN = 11
-    HALLOWEEN = 12
-    OVERCAST = 13
-    STARLIT_CITY = 14
-    VOID = 15
-    DESERT = 16
-
-
-class Weather(IntEnum):
-    """
-    You can introduce weather into your Bopimo level to enhance the atmosphere
-    of the level. This enum contains all of the different types of weather you
-    can choose from. By default, there will be no weather (CLEAR)
-    """
-
-    CLEAR = 0
-    SNOW = 1
-    RAIN = 2
-    VOID = 3
-    AUTUMN = 4
-
-
-class Music(IntEnum):
-    """
-    Bopimo has its own unique soundtrack that is produced by the developers.
-    This enum gives you all of the different song names and their associated
-    numeric IDs.
-    """
-
-    SERENE = 0
-    SWAYING_DREAMS = 1
-    PLAYFUL_WALTZ = 2
-    SICILIAN_STREET = 3
-    CONTEMPLATION = 4
-    CAVE_AMBIENCE = 5
-    FUNKY = 6
-    DARKNESS_APPROACHES = 7
-    CARNIVAL = 8
-    LATE_NIGHT_FIREWORKS = 9
-    I_DONT_KNOW = 10
-    WINTER_FOREST = 11
-    ASSAULT_ON_THE_EAR_DRUMS = 12
-    BLOOD_MOON = 13
-    ISAIAH_NEW_SONG = 14
-    BAMBA = 15
-    TORTUGA = 16
-    FRIVOLOUS_FLUTES = 17
-    SIXTY_FOUR = 64
-
-
 ### BOPIMO CLASSES
-
-
-# TODO: Try and find a way to version check various Bopimo attributes, to try and incorporate backwards compatibility
-class Bopimo_Property:
-    def __init__(self, value: Any, min_version: Game_Version = Game_Version(1, 0, 11)):
-        self.value = value
-        self.min_version = min_version
-
-    def compatible(self, level_version: Game_Version) -> bool:
-        return level_version >= self.min_version
-
 
 class Bopimo_Object:
     """
@@ -313,14 +124,14 @@ class Bopimo_Object:
         nametag (bool):
             If true, displays the name of the object as text above the object.
             Useful for conveying information.
-        color (Bopimo_Color):
+        color (Color):
             The color of the object
-        position (Bopimo_Vector3):
+        position (Vector3):
             The position of the object in 3D space
-        rotation (Bopimo_Vector3):
+        rotation (Vector3):
             The rotation of the object represented as euler angles. Rotation is
             in degrees.
-        scale (Bopimo_Vector3):
+        scale (Vector3):
             The size of the object in 3D space
 
         movement_flags (int):
@@ -330,7 +141,7 @@ class Bopimo_Object:
 
         position_enabled (bool):
             If true, will enable position kinematics.
-        position_points (Bopimo_Vector3Array):
+        position_points (Vector3Array):
             A sequence of position points the object will travel to in order.
             Positions are relative to the origin of the object.
         position_travel_speed (float):
@@ -339,7 +150,7 @@ class Bopimo_Object:
             was the legacy method of position kinematics and was replaced with
             time-based kinematics in Bopimo 1.0.14. However, this has full
             reverse compatibility.
-        position_travel_times (Bopimo_Float32Array):
+        position_travel_times (Float32Array):
             A sequence of durations (in seconds) it takes to get from the
             current point to the next one (or in the case of the last, getting
             back to the beginning). This is meant to stay in sync with the
@@ -348,10 +159,10 @@ class Bopimo_Object:
 
         rotation_enabled (bool):
             If true, will enable rotation kinematics
-        rotation_pivot_offset (Bopimo_Vector3):
+        rotation_pivot_offset (Vector3):
             Represents how much to move the center of rotation of the pivot.
             Position is relative to the origin of the object.
-        rotation_direction (Bopimo_Vector3):
+        rotation_direction (Vector3):
             A normal unit vector that represents the axis of rotation the
             object will rotate on
         rotation_speed (float):
@@ -364,31 +175,31 @@ class Bopimo_Object:
         self,
         id: Block_ID | int = Block_ID.NULL,
         name: str = "Object",
-        color: Bopimo_Color = Bopimo_Color(0, 0, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(0, 0, 0),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         self.id: Block_ID | int = id
         self.name: str = name
         self.nametag: bool = False
-        self.color: Bopimo_Color = color
-        self.position: Bopimo_Vector3 = position
-        self.rotation: Bopimo_Vector3 = rotation
-        self.scale: Bopimo_Vector3 = scale
+        self.color: Color = color
+        self.position: Vector3 = position
+        self.rotation: Vector3 = rotation
+        self.scale: Vector3 = scale
 
         # TODO: Add "movement_flags". They're currently in the code, but not functional at the moment.
 
         self.position_enabled: bool = False
-        self._position_points: Bopimo_Vector3Array = Bopimo_Vector3Array()
+        self._position_points: Vector3Array = Vector3Array()
         # As of Bopimo 1.0.14, position_travel_speed no longer exists in bopjson. This value is now None, which indicates it is disabled.
         # Setting this value to 0 will also re-enable the time-based kinematic system.
         self._position_travel_speed: float | None = None
-        self._position_travel_times: Bopimo_Float32Array = Bopimo_Float32Array()
+        self._position_travel_times: Float32Array = Float32Array()
 
         self.rotation_enabled: bool = False
-        self.rotation_pivot_offset: Bopimo_Vector3 = Bopimo_Vector3.zero()
-        self.rotation_direction: Bopimo_Vector3 = Bopimo_Vector3.zero()
+        self.rotation_pivot_offset: Vector3 = Vector3.zero()
+        self.rotation_direction: Vector3 = Vector3.zero()
         self.rotation_speed: float = 1
 
     def __refresh_constant_travel_speed_times(self):
@@ -402,7 +213,7 @@ class Bopimo_Object:
         if self._position_travel_speed is None:
             return
         for i, position in enumerate(self._position_points):
-            next_pos: Bopimo_Vector3
+            next_pos: Vector3
             if i == len(self._position_points) - 1:
                 next_pos = self._position_points.get_vector(0)
             else:
@@ -426,7 +237,7 @@ class Bopimo_Object:
         return self._position_travel_speed
 
     @property
-    def position_points(self) -> Bopimo_Vector3Array:
+    def position_points(self) -> Vector3Array:
         """
         <DEPRECATED>
         A getter method for the position_points attribute. This getter method
@@ -434,7 +245,7 @@ class Bopimo_Object:
         purpose of this function is reverse compatibility.
 
         Returns:
-            Bopimo_Vector3Array:
+            Vector3Array:
                 The sequence of the object's position points
         """
         if not DEPRECATION_WARNINGS["Getting position_points directly"]:
@@ -450,7 +261,7 @@ class Bopimo_Object:
         if self._position_travel_speed != 0:
             return self._position_points
         # If you are using the new system which involve travel times, you shouldn't get the actual points as they're linked with the time points.
-        return Bopimo_Vector3Array([])
+        return Vector3Array([])
 
     @position_travel_speed.setter
     def position_travel_speed(self, value: float):
@@ -466,7 +277,7 @@ class Bopimo_Object:
             self.__refresh_constant_travel_speed_times()
 
     @position_points.setter
-    def position_points(self, points: Bopimo_Vector3Array):
+    def position_points(self, points: Vector3Array):
         """
         <DEPRECATED>
         A setter method for the position_points attribute. This setter method
@@ -476,7 +287,7 @@ class Bopimo_Object:
         default value of 5).
 
         Parameters:
-            points (Bopimo_Vector3Array):
+            points (Vector3Array):
                 A new sequence of position points
         """
         if not DEPRECATION_WARNINGS["Setting position_points directly"]:
@@ -486,27 +297,27 @@ class Bopimo_Object:
             DEPRECATION_WARNINGS["Setting position_points directly"] = True
         # Bopimo 1.0.11-1.0.13 would implicitly declare the object's position (locally 0, 0, 0) as the starting position.
         # The times system requires this to be explicitly declared. So if the start is not (0, 0, 0), add it for reverse compatibility.
-        positions: Bopimo_Vector3Array
-        if not points.is_empty() and points.get_vector(0) != Bopimo_Vector3.zero():
-            positions = Bopimo_Vector3Array([Bopimo_Vector3.zero()]) + points
+        positions: Vector3Array
+        if not points.is_empty() and points.get_vector(0) != Vector3.zero():
+            positions = Vector3Array([Vector3.zero()]) + points
         else:
             positions = points
         self._position_points = positions
-        self._position_travel_times = Bopimo_Float32Array([0.0] * len(positions))
+        self._position_travel_times = Float32Array([0.0] * len(positions))
         # Previous default value with 1.0.11-1.0.13
         if self._position_travel_speed is None:
             self.position_travel_speed = 5
         if self._position_travel_speed != 0:
             self.__refresh_constant_travel_speed_times()
 
-    def add_position_point(self, position: Bopimo_Vector3, time: float = 0.0):
+    def add_position_point(self, position: Vector3, time: float = 0.0):
         """
         Adds a position point to the object's position points, along with an
         associated travel time. If a position travel speed has been given to
         the object, the travel time will be ignored.
 
         Parameters:
-            position (Bopimo_Vector3):
+            position (Vector3):
                 A position relative to the object's origin, to be added to the
                 sequence of position points.
             time (float):
@@ -523,7 +334,7 @@ class Bopimo_Object:
             if len(self._position_points) < 2:
                 self._position_travel_times.add_float(0)
                 return
-            prev_pos: Bopimo_Vector3 = self._position_points.get_vector(
+            prev_pos: Vector3 = self._position_points.get_vector(
                 len(self._position_points) - 2
             )
             distance: float = (position - prev_pos).magnitude
@@ -531,12 +342,12 @@ class Bopimo_Object:
                 len(self._position_points) - 2,
                 distance / self.position_travel_speed,
             )
-            next_pos: Bopimo_Vector3 = self._position_points.get_vector(0)
+            next_pos: Vector3 = self._position_points.get_vector(0)
             distance: float = (next_pos - position).magnitude
             self._position_travel_times.add_float(distance / self.position_travel_speed)
 
     def add_position_points(
-        self, position_times: List[tuple[Bopimo_Vector3, float]] | List[Bopimo_Vector3]
+        self, position_times: List[tuple[Vector3, float]] | List[Vector3]
     ):
         """
         Adds a list of position points to the object's position points, given
@@ -549,16 +360,16 @@ class Bopimo_Object:
         operations that would be performed to calculate the final travel time.
 
         Parameters:
-            position_times (List[ tuple[Bopimo_Vector3, float] ]
-                            | List[Bopimo_Vector3]):
+            position_times (List[ tuple[Vector3, float] ]
+                            | List[Vector3]):
                 A sequence of position point and time range pairs to add to the
                 object's position points and travel times. If doing speed-based
                 kinematics, just a sequence of position points.
         """
         if not position_times:
             return
-        e: tuple[Bopimo_Vector3, float] | Bopimo_Vector3 = position_times[-1]
-        if isinstance(e, Bopimo_Vector3) and self.position_travel_speed == 0:
+        e: tuple[Vector3, float] | Vector3 = position_times[-1]
+        if isinstance(e, Vector3) and self.position_travel_speed == 0:
             raise TypeError(
                 "Attempted to give a plain position, but position_travel_speed is 0. Either set a travel speed, or provide a time in seconds."
             )
@@ -567,13 +378,13 @@ class Bopimo_Object:
                 "Attempted to give a position and time, but position_travel_speed is non-zero. Either set position_travel_speed to 0, or remove the time."
             )
         for element in position_times:
-            if isinstance(element, Bopimo_Vector3):
+            if isinstance(element, Vector3):
                 # We cannot rely on add_position_point here otherwise we will be needlessly calculating the beginning point's time. That'll be saved for the end
                 self._position_points.add_vector(element)
                 if len(self._position_points) < 2:
                     self._position_travel_times.add_float(0)
                     continue
-                prev_pos: Bopimo_Vector3 = self._position_points.get_vector(
+                prev_pos: Vector3 = self._position_points.get_vector(
                     len(self._position_points) - 2
                 )
                 distance: float = (element - prev_pos).magnitude
@@ -586,15 +397,15 @@ class Bopimo_Object:
             else:
                 self.add_position_point(*element)
 
-        if isinstance(e, Bopimo_Vector3):
-            next_pos: Bopimo_Vector3 = self._position_points.get_vector(0)
+        if isinstance(e, Vector3):
+            next_pos: Vector3 = self._position_points.get_vector(0)
             distance: float = (next_pos - e).magnitude
             self._position_travel_times.set_float(
                 len(self._position_travel_times) - 1,
                 distance / self.position_travel_speed,
             )
 
-    def get_position_point(self, index: int) -> Bopimo_Vector3:
+    def get_position_point(self, index: int) -> Vector3:
         """
         Given an index, gets a position point of an object's position sequence
 
@@ -603,14 +414,14 @@ class Bopimo_Object:
                 An index in the position point array
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The position point at the given position. Position is relative
                 to the origin of the object.
         """
         return self._position_points.get_vector(index)
 
     def set_position_point(
-        self, index: int, position: Bopimo_Vector3, time: float = 0.0
+        self, index: int, position: Vector3, time: float = 0.0
     ):
         """
         Sets a position point in the object's position points, along with an
@@ -620,7 +431,7 @@ class Bopimo_Object:
         Parameters:
             index (int):
                 An index in the position point array
-            position (Bopimo_Vector3):
+            position (Vector3):
                 A position relative to the object's origin, to be added to the
                 sequence of position points.
             time (float):
@@ -636,13 +447,13 @@ class Bopimo_Object:
         else:
             if len(self._position_points) < 2:
                 self._position_travel_times.set_float(index, 0)
-            prev_pos: Bopimo_Vector3 = self._position_points.get_vector(index - 1)
+            prev_pos: Vector3 = self._position_points.get_vector(index - 1)
             distance: float = (position - prev_pos).magnitude
             self._position_travel_times.set_float(
                 index, distance / self.position_travel_speed
             )
             if index < len(self._position_points) - 1:
-                next_pos: Bopimo_Vector3 = self._position_points.get_vector(index + 1)
+                next_pos: Vector3 = self._position_points.get_vector(index + 1)
                 distance: float = (next_pos - position).magnitude
                 self._position_travel_times.set_float(
                     index + 1, distance / self.position_travel_speed
@@ -650,7 +461,7 @@ class Bopimo_Object:
 
     def remove_position_point(
         self, index: int
-    ) -> Bopimo_Vector3 | tuple[Bopimo_Vector3, float]:
+    ) -> Vector3 | tuple[Vector3, float]:
         """
         Given an index, removes the position point and associated travel time
         of an object's position points.
@@ -660,7 +471,7 @@ class Bopimo_Object:
                 An index in the position point array
 
         Returns:
-            tuple[Bopimo_Vector3, float]:
+            tuple[Vector3, float]:
                 The position and travel time in a tuple pair. Position is
                 relative to the origin of the object. If using speed-based
                 kinematics, time is calculated based on speed and distance.
@@ -775,7 +586,7 @@ class Bopimo_Tilable_Object(Bopimo_Object):
     Instance Attributes:
         pattern (Block_Pattern | int):
             The tilable pattern that the object uses.
-        pattern_color (Bopimo_Color):
+        pattern_color (Color):
             The color of the tilable pattern
     """
 
@@ -783,14 +594,14 @@ class Bopimo_Tilable_Object(Bopimo_Object):
         self,
         id: Block_ID | int = Block_ID.CUBE,
         name: str = "Tilable Object",
-        color: Bopimo_Color = Bopimo_Color(0, 0, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(0, 0, 0),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(id, name, color, position, rotation, scale)
         self.pattern: Block_Pattern | int = Block_Pattern.CHECKERBOARD
-        self.pattern_color: Bopimo_Color = Bopimo_Color(0, 0, 0)
+        self.pattern_color: Color = Color(0, 0, 0)
 
     def json(self) -> dict[str, Any]:
         """
@@ -839,7 +650,7 @@ class Bopimo_Level:
             The name of the level
         description (str):
             The description describing the level
-        music (Bopimo_Int32Array):
+        music (Int32Array):
             An array of different integers representing various Bopimo tracks.
             It is highly recommended that you use the Music enum for choosing
             tracks, as this is more readable and future-proof.
@@ -858,7 +669,7 @@ class Bopimo_Level:
         sky_energy (float):
             A positive value that represents the level's gamma/brightness. A
             higher energy will lead to a brighter level
-        ambient_color (Bopimo_Color):
+        ambient_color (Color):
             A color that represents the final color of a level's shadows. Be
             wary that the ambient color takes slight influence from a level's
             sky.
@@ -873,7 +684,7 @@ class Bopimo_Level:
         fog_distance (int):
             Set how far the fog will end. A smaller value resembles a closer
             fog.
-        fog_color (Bopimo_Color):
+        fog_color (Color):
             Set the color of the fog. Ideally, you'd want to match the fog to
             compliment your skybox.
         gravity (float):
@@ -917,7 +728,7 @@ class Bopimo_Level:
         # LEVEL INFORMATION
         self.name: str = name
         self.description: str = description
-        self.music: Bopimo_Int32Array = Bopimo_Int32Array(
+        self.music: Int32Array = Int32Array(
             [Music.SERENE, Music.SWAYING_DREAMS, Music.PLAYFUL_WALTZ]
         )
         self.lives: int = 0
@@ -926,11 +737,11 @@ class Bopimo_Level:
         # ATMOSPHERE
         self.sky: Sky | int = Sky.DAY
         self.sky_energy: float = 1
-        self.ambient_color: Bopimo_Color = Bopimo_Color(0, 0, 0)
+        self.ambient_color: Color = Color(0, 0, 0)
         self.weather: Weather | int = Weather.CLEAR
         self.fog_enabled: bool = False
         self.fog_distance: int = 0
-        self.fog_color: Bopimo_Color = Bopimo_Color(128, 128, 128)
+        self.fog_color: Color = Color(128, 128, 128)
         self.gravity: float = 105
 
         # MAP INFORMATION
@@ -1151,10 +962,10 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         self,
         id: Block_ID | int = Block_ID.CUBE,
         name: str = "Generated Block",
-        color: Bopimo_Color = Bopimo_Color(34, 139, 34),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(34, 139, 34),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(id, name, color, position, rotation, scale)
         # Block exclusive attributes
@@ -1194,10 +1005,10 @@ class Bopimo_Spawn(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Spawn",
-        color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(4, 1, 4),
+        color: Color = Color(160, 30, 176),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(4, 1, 4),
     ):
         super().__init__(Block_ID.SPAWN, name, color, position, rotation, scale)
 
@@ -1225,10 +1036,10 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Checkpoint",
-        color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 4, 2),
+        color: Color = Color(160, 30, 176),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 4, 2),
     ):
         super().__init__(Block_ID.CHECKPOINT, name, color, position, rotation, scale)
 
@@ -1269,10 +1080,10 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Completion Star",
-        color: Bopimo_Color = Bopimo_Color(94, 0, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(4, 4, 4),
+        color: Color = Color(94, 0, 176),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(4, 4, 4),
     ):
         super().__init__(
             Block_ID.COMPLETION_STAR, name, color, position, rotation, scale
@@ -1323,10 +1134,10 @@ class Bopimo_Spring(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Spring",
-        color: Bopimo_Color = Bopimo_Color(227, 181, 4),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(227, 181, 4),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.SPRING, name, color, position, rotation, scale)
         # Spring exclusive attributes
@@ -1361,7 +1172,7 @@ class Bopimo_Lava(Bopimo_Object):
     custom block pattern that can not be replicated or modified.
 
     Instance Attributes:
-        pattern_color (Bopimo_Color):
+        pattern_color (Color):
             The color of the lava pattern
         damage_amount (float):
             The amount of damage that will be dealt to a player upon contact.
@@ -1372,15 +1183,15 @@ class Bopimo_Lava(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Lava",
-        color: Bopimo_Color = Bopimo_Color(183, 14, 0),
-        pattern_color: Bopimo_Color = Bopimo_Color(255, 162, 73),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(183, 14, 0),
+        pattern_color: Color = Color(255, 162, 73),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
         damage: float = 25,
     ):
         super().__init__(Block_ID.LAVA, name, color, position, rotation, scale)
-        self.pattern_color: Bopimo_Color = pattern_color
+        self.pattern_color: Color = pattern_color
         self._damage_amount: float = damage
         self.__clamp()
 
@@ -1432,7 +1243,7 @@ class Bopimo_Water(Bopimo_Object):
     replicated or modified. The block_pattern attribute will be ignored.
 
     Instance Attributes:
-        foam_color (Bopimo_Color):
+        foam_color (Color):
             <ALIAS pattern_color>
             The color of the foam pattern in the water.
     """
@@ -1440,11 +1251,11 @@ class Bopimo_Water(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Water",
-        color: Bopimo_Color = Bopimo_Color(71, 130, 255),
-        foam_color: Bopimo_Color = Bopimo_Color(255, 255, 255),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(4, 4, 4),
+        color: Color = Color(71, 130, 255),
+        foam_color: Color = Color(255, 255, 255),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(4, 4, 4),
     ):
         super().__init__(Block_ID.WATER, name, color, position, rotation, scale)
         self.pattern_color = foam_color
@@ -1478,10 +1289,10 @@ class Bopimo_Ladder(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Ladder",
-        color: Bopimo_Color = Bopimo_Color(78, 52, 46),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 1),
+        color: Color = Color(78, 52, 46),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 1),
     ):
         super().__init__(Block_ID.LADDER, name, color, position, rotation, scale)
         self.climbing_speed: float = 1
@@ -1526,10 +1337,10 @@ class Bopimo_Token(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Token",
-        color: Bopimo_Color = Bopimo_Color(236, 126, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(236, 126, 0),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.TOKEN, name, color, position, rotation, scale)
         self.heal_amount: float = 5
@@ -1578,10 +1389,10 @@ class Bopimo_Disappearing_Block(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Disappearing Block",
-        color: Bopimo_Color = Bopimo_Color(122, 9, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(122, 9, 0),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(
             Block_ID.DISAPPEARING_BLOCK, name, color, position, rotation, scale
@@ -1624,10 +1435,10 @@ class Bopimo_Grates(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Grates",
-        color: Bopimo_Color = Bopimo_Color(0, 10, 18),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(4, 1, 4),
+        color: Color = Color(0, 10, 18),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(4, 1, 4),
     ):
         super().__init__(Block_ID.GRATES, name, color, position, rotation, scale)
 
@@ -1661,10 +1472,10 @@ class Bopimo_Speed_Panel(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Speed Panel",
-        color: Bopimo_Color = Bopimo_Color(27, 0, 32),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(3, 1, 3),
+        color: Color = Color(27, 0, 32),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(3, 1, 3),
         speed: float = 30,
         duration: float = 10,
     ):
@@ -1705,10 +1516,10 @@ class Bopimo_Boost_Panel(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Boost Panel",
-        color: Bopimo_Color = Bopimo_Color(0, 2, 34),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(3, 1, 3),
+        color: Color = Color(0, 2, 34),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(3, 1, 3),
     ):
         super().__init__(Block_ID.BOOST_PANEL, name, color, position, rotation, scale)
         self.boost: float = 75
@@ -1744,10 +1555,10 @@ class Bopimo_Ice(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Ice",
-        color: Bopimo_Color = Bopimo_Color(138, 220, 223),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(138, 220, 223),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.ICE, name, color, position, rotation, scale)
         self.slipperiness: float = 1
@@ -1785,10 +1596,10 @@ class Bopimo_Breakable_Block(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Breakable Block",
-        color: Bopimo_Color = Bopimo_Color(129, 0, 40),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(129, 0, 40),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(
             Block_ID.BREAKABLE_BLOCK, name, color, position, rotation, scale
@@ -1835,10 +1646,10 @@ class Bopimo_Cannon(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Cannon",
-        color: Bopimo_Color = Bopimo_Color(42, 2, 47),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(42, 2, 47),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
         power: float = 50,
     ):
         super().__init__(Block_ID.CANNON, name, color, position, rotation, scale)
@@ -1876,7 +1687,7 @@ class Bopimo_Portal(Bopimo_Object):
             <NON-FUNCTIONAL>
             The underlying transparency of the portal object. This attribute
             may be scrapped.
-        destinations (Bopimo_Int64Array):
+        destinations (Int64Array):
             <INTERNAL>
             A list of destinations the player may teleport to upon entering.
             Destinations are linked through a portal's corresponding UID, which
@@ -1886,14 +1697,14 @@ class Bopimo_Portal(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Portal",
-        color: Bopimo_Color = Bopimo_Color(0, 105, 182),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(10, 10, 2),
+        color: Color = Color(0, 105, 182),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(10, 10, 2),
     ):
         super().__init__(Block_ID.PORTAL, name, color, position, rotation, scale)
         self.transparency: int = 224
-        self.destinations: Bopimo_Int64Array = Bopimo_Int64Array([])
+        self.destinations: Int64Array = Int64Array([])
 
     def json(self) -> dict[str, Any]:
         """
@@ -1927,10 +1738,10 @@ class Bopimo_Web(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Web",
-        color: Bopimo_Color = Bopimo_Color(255, 255, 255),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(6, 1, 6),
+        color: Color = Color(255, 255, 255),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(6, 1, 6),
     ):
         super().__init__(Block_ID.WEB, name, color, position, rotation, scale)
         self.stickiness: float = 0.5
@@ -1983,10 +1794,10 @@ class Bopimo_Missile_Launcher(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Missile Launcher",
-        color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(160, 30, 176),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(
             Block_ID.MISSILE_LAUNCHER, name, color, position, rotation, scale
@@ -2032,10 +1843,10 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Flower",
-        color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(160, 30, 176),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.FLOWER, name, color, position, rotation, scale)
 
@@ -2060,10 +1871,10 @@ class Bopimo_Fence(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Fence",
-        color: Bopimo_Color = Bopimo_Color(121, 85, 72),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 4, 1),
+        color: Color = Color(121, 85, 72),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 4, 1),
     ):
         super().__init__(Block_ID.FENCE, name, color, position, rotation, scale)
         self.pattern = Block_Pattern.PLANKS
@@ -2089,10 +1900,10 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Pine Tree",
-        color: Bopimo_Color = Bopimo_Color(0, 88, 36),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(5, 10, 5),
+        color: Color = Color(0, 88, 36),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(5, 10, 5),
     ):
         super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
 
@@ -2117,10 +1928,10 @@ class Bopimo_Pine_Tree_Snow(Bopimo_Pine_Tree):
     def __init__(
         self,
         name: str = "Generated Pine Tree Snow",
-        color: Bopimo_Color = Bopimo_Color(0, 88, 36),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(5, 10, 5),
+        color: Color = Color(0, 88, 36),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(5, 10, 5),
     ):
         super().__init__(name, color, position, rotation, scale)
         self.id = Block_ID.PINE_TREE_SNOW
@@ -2146,10 +1957,10 @@ class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Palm Tree",
-        color: Bopimo_Color = Bopimo_Color(94, 214, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(8, 8, 8),
+        color: Color = Color(94, 214, 0),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(8, 8, 8),
     ):
         super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
 
@@ -2184,10 +1995,10 @@ class Bopimo_Street_Lamp(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Street Lamp",
-        color: Bopimo_Color = Bopimo_Color(255, 160, 30),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 10, 2),
+        color: Color = Color(255, 160, 30),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 10, 2),
     ):
         super().__init__(Block_ID.STREET_LAMP, name, color, position, rotation, scale)
         self.light_range: float = 25
@@ -2227,13 +2038,13 @@ class Bopimo_Torch(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Torch",
-        color: Bopimo_Color = Bopimo_Color(73, 48, 42),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(1, 2, 1),
+        color: Color = Color(73, 48, 42),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(1, 2, 1),
     ):
         super().__init__(Block_ID.TORCH, name, color, position, rotation, scale)
-        self.pattern_color: Bopimo_Color = Bopimo_Color(255, 68, 0)
+        self.pattern_color: Color = Color(255, 68, 0)
         self.light_range: float = 25
 
     def json(self) -> dict[str, Any]:
@@ -2256,28 +2067,28 @@ class Bopimo_Logo(Bopimo_Object):
     in their signature purple shades, but it can be customly colored.
 
     Instance Attributes:
-        primary_color (Bopimo_Color):
+        primary_color (Color):
             <ALIAS color>
             The outline color of the logo mesh.
-        secondary_color (Bopimo_Color):
+        secondary_color (Color):
             The fill color of the logo's letters
-        tertiary_color (Bopimo_Color):
+        tertiary_color (Color):
             The fill color of the exclamation point
     """
 
     def __init__(
         self,
         name: str = "Generated Logo",
-        primary_color: Bopimo_Color = Bopimo_Color(130, 12, 155),
-        secondary_color: Bopimo_Color = Bopimo_Color(175, 85, 217),
-        tertiary_color: Bopimo_Color = Bopimo_Color(141, 62, 229),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(6, 2.5, 2),
+        primary_color: Color = Color(130, 12, 155),
+        secondary_color: Color = Color(175, 85, 217),
+        tertiary_color: Color = Color(141, 62, 229),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(6, 2.5, 2),
     ):
         super().__init__(Block_ID.LOGO, name, primary_color, position, rotation, scale)
-        self.secondary_color: Bopimo_Color = secondary_color
-        self.tertiary_color: Bopimo_Color = tertiary_color
+        self.secondary_color: Color = secondary_color
+        self.tertiary_color: Color = tertiary_color
 
     def json(self) -> dict[str, Any]:
         """
@@ -2302,12 +2113,12 @@ class Bopimo_Logo_Icon(Bopimo_Logo):
     def __init__(
         self,
         name: str = "Generated Logo Icon",
-        primary_color: Bopimo_Color = Bopimo_Color(130, 12, 155),
-        secondary_color: Bopimo_Color = Bopimo_Color(175, 85, 217),
-        tertiary_color: Bopimo_Color = Bopimo_Color(141, 62, 229),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(6, 2.5, 2),
+        primary_color: Color = Color(130, 12, 155),
+        secondary_color: Color = Color(175, 85, 217),
+        tertiary_color: Color = Color(141, 62, 229),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(6, 2.5, 2),
     ):
         super().__init__(
             name,
@@ -2343,10 +2154,10 @@ class Bopimo_String_Lights(Bopimo_Object):
     "blinking"
 
     Instance Attributes:
-        wire_color (Bopimo_Color):
+        wire_color (Color):
             <ALIAS color>
             The color of the wire attaching all the string lights
-        bulb_colors (Bopimo_ColorArray):
+        bulb_colors (ColorArray):
             An ordered sequence of the colors that the string lights will
             illuminate. The sequence is looped through when rendering
             individual bulbs, and when the lights "blink" through the sequence.
@@ -2357,24 +2168,24 @@ class Bopimo_String_Lights(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated String Lights",
-        wire_color: Bopimo_Color = Bopimo_Color(0, 67, 27),
-        bulb_colors: Bopimo_ColorArray = Bopimo_ColorArray(
+        wire_color: Color = Color(0, 67, 27),
+        bulb_colors: ColorArray = ColorArray(
             [
-                Bopimo_Color(255, 0, 0),
-                Bopimo_Color(255, 215, 0),
-                Bopimo_Color(50, 205, 50),
-                Bopimo_Color(0, 0, 255),
-                Bopimo_Color(255, 0, 255),
+                Color(255, 0, 0),
+                Color(255, 215, 0),
+                Color(50, 205, 50),
+                Color(0, 0, 255),
+                Color(255, 0, 255),
             ]
         ),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(6, 2.5, 2),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(6, 2.5, 2),
     ):
         super().__init__(
             Block_ID.STRING_LIGHTS, name, wire_color, position, rotation, scale
         )
-        self.bulb_colors: Bopimo_ColorArray = bulb_colors
+        self.bulb_colors: ColorArray = bulb_colors
         self.blink_speed: float = 0
 
     def json(self) -> dict[str, Any]:
@@ -2407,10 +2218,10 @@ class Bopimo_Rose(Bopimo_Tilable_Object):
     damaging them, offering an alternative method of healing.
 
     Instance attributes:
-        bud_color (Bopimo_Color):
+        bud_color (Color):
             <ALIAS color>
             The color of the rose petals
-        stem_color (Bopimo_Color):
+        stem_color (Color):
             <ALIAS pattern_color>
             The color of the rose's stem (and by extension thorns)
         damage (float):
@@ -2425,12 +2236,12 @@ class Bopimo_Rose(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Rose",
-        bud_color: Bopimo_Color = Bopimo_Color(255, 0, 0),
-        stem_color: Bopimo_Color = Bopimo_Color(0, 153, 0),
+        bud_color: Color = Color(255, 0, 0),
+        stem_color: Color = Color(0, 153, 0),
         damage: float = 1,
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(1, 3, 1),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(1, 3, 1),
     ):
         super().__init__(Block_ID.ROSE, name, bud_color, position, rotation, scale)
         self.pattern_color = stem_color
@@ -2471,10 +2282,10 @@ class Bopimo_Item_Mesh(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Item Mesh",
-        color: Bopimo_Color = Bopimo_Color(255, 255, 255),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(255, 255, 255),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.MESH, name, color, position, rotation, scale)
         self.item_id: int = 1
@@ -2502,10 +2313,10 @@ class Bopimo_Cloud(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Cloud",
-        color: Bopimo_Color = Bopimo_Color(255, 255, 255),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(8, 2, 8),
+        color: Color = Color(255, 255, 255),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(8, 2, 8),
     ):
         super().__init__(Block_ID.CLOUD, name, color, position, rotation, scale)
 
@@ -2534,10 +2345,10 @@ class Bopimo_Statue(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Analog Clock",
-        color: Bopimo_Color = Bopimo_Color(246, 156, 0),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(3, 5, 2),
+        color: Color = Color(246, 156, 0),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(3, 5, 2),
     ):
         super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
 
@@ -2595,27 +2406,27 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
             this threshold, the NPC will start falling asleep. Useful to give
             players a headstart on a chase.
 
-        head_color (Bopimo_Color):
+        head_color (Color):
             The skin color of the NPC's head
-        torso_color (Bopimo_Color):
+        torso_color (Color):
             The skin color of the NPC's torso
-        left_arm_color (Bopimo_Color):
+        left_arm_color (Color):
             The skin color of the NPC's left arm
-        left_hand_color (Bopimo_Color):
+        left_hand_color (Color):
             The skin color of the NPC's left hand
-        right_arm_color (Bopimo_Color):
+        right_arm_color (Color):
             The skin color of the NPC's right arm
-        right_hand_color (Bopimo_Color):
+        right_hand_color (Color):
             The skin color of the NPC's right hand
-        left_leg_color (Bopimo_Color):
+        left_leg_color (Color):
             The skin color of the NPC's left leg
-        left_foot_color (Bopimo_Color):
+        left_foot_color (Color):
             The skin color of the NPC's left foot
-        right_leg_color (Bopimo_Color):
+        right_leg_color (Color):
             The skin color of the NPC's right leg
-        right_foot_color (Bopimo_Color):
+        right_foot_color (Color):
             The skin color of the NPC's right foot
-        hats (Bopimo_Int32Array):
+        hats (Int32Array):
             A list of IDs of valid hats that the NPC will wear
         face (int):
             An ID of a valid face the NPC will have
@@ -2632,10 +2443,10 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Bopi Spawner",
-        color: Bopimo_Color = Bopimo_Color(160, 30, 176),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 0.5, 2),
+        color: Color = Color(160, 30, 176),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 0.5, 2),
     ):
         super().__init__(Block_ID.BOPI_SPAWNER, name, color, position, rotation, scale)
         self.max_health: float = 75
@@ -2646,17 +2457,17 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
         self.return_to_spawner: bool = False
         self.sleep_time: float = 60
 
-        self.head_color: Bopimo_Color = Bopimo_Color(246, 156, 0)
-        self.torso_color: Bopimo_Color = Bopimo_Color(156, 156, 156)
-        self.left_arm_color: Bopimo_Color = Bopimo_Color(246, 156, 0)
-        self.left_hand_color: Bopimo_Color = Bopimo_Color(246, 156, 0)
-        self.right_arm_color: Bopimo_Color = Bopimo_Color(246, 156, 0)
-        self.right_hand_color: Bopimo_Color = Bopimo_Color(246, 156, 0)
-        self.left_leg_color: Bopimo_Color = Bopimo_Color(49, 51, 53)
-        self.left_foot_color: Bopimo_Color = Bopimo_Color(17, 17, 17)
-        self.right_leg_color: Bopimo_Color = Bopimo_Color(49, 51, 53)
-        self.right_foot_color: Bopimo_Color = Bopimo_Color(17, 17, 17)
-        self.hats: Bopimo_Int32Array = Bopimo_Int32Array()
+        self.head_color: Color = Color(246, 156, 0)
+        self.torso_color: Color = Color(156, 156, 156)
+        self.left_arm_color: Color = Color(246, 156, 0)
+        self.left_hand_color: Color = Color(246, 156, 0)
+        self.right_arm_color: Color = Color(246, 156, 0)
+        self.right_hand_color: Color = Color(246, 156, 0)
+        self.left_leg_color: Color = Color(49, 51, 53)
+        self.left_foot_color: Color = Color(17, 17, 17)
+        self.right_leg_color: Color = Color(49, 51, 53)
+        self.right_foot_color: Color = Color(17, 17, 17)
+        self.hats: Int32Array = Int32Array()
         self.face: int = -1
         self.shirt: int = -1
         self.pants: int = -1
@@ -2723,10 +2534,10 @@ class Bopimo_Analog_Clock(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Analog Clock",
-        color: Bopimo_Color = Bopimo_Color(160, 29, 175),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(160, 29, 175),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.ANALOG_CLOCK, name, color, position, rotation, scale)
 
@@ -2754,10 +2565,10 @@ class Bopimo_Bleeding_Eye(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Bleeding Eye",
-        color: Bopimo_Color = Bopimo_Color(237, 0, 8),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(237, 0, 8),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
 
@@ -2784,10 +2595,10 @@ class Bopimo_Hyacinth(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Hyacinth Flower",
-        color: Bopimo_Color = Bopimo_Color(20, 126, 172),
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        scale: Bopimo_Vector3 = Bopimo_Vector3(2, 2, 2),
+        color: Color = Color(20, 126, 172),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.HYACINTH, name, color, position, rotation, scale)
 
@@ -2809,28 +2620,6 @@ class Bopimo_Hyacinth(Bopimo_Tilable_Object):
 #          modified or removed at any time in the future, should the methods
 #          behind them break or an official implementation succeed these
 #          workarounds.
-
-
-class Decal_Type(IntEnum):
-    """
-    Decal uploaders will often upload their textures in three popular formats.
-    The two major articles of clothing, shirts and pants, both have their own
-    pros and cons.
-
-    Shirts will have a better pixel resolution and should be the case if
-    resolution is important. However, be careful with the corners, as the
-    corners will warp in the final decal.
-
-    Pants have significantly less warping artifacts, but they will have a lower
-    resolution. In addition, there are two variants of pants decals, depending
-    on which leg the decal maker chooses to put their texture. Make sure to
-    select the appropriate leg so the transformations will apply correctly.
-    """
-
-    SHIRT = 0
-    PANTS_FRONT_LEFT = 1  # Left Leg
-    PANTS_FRONT_RIGHT = 2  # Right Leg
-
 
 # Decals are made using transparent clothing items with images on specific faces.
 class Bopimo_Decal(Bopimo_Item_Mesh):
@@ -2875,7 +2664,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
             The ID of the decal texture
         type (Decal_Type):
             The type of clothing the texture is hosted on
-        offset (Bopimo_Vector3):
+        offset (Vector3):
             How much offset in the X and Y position to shift the texture.
             Useful if the decal maker didn't properly center their decal.
             The Z attribute will be ignored.
@@ -2897,59 +2686,59 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         name: str = "Generated Decal",
         decal_type: Decal_Type = Decal_Type.SHIRT,
         image_id: int = 3372,
-        position: Bopimo_Vector3 = Bopimo_Vector3.zero(),
-        rotation: Bopimo_Vector3 = Bopimo_Vector3.zero(),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
         width: float = 2,
         height: float = 2,
     ):
         super().__init__(
             name,
-            Bopimo_Color(255, 255, 255),
+            Color(255, 255, 255),
             position,
             rotation,
             # The Z axis must ideally be 0. By changing the Z value, you defeat the purpose of a decal
-            Bopimo_Vector3(width, height, 0.01),
+            Vector3(width, height, 0.01),
         )
         self.item_id = image_id
         self.decal_type: Decal_Type = decal_type
         # Oftentimes, images are not properly centered. Use this to center images.
-        self.offset: Bopimo_Vector3 = Bopimo_Vector3.zero()
+        self.offset: Vector3 = Vector3.zero()
 
-    def calculate_size(self) -> Bopimo_Vector3:
+    def calculate_size(self) -> Vector3:
         """
         Take the decal's texture size, and calculate the mesh's size.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The mesh size needed for the texture to match its size.
         """
         if self.scale.z > 0.1:
             logging.warning(
                 "You set a Decal's Z scale to a non-zero value, which defeats the purpose of a Decal. "
-                "Consider using a Bopimo_Item_Mesh instead."
+                "Consider using a Item_Mesh instead."
             )
         match self.decal_type:
             case Decal_Type.SHIRT:
-                return Bopimo_Vector3(
+                return Vector3(
                     self.scale.x * self.SHIRT_WIDTH_RATIO,
                     self.scale.y * self.SHIRT_HEIGHT_RATIO,
                     self.scale.z,
                 )
             case _:
-                return Bopimo_Vector3(
+                return Vector3(
                     self.scale.x * self.PANTS_WIDTH_RATIO,
                     self.scale.y * self.PANTS_HEIGHT_RATIO,
                     self.scale.z,
                 )
 
-    def __get_rotation_matrix(self, rotation: Bopimo_Vector3) -> List[List[float]]:
+    def __get_rotation_matrix(self, rotation: Vector3) -> List[List[float]]:
         """
         <PRIVATE>
         Given euler angles represented by a Vector3, calculate the rotation
         matrix behind the rotation.
 
         Parameters:
-            rotation (Bopimo_Vector3):
+            rotation (Vector3):
                 A Vector3 of the euler angles to calculate a rotation matrix
 
         Returns:
@@ -2974,7 +2763,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
 
         return dot(dot(MATRIX_Y, MATRIX_X), MATRIX_Z)
 
-    def calculate_center_vector(self, scale: Bopimo_Vector3) -> Bopimo_Vector3:
+    def calculate_center_vector(self, scale: Vector3) -> Vector3:
         """
         Given an input scale (usually the fixed mesh size), calculate the
         vector that will be used to translate the texture into a mesh position.
@@ -2983,17 +2772,17 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         as decals don't need their position shifted.
 
         Parameters:
-            scale (Bopimo_Vector3):
+            scale (Vector3):
                 The input scale of the final mesh. This is needed as it needs
                 the mesh scale, not the texture scale.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The translation vector needed to convert texture position into
                 mesh position.
         """
         if self.decal_type == Decal_Type.SHIRT:
-            return Bopimo_Vector3.zero()
+            return Vector3.zero()
         direction = 1
         if self.decal_type == Decal_Type.PANTS_FRONT_RIGHT:
             direction *= -1
@@ -3003,7 +2792,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         rot_matrix = self.__get_rotation_matrix(self.rotation.to_radians())
         offset: List[float] = [x_adjust, y_adjust, 0]
         x, y, z = dot(rot_matrix, offset)
-        return Bopimo_Vector3(x, y, z)
+        return Vector3(x, y, z)
 
     def json(self) -> dict[str, Any]:
         """
@@ -3032,7 +2821,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
                 if self.decal_type == Decal_Type.PANTS_FRONT_RIGHT
                 else -self.PANTS_TILT_FIX
             )
-            fixed_rotation = self.rotation + Bopimo_Vector3(0, 0, tilt_fix)
+            fixed_rotation = self.rotation + Vector3(0, 0, tilt_fix)
             obj["block_rotation"] = fixed_rotation.json()
 
         return obj

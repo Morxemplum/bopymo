@@ -1,15 +1,9 @@
-# Written using Bopymo 0.2 and Python 3.12.8
+# Written using Bopymo 0.3 and Python 3.13.3
 from time import perf_counter
 from typing import List
-from bopimo_types import Bopimo_Color, Bopimo_Vector3
-from bopymo import (
-    Block_ID,
-    Bopimo_Block,
-    Bopimo_Decal,
-    Bopimo_Level,
-    Bopimo_Object,
-    Decal_Type,
-)
+from bopymo.bopimo_types import Color, Vector3
+from bopymo.classes import Bopimo_Block, Bopimo_Decal, Bopimo_Level, Bopimo_Object
+from bopymo.enumerators import Block_ID, Decal_Type
 
 # CHANGE THESE TO VALID CLOTHING IDS, AND SEE THEM CHANGE UPON GENERATION
 SHIRT_ID = 3915
@@ -25,8 +19,8 @@ def main():
     baseplate = Bopimo_Block(
         id=Block_ID.CYLINDER,
         name="Baseplate",
-        position=Bopimo_Vector3(0, -6, 0),
-        scale=Bopimo_Vector3(1024, 6, 1024),
+        position=Vector3(0, -6, 0),
+        scale=Vector3(1024, 6, 1024),
     )
     level.add_object(baseplate)
 
@@ -35,7 +29,7 @@ def main():
         name=f"Shirt Decal (ID: {SHIRT_ID})",
         decal_type=Decal_Type.SHIRT,
         image_id=SHIRT_ID,
-        position=Bopimo_Vector3(10, 5, 0),
+        position=Vector3(10, 5, 0),
         width=5,
         height=5,
     )
@@ -48,7 +42,7 @@ def main():
         name=f"Pants Decal (ID: {PANTS_RIGHT_ID})",
         decal_type=Decal_Type.PANTS_FRONT_RIGHT,
         image_id=PANTS_RIGHT_ID,
-        position=Bopimo_Vector3(0, 5, 0),
+        position=Vector3(0, 5, 0),
         width=5,
         height=5,
     )
@@ -59,10 +53,10 @@ def main():
     # Bopymo takes care of this for you and makes this easy.
     pants_kinematics = pants_decal.copy(
         name="Pants with Rotation Kinematics",
-        position=pants_decal.position - Bopimo_Vector3(10, 0, 0),
+        position=pants_decal.position - Vector3(10, 0, 0),
     )
     pants_kinematics.rotation_enabled = True
-    pants_kinematics.rotation_direction = Bopimo_Vector3.up(0, 0, 0)
+    pants_kinematics.rotation_direction = Vector3.up(0, 0, 0)
     pants_kinematics.rotation_speed = 20
     level.add_object(pants_kinematics)
 
@@ -74,7 +68,7 @@ def main():
 
 
 def rotation_stress_test() -> List[Bopimo_Object]:
-    start_offset = Bopimo_Vector3(40, 0, 0)
+    start_offset = Vector3(40, 0, 0)
     blocks: List[Bopimo_Object] = []
     directions: List[tuple[int, int, int]] = [
         (1, 0, 0),
@@ -91,9 +85,9 @@ def rotation_stress_test() -> List[Bopimo_Object]:
         for i in range(0, 30):
             inc = i * 12
             block = Bopimo_Block(
-                position=start_offset + Bopimo_Vector3(10 * i, 5, r * 10),
-                rotation=Bopimo_Vector3(x * inc, y * inc, z * inc),
-                scale=Bopimo_Vector3(5, 5, 2),
+                position=start_offset + Vector3(10 * i, 5, r * 10),
+                rotation=Vector3(x * inc, y * inc, z * inc),
+                scale=Vector3(5, 5, 2),
             )
             block.collision_enabled = False
             block.transparency_enabled = True
@@ -108,13 +102,13 @@ def rotation_stress_test() -> List[Bopimo_Object]:
             )
             blocks.append(block)
             blocks.append(decal)
-            look_vector = Bopimo_Vector3.forward(*block.rotation.to_radians())
+            look_vector = Vector3.forward(*block.rotation.to_radians())
             blocks.append(
                 Bopimo_Block(
                     position=block.position + look_vector * block.scale.z / 2,
                     rotation=block.rotation,
-                    scale=Bopimo_Vector3(0.1, 0.1, block.scale.z),
-                    color=Bopimo_Color(255, 0, 0),
+                    scale=Vector3(0.1, 0.1, block.scale.z),
+                    color=Color(255, 0, 0),
                 )
             )
         r += 1
@@ -132,7 +126,7 @@ def rotation_stress_test() -> List[Bopimo_Object]:
     ]
     for i, line in enumerate(text):
         text_block = Bopimo_Block(
-            name=line, position=start_offset + Bopimo_Vector3(0, -0.5 * i, 70)
+            name=line, position=start_offset + Vector3(0, -0.5 * i, 70)
         )
         text_block.nametag = True
         text_block.transparency_enabled = True
