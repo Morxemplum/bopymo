@@ -1,8 +1,8 @@
 # Bopymo
 
-Bo-py-mo is a Python wrapper for the bopjson level format for the 3D Platformer Bopimo! Written in Python!
+Bopymo is a translation layer for the bopjson level format for the 3D Platformer Bopimo that allows you to write Bopimo levels using Python! Written in Python!
 
-Not only does this wrapper allow you to write levels completely with Python code, it also allows you to tap into features you can not access with the in-game level editor.
+Not only does this tool allow you to write levels completely with Python code, it also allows you to tap into features you can not access with the in-game level editor.
 
 It's quite simple to use. For example, this code recreates the default baseplate that you start with in the level editor:
 
@@ -13,13 +13,6 @@ level.add_object(
     Bopimo_Block(id = Block_ID.CYLINDER, name = "Baseplate", position = Bopimo_Vector3(0, -6, 0), scale = Bopimo_Vector3(250, 6, 250))
 )
 ```
-
-### Why Python?
-
-There's a couple of reasons why I chose Python as the language for my wrapper:
-
-1. Python is a fairly simple and easy to understand language. It is many people's first programming language they learn, so by choosing Python, this will be more accessible to new comers
-2. It helps keep my Python skills in check. Never underestimate how quickly you can forget a programming language.
 
 ## Why should you use Bopymo?
 
