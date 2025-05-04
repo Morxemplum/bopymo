@@ -1,6 +1,8 @@
+# Written using Bopymo 0.3 and Python 3.13.3
 from typing import List
-from bopimo_types import Bopimo_Color, Bopimo_Int32Array, Bopimo_Vector3
-from bopymo import Block_ID, Bopimo_Block, Bopimo_Completion_Star, Bopimo_Level, Bopimo_Object, Bopimo_Spawn, Music, Sky
+from bopymo.bopimo_types import Bopimo_Color, Bopimo_Int32Array, Bopimo_Vector3
+from bopymo.classes import Bopimo_Block, Bopimo_Completion_Star, Bopimo_Level, Bopimo_Object, Bopimo_Spawn
+from bopymo.enumerators import Block_ID, Music, Sky
 import math
 
 

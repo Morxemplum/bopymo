@@ -1,7 +1,8 @@
-# Written using Bopymo 0.2 and Python 3.12.8
+# Written using Bopymo 0.3 and Python 3.13.3
 import math
-from bopimo_types import Bopimo_Vector3
-from bopymo import Block_ID, Bopimo_Block, Bopimo_Level, Game_Version, Bopimo_Rose
+from bopymo.bopimo_types import Bopimo_Vector3
+from bopymo.classes import Bopimo_Block, Bopimo_Level, Game_Version, Bopimo_Rose
+from bopymo.enumerators import Block_ID
 
 
 def main():

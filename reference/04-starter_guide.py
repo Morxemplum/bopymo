@@ -1,15 +1,10 @@
-# Written using Bopymo 0.2 and Python 3.12.8
+# Written using Bopymo 0.3 and Python 3.13.3
 # Type Hinting
 from typing import List
 
-# Types
-from bopimo_types import Bopimo_Color, Bopimo_Int32Array, Bopimo_Vector3
-
-# Enums
-from bopymo import Block_ID, Block_Pattern, Music, Sky
-
-# Classes
-from bopymo import (
+from bopymo.bopimo_types import Bopimo_Color, Bopimo_Int32Array, Bopimo_Vector3
+from bopymo.enumerators import Block_ID, Block_Pattern, Music, Sky
+from bopymo.classes import (
     Bopimo_Block,
     Bopimo_Cannon,
     Bopimo_Checkpoint,

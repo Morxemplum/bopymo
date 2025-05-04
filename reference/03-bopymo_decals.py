@@ -1,15 +1,9 @@
-# Written using Bopymo 0.2 and Python 3.12.8
+# Written using Bopymo 0.3 and Python 3.13.3
 from time import perf_counter
 from typing import List
-from bopimo_types import Bopimo_Color, Bopimo_Vector3
-from bopymo import (
-    Block_ID,
-    Bopimo_Block,
-    Bopimo_Decal,
-    Bopimo_Level,
-    Bopimo_Object,
-    Decal_Type,
-)
+from bopymo.bopimo_types import Bopimo_Color, Bopimo_Vector3
+from bopymo.classes import Bopimo_Block, Bopimo_Decal, Bopimo_Level, Bopimo_Object
+from bopymo.enumerators import Block_ID, Decal_Type
 
 # CHANGE THESE TO VALID CLOTHING IDS, AND SEE THEM CHANGE UPON GENERATION
 SHIRT_ID = 3915
