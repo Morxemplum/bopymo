@@ -107,26 +107,45 @@ class Block_Pattern(IntEnum):
     ID. By default, objects will use the checkerboard pattern (0).
 
     If you are aiming for no pattern, the easiest way to do so is by matching
-    the pattern color with the block color.
+    the pattern color with the block color or by setting pattern opacity to 0.
     """
-
     CHECKERBOARD = 0
     HEX = 1
     STRIPES = 2
     PLANKS = 3
     ZIG_ZAG = 4
-    CIRCLES = 5
-    DIAMONDS = 6
-    LARGE_DIAMONDS = 7
-    BRICKS = 8
-    LARGE_BRICKS = 9
-    WAVES = 10
-    CHEVRON = 11
-    GEOMETRIC = 12
-    HORIZONTAL_STRIPES = 13
-    VERTICAL_STRIPES = 14
-    X = 15
-    HEARTS = 17
+    BRICKS = 5
+    LARGE_BRICKS = 6
+    WAVES = 7
+    CHEVRON = 8
+    GEOMETRIC = 9
+    HORIZONTAL_STRIPES = 10
+    VERTICAL_STRIPES = 11
+    X = 12
+    PLATE = 13
+    RADIAL = 14
+    ARROW = 15
+    CIRCLES = 16
+    EVEN_CIRCLES = 17
+    MESSY_CIRCLES = 18
+    SQUARES = 19
+    EVEN_SQUARES = 20
+    MESSY_SQUARES = 21
+    TRIANGLES = 22
+    EVEN_TRIANGLES = 23
+    MESSY_TRIANGLES = 24
+    DIAMONDS = 25
+    ODD_DIAMONDS = 26
+    MESSY_DIAMONDS = 27
+    LARGE_DIAMONDS = 28
+    STARS = 29
+    EVEN_STARS = 30
+    MESSY_STARS = 31
+    HEARTS = 32
+    EVEN_HEARTS = 33
+    MESSY_HEARTS = 34
+    NOTE = 35
+    BEAMED_NOTE = 36
 
 
 class Sky(IntEnum):
