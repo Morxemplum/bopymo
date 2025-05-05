@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class Block_ID(IntEnum):
     """
     Bopimo differentiates their objects through a numeric ID. This enum makes
@@ -9,20 +10,7 @@ class Block_ID(IntEnum):
 
     NULL = -1
 
-    # PRIMITIVES
-    CUBE = 0
-    RAMP = 1
-    CYLINDER = 2
-    SPHERE = 5
-    CORNER_RAMP = 7
-    CONE = 8
-    PYRAMID = 12
-    PYRAMID_CORNER = 13
-    ROUNDED_RAMP = 15
-    HOLE = 20
-    ARCH = 21
-    HALF_ARCH = 22
-    LOOP = 32
+    PRIMITIVE = 0
 
     # DECORATION
     PINE_TREE = 1000
@@ -69,6 +57,48 @@ class Block_ID(IntEnum):
     GLOOMLIGHT_SPAWNER = 3100
     ITEM_GRANTER = 60000
     BLEEDING_EYE = 61366
+
+
+class Shape(IntEnum):
+    """
+    Since Bopimo 1.1.0, primitives all share the same Block ID and are uniquely
+    identified through a "shape" attribute. This enum outlines the different
+    shape values that are associated with primitives
+    """
+
+    CUBE = 0
+    RAMP = 1
+    CYLINDER = 2
+    HALF_CYLINDER = 3
+    QUARTER_CYLINDER = 4
+    SPHERE = 5
+    HALF_SPHERE = 6
+    CORNER_RAMP = 7
+    CONE = 8
+    TORUS = 9
+    THIN_TORUS = 10
+    TETRAHEDRON = 11
+    PYRAMID = 12
+    PYRAMID_CORNER = 13
+    OCTAHEDRON = 14
+    ROUNDED_RAMP = 15
+    INVERTED_ROUNDED_RAMP = 16
+    HOLLOW_CYLINDER = 17
+    HALF_HOLLOW_CYLINDER = 18
+    QUARTER_HOLLOW_CYLINDER = 19
+    HOLE = 20
+    ARCH = 21
+    HALF_ARCH = 22
+    PENTAGON = 23
+    HEXAGON = 24
+    HEPTAGON = 25
+    OCTAGON = 26
+    STAR = 27
+    HEART = 28
+    OPEN_CRESCENT = 29
+    CLOSING_CRESCENT = 30
+    EGG = 31
+    LOOP = 32
 
 
 class Block_Pattern(IntEnum):
@@ -165,6 +195,7 @@ class Music(IntEnum):
     TORTUGA = 16
     FRIVOLOUS_FLUTES = 17
     SIXTY_FOUR = 64
+
 
 class Decal_Type(IntEnum):
     """
