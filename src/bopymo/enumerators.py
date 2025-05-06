@@ -235,7 +235,6 @@ class Music(IntEnum):
     # OLD NAMES
     ISAIAH_NEW_SONG = 14
 
-
 class Decal_Type(IntEnum):
     """
     Decal uploaders will often upload their textures in three popular formats.
@@ -255,3 +254,16 @@ class Decal_Type(IntEnum):
     SHIRT = 0
     PANTS_FRONT_LEFT = 1  # Left Leg
     PANTS_FRONT_RIGHT = 2  # Right Leg
+
+class Grates_Style(IntEnum):
+    '''
+    Since Bopimo 1.1.0, Grates now have a variety of textures that can be
+    applied to give them a different look. These are exclusive to the Grates
+    block and can't be applied to other blocks.
+    '''
+    GRID = 0
+    X = 1
+    BOX = 2
+    ROUNDED_BOX = 3
+    TILES = 4
+    OVERLAPPING_TILES = 5

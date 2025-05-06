@@ -11,6 +11,7 @@ from bopymo.enumerators import (
     Block_ID,
     Block_Pattern,
     Decal_Type,
+    Grates_Style,
     Music,
     Shape,
     Sky,
@@ -1517,8 +1518,13 @@ class Bopimo_Grates(Bopimo_Object):
     can be grabbed from underneath by players; they can hang and move while
     gripped.
 
-    Grates use their own block pattern which cannot be replicated or modified,
-    making them not tilable.
+    Grates use their own block patterns that are unique and cannot be applied
+    to other blocks. In Bopimo, they are called "Styles".
+
+    Instance Attributes:
+        style (Grates_Style | int):
+            <ALIAS block_pattern>
+            Changes the texture of the grates to a different look.
     """
 
     def __init__(
@@ -1530,6 +1536,7 @@ class Bopimo_Grates(Bopimo_Object):
         scale: Vector3 = Vector3(4, 1, 4),
     ):
         super().__init__(Block_ID.GRATES, name, color, position, rotation, scale)
+        self.style: Grates_Style | int = Grates_Style.GRID
 
     def json(self) -> dict[str, Any]:
         """
@@ -1539,7 +1546,8 @@ class Bopimo_Grates(Bopimo_Object):
             dict[str, Any]:
                 A JSON object of the grates
         """
-        return super().json()
+        obj = super().json()
+        return obj | {"block_pattern": self.style}
 
 
 class Bopimo_Speed_Panel(Bopimo_Object):
@@ -2011,9 +2019,7 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
                 A JSON object of the pine tree
         """
         obj = super().json()
-        return obj | {
-            "snow": self.snow
-        }
+        return obj | {"snow": self.snow}
 
 
 class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
