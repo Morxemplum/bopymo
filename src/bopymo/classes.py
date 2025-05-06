@@ -1,5 +1,6 @@
 from bopymo.bopimo_types import (
     Color,
+    Vector2_I8,
     Vector3,
     Vector3Array,
     Float32Array,
@@ -980,6 +981,15 @@ class Bopimo_Block(Bopimo_Tilable_Object):
             indicate full opacity.
 
     Instance Attributes:
+        pattern_scale (float):
+            How big the magma pattern will be across the block.
+
+            In regular Bopimo, usually bigger values will lead to a smaller
+            pattern. However, Bopymo fixes this inverse relationship to make
+            it more intuitive. Scale is in units.
+        pattern_scroll (Vector2_I8):
+            Determines movement of the pattern on the block, and how fast it
+            should be going in an XY direction.
         shape (Shape | int):
             The shape of the primitive
         transparency_enabled (bool):
@@ -1001,6 +1011,9 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         collision_enabled (bool):
             Toggles collision with other objects. If disabled, objects will
             clip through them.
+        unshaded (bool):
+            If set to true, the block will not receive shadows. However, the
+            block will still cast shadows.
     """
 
     TRANSPARENCY_LOOKUP: List[int] = [0, 31, 63, 95, 127, 159, 191, 223, 255]
@@ -1015,11 +1028,14 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.PRIMITIVE, name, color, position, rotation, scale)
+        self.pattern_scale: float = 2
+        self.pattern_scroll: Vector2_I8 = Vector2_I8(0, 0) 
         self.shape: Shape | int = shape
         # Block exclusive attributes
         self._transparency_enabled: bool = False
-        self._opacity = 255
+        self._opacity: int = 255
         self.collision_enabled: bool = True
+        self.unshaded: bool = False
 
     @property
     def transparency_enabled(self) -> bool:
@@ -1073,9 +1089,12 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         """
         obj = super().json()
         return obj | {
-            "shape": self.shape,
-            "opacity": self._opacity,
             "collision_enabled": self.collision_enabled,
+            "opacity": self._opacity,
+            "pattern_scale": 2 / self.pattern_scale,
+            "pattern_scroll": self.pattern_scroll.json(),
+            "shape": self.shape,
+            "unshaded": self.unshaded
         }
 
 
