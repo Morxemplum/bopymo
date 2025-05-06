@@ -607,6 +607,16 @@ class Bopimo_Tilable_Object(Bopimo_Object):
         super().__init__(id, name, color, position, rotation, scale)
         self.pattern: Block_Pattern | int = Block_Pattern.CHECKERBOARD
         self.pattern_color: Color = Color(0, 0, 0)
+        self._pattern_opacity: int = 60
+
+    @property
+    def pattern_opacity(self) -> int:
+        return self._pattern_opacity
+
+    @pattern_opacity.setter
+    def pattern_opacity(self, value: int):
+        # Clamp pattern opacity to have values between 0 and 255
+        self._pattern_opacity = max(0, min(value, 255))
 
     def json(self) -> dict[str, Any]:
         """
@@ -620,6 +630,7 @@ class Bopimo_Tilable_Object(Bopimo_Object):
         return obj | {
             "block_pattern": self.pattern,
             "block_pattern_color": self.pattern_color.json(),
+            "pattern_opacity": self._pattern_opacity,
         }
 
 
