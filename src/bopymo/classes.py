@@ -7,7 +7,15 @@ from bopymo.bopimo_types import (
     Int64Array,
     ColorArray,
 )
-from bopymo.enumerators import Block_ID, Block_Pattern, Decal_Type, Music, Sky, Weather
+from bopymo.enumerators import (
+    Block_ID,
+    Block_Pattern,
+    Decal_Type,
+    Music,
+    Shape,
+    Sky,
+    Weather,
+)
 
 from copy import deepcopy
 import datetime
@@ -958,10 +966,9 @@ class Bopimo_Block(Bopimo_Tilable_Object):
     The class that embodies all Bopimo primitives. Whether it's cubes, ramps,
     cylinders, or anything similar, you'll declare them with this class.
 
-    This is the only class where a Block ID can be explicitly declared upon
-    instantiation, meant to declare IDs for primitives.
-
     Instance Attributes:
+        shape (Shape | int):
+            The shape of the primitive
         transparency_enabled (bool):
             If enabled, turns on transparency, allowing users to see partially
             or completely through the block
@@ -976,14 +983,15 @@ class Bopimo_Block(Bopimo_Tilable_Object):
 
     def __init__(
         self,
-        id: Block_ID | int = Block_ID.CUBE,
+        shape: Shape | int = Shape.CUBE,
         name: str = "Generated Block",
         color: Color = Color(34, 139, 34),
         position: Vector3 = Vector3.zero(),
         rotation: Vector3 = Vector3.zero(),
         scale: Vector3 = Vector3(2, 2, 2),
     ):
-        super().__init__(id, name, color, position, rotation, scale)
+        super().__init__(Block_ID.PRIMITIVE, name, color, position, rotation, scale)
+        self.shape: Shape | int = shape
         # Block exclusive attributes
         self.transparency_enabled: bool = False
         self.transparency: int = 7
@@ -999,6 +1007,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         """
         obj = super().json()
         return obj | {
+            "shape": self.shape,
             "transparency": self.transparency,
             "collision_enabled": self.collision_enabled,
             "transparency_enabled": self.transparency_enabled,
