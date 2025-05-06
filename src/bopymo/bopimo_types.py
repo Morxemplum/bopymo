@@ -7,6 +7,7 @@ from typing import Any, Iterator, List, Self
 
 ## TYPES
 
+
 class Color:
     """
     A bopimo type that is meant to represent 8-bit RGB color. Responsible for
@@ -90,9 +91,7 @@ class Color:
     ## CLASS METHODS
 
     @classmethod
-    def from_hsv(
-        cls, hue: int = 0, saturation: float = 1, value: float = 1
-    ) -> Self:
+    def from_hsv(cls, hue: int = 0, saturation: float = 1, value: float = 1) -> Self:
         """
         <CONSTRUCTOR>
         Given HSV values, convert them to RGB and create a color object.
@@ -112,9 +111,7 @@ class Color:
                 A newly created color object, converted from HSV
         """
         r, g, b = cls.__from_hs(hue, saturation)
-        c = cls(
-            int(r * value * 255), int(g * value * 255), int(b * value * 255)
-        )
+        c = cls(int(r * value * 255), int(g * value * 255), int(b * value * 255))
         c.__clamp()
         return c
 
@@ -629,9 +626,7 @@ class Vector3Array:
 
     ### OPERATOR METHODS
 
-    def __add__(
-        self, other: "Vector3Array" | List[Vector3]
-    ) -> "Vector3Array":
+    def __add__(self, other: "Vector3Array" | List[Vector3]) -> "Vector3Array":
         if isinstance(other, Vector3Array):
             return Vector3Array(self._list + other._list)
         else:
@@ -810,9 +805,7 @@ class ColorArray:
 
     ### OPERATOR METHODS
 
-    def __add__(
-        self, other: "ColorArray" | List[Color]
-    ) -> "ColorArray":
+    def __add__(self, other: "ColorArray" | List[Color]) -> "ColorArray":
         if isinstance(other, ColorArray):
             return ColorArray(self._list + other._list)
         else:
@@ -1294,9 +1287,7 @@ class Float32Array:
 
     def __add__(
         self,
-        other: (
-            "Float32Array" | List[float] | List[np.float32] | NDArray[np.float32]
-        ),
+        other: "Float32Array" | List[float] | List[np.float32] | NDArray[np.float32],
     ) -> Self:
         if isinstance(other, Float32Array):
             return self.__class__(self._list + other._list)
@@ -1342,6 +1333,7 @@ class Float32Array:
         if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
+
 
 ## ALIASES FOR REVERSE COMPATIBILITY
 

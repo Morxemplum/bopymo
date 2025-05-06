@@ -1,4 +1,12 @@
-from bopymo.bopimo_types import Color, Vector3, Vector3Array, Float32Array, Int32Array, Int64Array, ColorArray
+from bopymo.bopimo_types import (
+    Color,
+    Vector3,
+    Vector3Array,
+    Float32Array,
+    Int32Array,
+    Int64Array,
+    ColorArray,
+)
 from bopymo.enumerators import Block_ID, Block_Pattern, Decal_Type, Music, Sky, Weather
 
 from copy import deepcopy
@@ -103,6 +111,7 @@ class Game_Version:
 GAME_VERSION = Game_Version(1, 0, 15)
 
 ### BOPIMO CLASSES
+
 
 class Bopimo_Object:
     """
@@ -420,9 +429,7 @@ class Bopimo_Object:
         """
         return self._position_points.get_vector(index)
 
-    def set_position_point(
-        self, index: int, position: Vector3, time: float = 0.0
-    ):
+    def set_position_point(self, index: int, position: Vector3, time: float = 0.0):
         """
         Sets a position point in the object's position points, along with an
         associated travel time, at the given index. If a position travel speed
@@ -459,9 +466,7 @@ class Bopimo_Object:
                     index + 1, distance / self.position_travel_speed
                 )
 
-    def remove_position_point(
-        self, index: int
-    ) -> Vector3 | tuple[Vector3, float]:
+    def remove_position_point(self, index: int) -> Vector3 | tuple[Vector3, float]:
         """
         Given an index, removes the position point and associated travel time
         of an object's position points.
@@ -2620,6 +2625,7 @@ class Bopimo_Hyacinth(Bopimo_Tilable_Object):
 #          modified or removed at any time in the future, should the methods
 #          behind them break or an official implementation succeed these
 #          workarounds.
+
 
 # Decals are made using transparent clothing items with images on specific faces.
 class Bopimo_Decal(Bopimo_Item_Mesh):
