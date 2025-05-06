@@ -2005,35 +2005,6 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
         return super().json()
 
 
-class Bopimo_Pine_Tree_Snow(Bopimo_Pine_Tree):
-    """
-    <INHERITED Bopimo_Pine_Tree>
-
-    A snowy variant of the pine tree. Usually used in cold or winter levels.
-    """
-
-    def __init__(
-        self,
-        name: str = "Generated Pine Tree Snow",
-        color: Color = Color(0, 88, 36),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(5, 10, 5),
-    ):
-        super().__init__(name, color, position, rotation, scale)
-        self.id = Block_ID.PINE_TREE_SNOW
-
-    def json(self) -> dict[str, Any]:
-        """
-        Convert the pine tree to JSON, as part of the exporting process.
-
-        Returns:
-            dict[str, Any]:
-                A JSON object of the pine tree
-        """
-        return super().json()
-
-
 class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
     """
     <INHERITED Bopimo_Tilable_Object>
