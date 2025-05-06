@@ -604,6 +604,8 @@ class Bopimo_Tilable_Object(Bopimo_Object):
             The tilable pattern that the object uses.
         pattern_color (Color):
             The color of the tilable pattern
+        pattern_opacity (int):
+            The opacity of the tilable pattern
     """
 
     def __init__(
@@ -1982,6 +1984,11 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
     <INHERITED Bopimo_Tilable_Object>
 
     A pine tree with leaves that resemble a cone-like structure.
+
+    Instance Attributes:
+        snow (bool):
+            If set to true, this will cover the tree in snow. This is the
+            equivalent of the Snow Pine Tree in 1.0.x versions of Bopimo.
     """
 
     def __init__(
@@ -1993,6 +2000,7 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
         scale: Vector3 = Vector3(5, 10, 5),
     ):
         super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
+        self.snow: bool = False
 
     def json(self) -> dict[str, Any]:
         """
@@ -2002,7 +2010,10 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
             dict[str, Any]:
                 A JSON object of the pine tree
         """
-        return super().json()
+        obj = super().json()
+        return obj | {
+            "snow": self.snow
+        }
 
 
 class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
