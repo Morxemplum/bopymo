@@ -1262,12 +1262,20 @@ class Bopimo_Magma(Bopimo_Object):
     custom block pattern that can not be replicated or modified.
 
     Instance Attributes:
-        pattern_color (Color):
-            The color of the magma pattern
         damage_amount (float):
             The amount of damage that will be dealt to a player upon contact.
             Setting this value to 100 or more will make the magma immediately
             kill the player upon contact.
+        pattern_color (Color):
+            The color of the magma pattern
+        pattern_scale (float):
+            How big the magma pattern will be across the block.
+
+            In regular Bopimo, usually bigger values will lead to a smaller
+            pattern. However, Bopymo fixes this inverse relationship to make
+            it more intuitive. Scale is in units.
+        shape (Shape | int):
+            The shape of the lava block
     """
 
     def __init__(
@@ -1283,6 +1291,8 @@ class Bopimo_Magma(Bopimo_Object):
         super().__init__(Block_ID.MAGMA, name, color, position, rotation, scale)
         self.pattern_color: Color = pattern_color
         self._damage_amount: float = damage
+        self.pattern_scale: float = 4
+        self.shape: Shape | int = Shape.CUBE
         self.__clamp()
 
     @property
@@ -1314,6 +1324,8 @@ class Bopimo_Magma(Bopimo_Object):
         return obj | {
             "block_pattern_color": self.pattern_color.json(),
             "damage_amount": self.damage_amount,
+            "pattern_scale": 2 / self.pattern_scale,
+            "shape": self.shape,
         }
 
 
