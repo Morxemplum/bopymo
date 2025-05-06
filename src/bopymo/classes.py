@@ -1249,38 +1249,38 @@ class Bopimo_Spring(Bopimo_Object):
         }
 
 
-class Bopimo_Lava(Bopimo_Object):
+class Bopimo_Magma(Bopimo_Object):
     """
     <INHERITED Bopimo_Object>
 
-    One of the primary avoidances of a player. Upon touching lava, players will
-    take damage and will repeatedly take damage until either the player ceases
-    contact, or the player dies.
+    One of the primary avoidances of a player. Upon touching magma, players
+    will take damage and will repeatedly take damage until either the player
+    ceases contact, or the player dies.
 
-    While it is inherited from Bopimo_Object, Lava does have a pattern_color
-    attribute which is only seen in a Tilable_Object. However, lava has a
+    While it is inherited from Bopimo_Object, magma does have a pattern_color
+    attribute which is only seen in a Tilable_Object. However, magma has a
     custom block pattern that can not be replicated or modified.
 
     Instance Attributes:
         pattern_color (Color):
-            The color of the lava pattern
+            The color of the magma pattern
         damage_amount (float):
             The amount of damage that will be dealt to a player upon contact.
-            Setting this value to 100 or more will make the lava immediately
+            Setting this value to 100 or more will make the magma immediately
             kill the player upon contact.
     """
 
     def __init__(
         self,
-        name: str = "Generated Lava",
-        color: Color = Color(183, 14, 0),
-        pattern_color: Color = Color(255, 162, 73),
+        name: str = "Generated Magma",
+        color: Color = Color(96, 20, 0),
+        pattern_color: Color = Color(246, 84, 20),
         position: Vector3 = Vector3.zero(),
         rotation: Vector3 = Vector3.zero(),
         scale: Vector3 = Vector3(2, 2, 2),
         damage: float = 25,
     ):
-        super().__init__(Block_ID.LAVA, name, color, position, rotation, scale)
+        super().__init__(Block_ID.MAGMA, name, color, position, rotation, scale)
         self.pattern_color: Color = pattern_color
         self._damage_amount: float = damage
         self.__clamp()
@@ -1304,17 +1304,20 @@ class Bopimo_Lava(Bopimo_Object):
 
     def json(self) -> dict[str, Any]:
         """
-        Convert the lava to JSON, as part of the exporting process.
+        Convert the magma to JSON, as part of the exporting process.
 
         Returns:
             dict[str, Any]:
-                A JSON object of the lava
+                A JSON object of the magma
         """
         obj = super().json()
         return obj | {
             "block_pattern_color": self.pattern_color.json(),
             "damage_amount": self.damage_amount,
         }
+
+
+Bopimo_Lava = Bopimo_Magma  # Reverse compatibility alias
 
 
 class Bopimo_Water(Bopimo_Object):
