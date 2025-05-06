@@ -217,11 +217,15 @@ class Music(IntEnum):
     WINTER_FOREST = 11
     ASSAULT_ON_THE_EAR_DRUMS = 12
     BLOOD_MOON = 13
-    ISAIAH_NEW_SONG = 14
+    ORGAN = 14
     BAMBA = 15
     TORTUGA = 16
     FRIVOLOUS_FLUTES = 17
+    PEACEFUL = 18
     SIXTY_FOUR = 64
+
+    # OLD NAMES
+    ISAIAH_NEW_SONG = 14
 
 
 class Decal_Type(IntEnum):
