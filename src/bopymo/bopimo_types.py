@@ -107,7 +107,7 @@ class Color:
                 0 - 1
 
         Returns:
-            Bopimo_Color:
+            Color:
                 A newly created color object, converted from HSV
         """
         r, g, b = cls.__from_hs(hue, saturation)
@@ -123,7 +123,7 @@ class Color:
         makers don't want to import the copy module.
 
         Returns:
-            Bopimo_Color:
+            Color:
                 A new color object with the same attributes as the current.
         """
         return copy(self)
@@ -382,7 +382,7 @@ class Vector3:
         makers don't want to import the copy module.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 A new vector object with the same attributes as the current.
         """
         return copy(self)
@@ -393,7 +393,7 @@ class Vector3:
         equivalent vector in degrees.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The vector converted to degrees.
         """
         return self.__class__(
@@ -406,7 +406,7 @@ class Vector3:
         equivalent vector in radians.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The vector converted to radians.
         """
         return self.__class__(
@@ -496,7 +496,7 @@ class Vector3Array:
             The name of the type as detailed in the bopjson format
 
     Instance Attributes:
-        list (List[Bopimo_Vector3]):
+        list (List[Vector3]):
             The underlying data structure that stores the vectors
     """
 
@@ -514,7 +514,7 @@ class Vector3Array:
         Adds a vector into the array
 
         Parameters:
-            vector (Bopimo_Vector3):
+            vector (Vector3):
                 The Bopimo vector to be added into the array
         """
         self._list.append(vector)
@@ -538,7 +538,7 @@ class Vector3Array:
                 this to False.
 
         Returns:
-            Bopimo_Vector3Array:
+            Vector3Array:
                 A newly created array containing identical elements
         """
         if deep:
@@ -554,7 +554,7 @@ class Vector3Array:
                 The position in the list to grab a vector from.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The vector at the given index
         """
         return self._list[index]
@@ -566,7 +566,7 @@ class Vector3Array:
         Parameters:
             index (int):
                 The position in the list to set a vector in
-            vector (Bopimo_Vector3):
+            vector (Vector3):
                 The new vector to replace in the array
         """
         self._list[index] = vector
@@ -590,7 +590,7 @@ class Vector3Array:
                 The position in the list to remove a vector from
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The removed vector from the list
         """
         return self._list.pop(index)
@@ -676,7 +676,7 @@ class ColorArray:
             The name of the type as detailed in the bopjson format
 
     Instance Attributes:
-        list (List[Bopimo_Color]):
+        list (List[Color]):
             The underlying data structure that stores the color
     """
 
@@ -693,7 +693,7 @@ class ColorArray:
         Adds a color into the array
 
         Parameters:
-            color (Bopimo_Color):
+            color (Color):
                 The Bopimo color to be added into the array
         """
         self._list.append(color)
@@ -717,7 +717,7 @@ class ColorArray:
                 this to False.
 
         Returns:
-            Bopimo_ColorArray:
+            ColorArray:
                 A newly created array containing identical elements
         """
         if deep:
@@ -733,7 +733,7 @@ class ColorArray:
                 The position in the list to grab a color from.
 
         Returns:
-            Bopimo_Color:
+            Color:
                 The color object at the given index
         """
         return self._list[index]
@@ -745,7 +745,7 @@ class ColorArray:
         Parameters:
             index (int):
                 The position in the list to set a color in
-            color (Bopimo_Vector3):
+            color (Vector3):
                 The new color to replace in the array
         """
         self._list[index] = color
@@ -769,7 +769,7 @@ class ColorArray:
                 The position in the list to remove a color from
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The removed color from the list
         """
         return self._list.pop(index)
@@ -905,7 +905,7 @@ class IntArray:
                 this to False.
 
         Returns:
-            Bopimo_IntArray:
+            IntArray:
                 A newly created array containing identical elements
         """
         if deep:
@@ -1195,7 +1195,7 @@ class Float32Array:
                 this to False.
 
         Returns:
-            Bopimo_Float32Array:
+            Float32Array:
                 A newly created array containing identical elements
         """
         if deep:
