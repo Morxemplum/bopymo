@@ -597,7 +597,7 @@ class Bopimo_Tilable_Object(Bopimo_Object):
 
     def __init__(
         self,
-        id: Block_ID | int = Block_ID.CUBE,
+        id: Block_ID | int = Block_ID.NULL,
         name: str = "Tilable Object",
         color: Color = Color(0, 0, 0),
         position: Vector3 = Vector3.zero(),
