@@ -3,7 +3,7 @@ from copy import copy, deepcopy
 from enum import IntEnum
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Iterator, List, Self
+from typing import Any, Iterator, List, Mapping, Self
 
 ## TYPES
 
@@ -176,6 +176,193 @@ class Color:
             raise TypeError()
         return not (self == other)
 
+
+class Vector2:
+    """
+    A Bopimo type that represents a specialized two element array, representing
+    2D coordinates for the X and Y axes.
+
+    Class Attributes:
+        bopjson_type_name (str):
+            The name of the type as detailed in the bopjson format
+
+    Instance Attributes:
+        x (float):
+            The value of the coordinate in the X axis
+        y (float):
+            The value of the coordinate in the Y axis
+    """
+
+    bopjson_type_name: str = "Vector2F32"
+
+    def __init__(self, x: float, y: float):
+        self.x: float = x
+        self.y: float = y
+
+    ## CLASS METHODS
+
+    @classmethod
+    def zero(cls) -> Self:
+        """
+        <CONSTRUCTOR>
+        A shorthand method of creating a zero vector
+
+        Returns:
+            Self:
+                A newly created zero vector
+        """
+        return cls(0, 0)
+
+    @classmethod
+    def one(cls) -> Self:
+        """
+        <CONSTRUCTOR>
+        A shorthand method of creating a one vector
+
+        Returns:
+            Self:
+                A newly created one vector
+        """
+        return cls(1, 1)
+
+    ## INSTANCE METHODS
+
+    def copy(self) -> Self:
+        """
+        Creates an identical copy of itself. A dedicated method in case level
+        makers don't want to import the copy module.
+
+        Returns:
+            Vector2:
+                A new vector object with the same attributes as the current.
+        """
+        return copy(self)
+
+    def to_obj(self) -> Mapping[str, float]:
+        """
+        Converts the vector into a more literal dictionary, compatible with
+        normal JSON.
+
+        Returns:
+            dict[str, float]:
+                A dictionary equivalent of the vector object.
+        """
+        return {"x": self.x, "y": self.y}
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the vector to bopjson, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A bopjson vector object
+        """
+        return {"type": self.bopjson_type_name, "value": self.to_obj()}
+
+    ## DUNDER METHODS
+
+    def __copy__(self) -> Self:
+        return self.__class__(self.x, self.y)
+
+    def __iter__(self) -> Iterator[float]:
+        return iter((self.x, self.y))
+
+    def __str__(self) -> str:
+        return f"{self.bopjson_type_name}({self.x}, {self.y})"
+
+    ### OPERATOR METHODS
+
+    def __add__(self, other: Self) -> Self:
+        return self.__class__(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other: Self) -> Self:
+        return self.__class__(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other: int | float) -> Self:
+        return self.__class__(self.x * other, self.y * other)
+
+    def __div__(self, other: int | float) -> Self:
+        if other == 0:
+            raise ZeroDivisionError()
+        return self.__class__(self.x / other, self.y / other)
+
+    def __truediv__(self, other: int | float) -> Self:
+        return self.__div__(other)
+
+    def __divmod__(self, other: int | float) -> Self:
+        if other == 0:
+            raise ZeroDivisionError()
+        return self.__class__(self.x % other, self.y % other)
+
+    def __neg__(self) -> Self:
+        return self.__class__(-self.x, -self.y)
+
+    ### EQUALITY METHODS
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            raise TypeError()
+        return (self.x == other.x) and (self.y == other.y)
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            raise TypeError()
+        return not (self == other)
+
+
+class Vector2_I8(Vector2):
+    """ 
+    A subtype of the Vector2 class where the values are 8 bit signed integers
+    instead of floating point numbers.
+
+    Internally, the values are still stored as floats, because Python does not
+    let me switch the type when overriding an attribute, and since I don't want
+    to duplicate code, this is the easier way to do it.
+    """
+    bopjson_type_name: str = "Vector2I8"
+
+    def __init__(self, x: int, y: int):
+        self.x: float = x
+        self.y: float = y
+    
+    def to_obj(self) -> Mapping[str, int]:
+        """
+        Converts the vector into a more literal dictionary, compatible with
+        normal JSON.
+
+        Returns:
+            dict[str, int]:
+                A dictionary equivalent of the vector object.
+        """
+        lower_bound = -(2**7)
+        upper_bound = (2**7) - 1
+        if self.x < lower_bound or self.x > upper_bound:
+            raise OverflowError(
+                f"You have ran into an overflow/underflow in a signed 8 bit integer Vector 2 with the X value"
+            )
+        if self.y < lower_bound or self.y > upper_bound:
+            raise OverflowError(
+                f"You have ran into an overflow/underflow in a signed 8 bit integer Vector 2 with the Y value"
+            )
+        return {"x": int(self.x), "y": int(self.y)}
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the vector to bopjson, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A bopjson vector object
+        """
+        return {"type": self.bopjson_type_name, "value": self.to_obj()}
+    
+    ## DUNDER METHODS
+
+    def __iter__(self) -> Iterator[int]:
+        return iter((int(self.x), int(self.y)))
+
+    def __str__(self) -> str:
+        return f"{self.bopjson_type_name}({int(self.x)}, {int(self.y)})"
 
 class Vector3:
     """
