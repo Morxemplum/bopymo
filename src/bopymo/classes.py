@@ -38,7 +38,6 @@ DEPRECATION_WARNINGS: dict[str, bool] = {
     # TODO: The following below will be deprecations for Bopymo 0.3. Make sure they actually warn when triggered
     "Using Music.ISAIAH_NEW_SONG": False,
     "Using transparency_enabled": False,
-    "Using transparency instead of opacity": False,
 }
 
 
@@ -970,20 +969,38 @@ class Bopimo_Block(Bopimo_Tilable_Object):
     The class that embodies all Bopimo primitives. Whether it's cubes, ramps,
     cylinders, or anything similar, you'll declare them with this class.
 
+    Class Attributes:
+        TRANSPARENCY_LOOKUP (List[int]):
+            A transparency lookup table that has equivalent opacity values for
+            the old "transparency" attribute before Bopimo 1.1.0. While the
+            original implementation went from 0-7, an 8 value has been added to
+            indicate full opacity.
+
     Instance Attributes:
         shape (Shape | int):
             The shape of the primitive
         transparency_enabled (bool):
+            <DEPRECATED>
             If enabled, turns on transparency, allowing users to see partially
             or completely through the block
         transparency (int):
-            The level of transparency of the block. Lower values indicate
-            higher transparency, with 0 being the lowest value (full
-            transparency)
+            <REVERSE_COMPAT>
+            The level of transparency of the block from 0-8. Lower values
+            indicate higher transparency, with 0 being full transparency.
+
+            This attribute has been removed since Bopimo 1.1.0, and it is
+            recommended to use \"opacity\" instead, as it offers a greater
+            degree of control.
+        opacity (int):
+            The opacity of the block from 0-255. A value of 255 means the
+            block is fully opaque, while a value of 0 indicates full
+            transparency.
         collision_enabled (bool):
             Toggles collision with other objects. If disabled, objects will
             clip through them.
     """
+
+    TRANSPARENCY_LOOKUP: List[int] = [0, 31, 63, 95, 127, 159, 191, 223, 255]
 
     def __init__(
         self,
@@ -997,9 +1014,51 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         super().__init__(Block_ID.PRIMITIVE, name, color, position, rotation, scale)
         self.shape: Shape | int = shape
         # Block exclusive attributes
-        self.transparency_enabled: bool = False
-        self.transparency: int = 7
+        self._transparency_enabled: bool = False
+        self._opacity = 255
         self.collision_enabled: bool = True
+
+    @property
+    def transparency_enabled(self) -> bool:
+        if not DEPRECATION_WARNINGS["Using transparency_enabled"]:
+            logging.warning(
+                'The property "transparency_enabled" has been removed since Bopimo 1.1.0, so using this property is deprecated. '
+                "This attribute will be removed in a future version of Bopymo. Remove any lines getting this property and get "
+                '"opacity" directly.'
+            )
+            DEPRECATION_WARNINGS["Using transparency_enabled"] = True
+        return self._transparency_enabled
+
+    @transparency_enabled.setter
+    def transparency_enabled(self, value: bool):
+        if not DEPRECATION_WARNINGS["Using transparency_enabled"]:
+            logging.warning(
+                'The property "transparency_enabled" has been removed since Bopimo 1.1.0, so using this property is deprecated. '
+                "This attribute will be removed in a future version of Bopymo. Remove any lines setting this property and set "
+                '"opacity" directly.'
+            )
+            DEPRECATION_WARNINGS["Using transparency_enabled"] = True
+        self._transparency_enabled = value
+
+    # REVERSE COMPATIBILITY FOR TRANSPARENCY
+    @property
+    def transparency(self) -> int:
+        return self.TRANSPARENCY_LOOKUP.index(self._opacity)
+
+    @transparency.setter
+    def transparency(self, value: int):
+        if value < 0 or value > 8:
+            raise ValueError("Transparency value must be a value between 0-8")
+        self._opacity = self.TRANSPARENCY_LOOKUP[value]
+
+    @property
+    def opacity(self) -> int:
+        return self._opacity
+
+    @opacity.setter
+    def opacity(self, value: int):
+        # Clamp opacity to have values between 0 and 255
+        self._opacity = max(0, min(value, 255))
 
     def json(self) -> dict[str, Any]:
         """
@@ -1012,9 +1071,8 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         obj = super().json()
         return obj | {
             "shape": self.shape,
-            "transparency": self.transparency,
+            "opacity": self._opacity,
             "collision_enabled": self.collision_enabled,
-            "transparency_enabled": self.transparency_enabled,
         }
 
 
