@@ -14,7 +14,6 @@ class Block_ID(IntEnum):
 
     # DECORATION
     PINE_TREE = 1000
-    PINE_TREE_SNOW = 1001
     LOGO = 1002
     LOGO_ICON = 1003
     PALM_TREE = 1004
@@ -24,6 +23,9 @@ class Block_ID(IntEnum):
     TORCH = 1008
     STRING_LIGHTS = 1009
     ROSE = 1014
+    TREE = 1015
+    CORNSTALK = 1016
+
     MESH = 1100
     CLOUD = 1101
     STATUE = 1102
@@ -37,7 +39,7 @@ class Block_ID(IntEnum):
     LADDER = 2005
     ICE = 2006
     COMPLETION_STAR = 2007
-    LAVA = 2008
+    MAGMA = 2008
     BOOST_PANEL = 2009
     SPEED_PANEL = 2010
     GRATES = 2011
@@ -46,7 +48,10 @@ class Block_ID(IntEnum):
     BREAKABLE_BLOCK = 2014
     CANNON = 2015
     PORTAL = 2016
+    DIALOGUE_SIGN = 2019
     WEB = 2025
+    NOTE_BLOCK = 2026
+    LEVEL_PAINTING = 2027
 
     # NPC
     BOPI_SPAWNER = 3000
@@ -57,6 +62,9 @@ class Block_ID(IntEnum):
     GLOOMLIGHT_SPAWNER = 3100
     ITEM_GRANTER = 60000
     BLEEDING_EYE = 61366
+
+    # DEPRECATED
+    LAVA = 2008  # Old alias for Magma
 
 
 class Shape(IntEnum):
