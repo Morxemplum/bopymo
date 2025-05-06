@@ -109,6 +109,7 @@ class Block_Pattern(IntEnum):
     If you are aiming for no pattern, the easiest way to do so is by matching
     the pattern color with the block color or by setting pattern opacity to 0.
     """
+
     CHECKERBOARD = 0
     HEX = 1
     STRIPES = 2
@@ -172,6 +173,13 @@ class Sky(IntEnum):
     STARLIT_CITY = 14
     VOID = 15
     DESERT = 16
+    FAR_GONE = 17
+    SUNKEN = 18
+    EGGSTAR = 19
+    BLOOM = 20
+    DEPENDENCE = 21
+    RAPTURE = 22
+    WASTES = 23
 
 
 class Weather(IntEnum):
