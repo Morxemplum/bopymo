@@ -35,6 +35,10 @@ logging.basicConfig(level=LOG_LEVEL, format=LOG_FMT)
 DEPRECATION_WARNINGS: dict[str, bool] = {
     "Getting position_points directly": False,
     "Setting position_points directly": False,
+    # TODO: The following below will be deprecations for Bopymo 0.3. Make sure they actually warn when triggered
+    "Using Music.ISAIAH_NEW_SONG": False,
+    "Using transparency_enabled": False,
+    "Using transparency instead of opacity": False,
 }
 
 
