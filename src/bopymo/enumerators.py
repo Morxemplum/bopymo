@@ -204,6 +204,42 @@ class Weather(IntEnum):
     AUTUMN = 4
 
 
+class Sound(IntEnum):
+    """
+    Typically reserved for Note Blocks, this enum focuses on all of the sound
+    IDs that are contained within Bopimo. This includes all the instruments,
+    and sounds that are not readily accessible with the Bopimo level editor.
+
+    Keep in mind that when using a Sound value outside of the intended
+    instruments, the pitch may not be aligned and needs to be adjusted.
+    In addition, sounds that loop will continue looping after the sound
+    is emitted.
+    """
+
+    SPRING = 0
+    TOKEN = 2
+    SPLASH = 3
+    DISAPPEAR = 4
+    CANNON_ENTER = 5
+    FIREWORKS = 7  # Used in the New Year's celebration
+    PORTAL_ENTER = 9
+    PORTAL_EXIT = 10
+    STAR_COLLECT = 15
+
+    # LOOPING SOUNDS
+
+    COMPLETION_STAR = 1
+    NOTE_LOOP = 6
+    PORTAL_AMBIENCE = 8
+
+    # INSTRUMENTS
+
+    PIANO = 11
+    CHORD = 12
+    SYNTH = 13
+    VIOLA = 14
+
+
 class Music(IntEnum):
     """
     Bopimo has its own unique soundtrack that is produced by the developers.
@@ -235,6 +271,7 @@ class Music(IntEnum):
     # OLD NAMES
     ISAIAH_NEW_SONG = 14
 
+
 class Decal_Type(IntEnum):
     """
     Decal uploaders will often upload their textures in three popular formats.
@@ -255,12 +292,14 @@ class Decal_Type(IntEnum):
     PANTS_FRONT_LEFT = 1  # Left Leg
     PANTS_FRONT_RIGHT = 2  # Right Leg
 
+
 class Grates_Style(IntEnum):
-    '''
+    """
     Since Bopimo 1.1.0, Grates now have a variety of textures that can be
     applied to give them a different look. These are exclusive to the Grates
     block and can't be applied to other blocks.
-    '''
+    """
+
     GRID = 0
     X = 1
     BOX = 2
