@@ -2013,6 +2013,16 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
     <INHERITED Bopimo_Tilable_Object>
 
     A simple flower with petals, reminiscent of a daisy or dandelion.
+
+    Instance attributes:
+        bud_color (Color):
+            <ALIAS color>
+            The color of the rose petals
+        capitulum_color (Color):
+            The color of the central part of the flower
+        stem_color (Color):
+            <ALIAS pattern_color>
+            The color of the flower's stem
     """
 
     def __init__(
@@ -2024,6 +2034,24 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
         scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.FLOWER, name, color, position, rotation, scale)
+        self.pattern_color = Color(0, 167, 0)
+        self.capitulum_color: Color = Color(255, 165, 0)
+
+    @property
+    def bud_color(self) -> Color:
+        return self.color
+
+    @bud_color.setter
+    def bud_color(self, value: Color):
+        self.color = value
+
+    @property
+    def stem_color(self) -> Color:
+        return self.pattern_color
+
+    @stem_color.setter
+    def stem_color(self, value: Color):
+        self.pattern_color = value
 
     def json(self) -> dict[str, Any]:
         """
@@ -2033,7 +2061,8 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
             dict[str, Any]:
                 A JSON object of the flower
         """
-        return super().json()
+        obj = super().json()
+        return obj | {"capitulum_color": self.capitulum_color}
 
 
 class Bopimo_Fence(Bopimo_Tilable_Object):
