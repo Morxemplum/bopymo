@@ -2652,6 +2652,87 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
         }
 
 
+class Bopimo_Sign(Bopimo_Tilable_Object):
+    """
+    <INHERITED Bopimo_Tilable_Object>
+
+    A sign that, when a player interacts with (using Punch) will display text
+    on the screen that the player can read.
+
+    Incredibly useful for level makers to convey information to the player, or
+    useful to incorporate dialogue from NPCs. Remember that the name attribute
+    will be displayed to the user upon interaction.
+
+    Instance Attributes
+        text (str):
+            The contents that will be contained inside the sign and read out to
+            the user upon interaction.
+        pole_color (Color):
+            The color of the sign's pole
+        pole_pattern (Block_Pattern | int):
+            The pattern of the sign's pole
+        pole_pattern_color (Color):
+            The color of the sign pole's pattern
+        pole_pattern_opacity (int):
+            The opacity of the sign's pole
+    """
+
+    MIN_VERSION = Game_Version(1, 1, 0)
+
+    def __init__(
+        self,
+        name: str = "Generated Sign",
+        text: str = "Hello World!",
+        color: Color = Color(155, 60, 17),
+        pole_color: Color = Color(83, 41, 11),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(3, 3, 1),
+    ):
+        super().__init__(Block_ID.DIALOGUE_SIGN, name, color, position, rotation, scale)
+        self._text: str = text
+        self.pattern = Block_Pattern.PLANKS
+
+        self.pole_color: Color = pole_color
+        self.pole_pattern: Block_Pattern | int = Block_Pattern.PLANKS
+        self.pole_pattern_color: Color = Color(0, 0, 0)
+        self._pole_pattern_opacity: int = 60
+
+    @property
+    def text(self) -> str:
+        return self._text
+
+    @text.setter
+    def text(self, string: str):
+        # There is actually no character limit at the moment, but in the event one does get implemented, a check will be made here.
+        self._text = string
+
+    @property
+    def pole_pattern_opacity(self) -> int:
+        return self._pole_pattern_opacity
+
+    @pole_pattern_opacity.setter
+    def pole_pattern_opacity(self, value: int):
+        self._pole_pattern_opacity = max(0, min(value, 255))
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the sign to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the sign
+        """
+        obj = super().json()
+        return obj | {
+            "text": self._text,
+            "pole_color": self.pole_color.json(),
+            "pole_pattern": self.pole_pattern,
+            "pole_pattern_color": self.pole_pattern_color.json(),
+            "pole_pattern_opacity": self._pole_pattern_opacity,
+        }
+
+
 ## NPC BLOCKS
 class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
     """
