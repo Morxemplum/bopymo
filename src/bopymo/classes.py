@@ -121,7 +121,7 @@ class Game_Version:
 
 # This is a constant that is used to represent the latest version of Bopimo
 # If your level doesn't specify a version, this value will be used by default
-GAME_VERSION = Game_Version(1, 0, 15)
+GAME_VERSION = Game_Version(1, 1, 0)
 
 ### BOPIMO CLASSES
 
