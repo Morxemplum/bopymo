@@ -3,7 +3,7 @@ from time import perf_counter
 from typing import List
 from bopymo.bopimo_types import Color, Vector3
 from bopymo.classes import Bopimo_Block, Bopimo_Decal, Bopimo_Level, Bopimo_Object
-from bopymo.enumerators import Block_ID, Decal_Type
+from bopymo.enumerators import Shape, Decal_Type
 
 # CHANGE THESE TO VALID CLOTHING IDS, AND SEE THEM CHANGE UPON GENERATION
 SHIRT_ID = 3915
@@ -17,7 +17,7 @@ def main():
     )
 
     baseplate = Bopimo_Block(
-        id=Block_ID.CYLINDER,
+        shape=Shape.CYLINDER,
         name="Baseplate",
         position=Vector3(0, -6, 0),
         scale=Vector3(1024, 6, 1024),
