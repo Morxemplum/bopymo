@@ -1854,40 +1854,64 @@ class Bopimo_Portal(Bopimo_Tilable_Object):
     """
     <INHERITED Bopimo_Tilable_Object>
 
-    An object where players can enter and be teleported from one place to 
-    another. Portals often fulfill many of the previous roles of a cannon more 
-    efficiently and effectively.
+    An object where players can enter and be teleported from one place to
+    another. Portals often fulfill many of the previous roles of a cannon more
+    efficiently and effectively. Unlike cannons, Portals will preserve the
+    momentum of a player.
 
     Portals can be one-way or two-way; portals can also have multiple
-    destinations. If a portal has multiple destinations, a random one is chosen
-    whenever a player enters a portal.
-
-    Portals are the only object without a visible mesh; they rely on particles
-    for their visibility.
+    destinations (this is internal). If a portal has multiple destinations, a
+    random one is chosen whenever a player enters a portal.
 
     Instance Attributes:
-        transparency (int):
-            <NON-FUNCTIONAL>
-            The underlying transparency of the portal object. This attribute
-            may be scrapped.
+        delay (float):
+            The amount of time it takes for the player to travel to a
+            destination. Setting this value to zero will instantly teleport the
+            player.
         destinations (Int64Array):
-            <INTERNAL>
             A list of destinations the player may teleport to upon entering.
             Destinations are linked through a portal's corresponding UID, which
             can be obtained through Bopimo_Level.add_object.
+
+            The bopimo editor caps the user to one destination, but internally
+            destinations are stored as an array. Bopymo allows you to store
+            multiple portal destinations.
+        opacity (int):
+            The underlying opacity of the portal object.
+        secondary_color (Color):
+            <ALIAS pattern_color>
+            The secondary color of a portal used in its signature pattern
     """
 
     def __init__(
         self,
         name: str = "Generated Portal",
-        color: Color = Color(0, 105, 182),
+        color: Color = Color(31, 49, 255),
         position: Vector3 = Vector3.zero(),
         rotation: Vector3 = Vector3.zero(),
         scale: Vector3 = Vector3(10, 10, 2),
     ):
         super().__init__(Block_ID.PORTAL, name, color, position, rotation, scale)
-        self.transparency: int = 224
-        self.destinations: Int64Array = Int64Array([])
+        self.pattern_color = Color(158, 1, 255)
+        self.delay: float = 1
+        self.destinations: Int64Array = Int64Array()
+        self._opacity: int = 204
+
+    @property
+    def opacity(self) -> int:
+        return self._opacity
+
+    @opacity.setter
+    def opacity(self, value: int):
+        self._opacity = max(0, min(value, 255))
+
+    @property
+    def secondary_color(self) -> Color:
+        return self.pattern_color
+
+    @secondary_color.setter
+    def secondary_color(self, value: Color):
+        self.pattern_color = value
 
     def json(self) -> dict[str, Any]:
         """
@@ -1899,8 +1923,9 @@ class Bopimo_Portal(Bopimo_Tilable_Object):
         """
         obj = super().json()
         return obj | {
-            "transparency": self.transparency,
+            "delay": self.delay,
             "destinations": self.destinations.json(),
+            "opacity": self._opacity,
         }
 
 
