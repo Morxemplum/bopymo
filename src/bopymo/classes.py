@@ -1850,13 +1850,13 @@ class Bopimo_Cannon(Bopimo_Object):
         return obj | {"power": self.power}
 
 
-class Bopimo_Portal(Bopimo_Object):
+class Bopimo_Portal(Bopimo_Tilable_Object):
     """
-    <INHERITED Bopimo_Object> <UPCOMING>
+    <INHERITED Bopimo_Tilable_Object>
 
-    An object where players can enter and be instantaneously teleported from
-    one place to another. Portals often fulfill many of the previous roles of a
-    cannon more efficiently and effectively.
+    An object where players can enter and be teleported from one place to 
+    another. Portals often fulfill many of the previous roles of a cannon more 
+    efficiently and effectively.
 
     Portals can be one-way or two-way; portals can also have multiple
     destinations. If a portal has multiple destinations, a random one is chosen
