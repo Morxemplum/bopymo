@@ -2038,6 +2038,218 @@ class Bopimo_Missile_Launcher(Bopimo_Object):
         }
 
 
+class Bopimo_Note_Block(Bopimo_Tilable_Object):
+    """
+    <INHERITED Bopimo_Tilable_Object>
+
+    A block that, when the player tries to stand on top of it, bounces the
+    player upwards, similar to a Bopimo_Spring. However, bouncing on top of a
+    note block will emit a sound (reminiscient of an instrument). Inspired by
+    Super Mario's note block.
+
+    While it is considered an action block, its feature set can be considered
+    decorational.
+
+    Instance Attributes:
+        center_color (Color):
+            The color of the central part of the note block
+        center_pattern (Block_Pattern | int):
+            The pattern of the central part of the note block. Unlike most
+            tilable objects, this pattern won't tile and will stretch when
+            the block is resized.
+        center_pattern_color (Color):
+            The color of the pattern in the central part of the note block.
+
+        bounce_force (float):
+            Affects how much the note block will propel the player. A higher
+            value will propel the player farther.
+        instrument (Sound | int):
+            The sound that will be emitted when a player bounces on the block.
+            Usually this is the sound of an instrument like the attribute is
+            named, but any sound ID will work.
+        pitch (float):
+            Resembles the pitch of the emitted sound. One is the base value,
+            a higher value will be a higher pitch, and values lower than one
+            will be a lower pitch
+    """
+
+    MIN_VERSION = Game_Version(1, 1, 0)
+
+    def __init__(
+        self,
+        name: str = "Generated Note Block",
+        color: Color = Color(77, 31, 144),
+        center_color: Color = Color(26, 23, 47),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
+    ):
+        super().__init__(Block_ID.NOTE_BLOCK, name, color, position, rotation, scale)
+        self.center_color: Color = center_color
+        self.center_pattern: Block_Pattern | int = Block_Pattern.NOTE
+        self.center_pattern_color: Color = Color(176, 131, 241)
+
+        self.bounce_force: float = 50
+        self.instrument: Sound | int = Sound.PIANO
+        self.pitch: float = 1
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the note block to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the note block
+        """
+        obj = super().json()
+        return obj | {
+            "center_color": self.center_color.json(),
+            "center_pattern": self.center_pattern,
+            "center_pattern_color": self.center_pattern_color.json(),
+            "bounce_force": self.bounce_force,
+            "instrument": self.instrument,
+            "pitch_scale": self.pitch,
+        }
+
+
+class Bopimo_Sign(Bopimo_Tilable_Object):
+    """
+    <INHERITED Bopimo_Tilable_Object>
+
+    A sign that, when a player interacts with (using Punch) will display text
+    on the screen that the player can read.
+
+    Incredibly useful for level makers to convey information to the player, or
+    useful to incorporate dialogue from NPCs. Remember that the name attribute
+    will be displayed to the user upon interaction.
+
+    Instance Attributes
+        text (str):
+            The contents that will be contained inside the sign and read out to
+            the user upon interaction.
+        pole_color (Color):
+            The color of the sign's pole
+        pole_pattern (Block_Pattern | int):
+            The pattern of the sign's pole
+        pole_pattern_color (Color):
+            The color of the sign pole's pattern
+        pole_pattern_opacity (int):
+            The opacity of the sign's pole
+    """
+
+    MIN_VERSION = Game_Version(1, 1, 0)
+
+    def __init__(
+        self,
+        name: str = "Generated Sign",
+        text: str = "Hello World!",
+        color: Color = Color(155, 60, 17),
+        pole_color: Color = Color(83, 41, 11),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(3, 3, 1),
+    ):
+        super().__init__(Block_ID.DIALOGUE_SIGN, name, color, position, rotation, scale)
+        self._text: str = text
+        self.pattern = Block_Pattern.PLANKS
+
+        self.pole_color: Color = pole_color
+        self.pole_pattern: Block_Pattern | int = Block_Pattern.PLANKS
+        self.pole_pattern_color: Color = Color(0, 0, 0)
+        self._pole_pattern_opacity: int = 60
+
+    @property
+    def text(self) -> str:
+        return self._text
+
+    @text.setter
+    def text(self, string: str):
+        # There is actually no character limit at the moment, but in the event one does get implemented, a check will be made here.
+        self._text = string
+
+    @property
+    def pole_pattern_opacity(self) -> int:
+        return self._pole_pattern_opacity
+
+    @pole_pattern_opacity.setter
+    def pole_pattern_opacity(self, value: int):
+        self._pole_pattern_opacity = max(0, min(value, 255))
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the sign to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the sign
+        """
+        obj = super().json()
+        return obj | {
+            "text": self._text,
+            "pole_color": self.pole_color.json(),
+            "pole_pattern": self.pole_pattern,
+            "pole_pattern_color": self.pole_pattern_color.json(),
+            "pole_pattern_opacity": self._pole_pattern_opacity,
+        }
+
+
+class Bopimo_Level_Painting(Bopimo_Tilable_Object):
+    """
+    <INHERITED Bopimo_Tilable_Object> <ONLINE>
+
+    A painting block that will display the thumbnail of another Bopimo level.
+    When the player interacts with the painting by hopping into it, they will
+    exit the level and be transported to that level.
+
+    This block will not have any functionality present if using the offline
+    client.
+
+    Instance Attributes:
+        level_id (int):
+            The ID of the level that will be displayed on the painting, and the
+            player will be taken to upon contact.
+
+            To retrieve a level ID, visit a level on the Bopimo website and copy
+            the numeric ID in the link from a level page.
+    """
+
+    MIN_VERSION = Game_Version(1, 1, 0)
+
+    def __init__(
+        self,
+        name: str = "Generated Level Painting",
+        level_id: int = 4193,  # I love doing self promo LOL
+        color: Color = Color(160, 29, 175),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(16, 12, 2),
+    ):
+        super().__init__(
+            Block_ID.LEVEL_PAINTING, name, color, position, rotation, scale
+        )
+        self._level_id = level_id
+
+    @property
+    def level_id(self) -> int:
+        return self._level_id
+
+    @level_id.setter
+    def level_id(self, id: int):
+        # Keep id with a minimum value of 1
+        self._level_id = max(1, id)
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the level painting to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the level painting
+        """
+        obj = super().json()
+        return obj | {"level_id": self._level_id}
+
+
 ## DECORATION BLOCKS
 
 
@@ -2616,218 +2828,6 @@ class Bopimo_Statue(Bopimo_Tilable_Object):
                 A JSON object of the statue
         """
         return super().json()
-
-
-class Bopimo_Note_Block(Bopimo_Tilable_Object):
-    """
-    <INHERITED Bopimo_Tilable_Object>
-
-    A block that, when the player tries to stand on top of it, bounces the
-    player upwards, similar to a Bopimo_Spring. However, bouncing on top of a
-    note block will emit a sound (reminiscient of an instrument). Inspired by
-    Super Mario's note block.
-
-    While it is considered an action block, its feature set can be considered
-    decorational.
-
-    Instance Attributes:
-        center_color (Color):
-            The color of the central part of the note block
-        center_pattern (Block_Pattern | int):
-            The pattern of the central part of the note block. Unlike most
-            tilable objects, this pattern won't tile and will stretch when
-            the block is resized.
-        center_pattern_color (Color):
-            The color of the pattern in the central part of the note block.
-
-        bounce_force (float):
-            Affects how much the note block will propel the player. A higher
-            value will propel the player farther.
-        instrument (Sound | int):
-            The sound that will be emitted when a player bounces on the block.
-            Usually this is the sound of an instrument like the attribute is
-            named, but any sound ID will work.
-        pitch (float):
-            Resembles the pitch of the emitted sound. One is the base value,
-            a higher value will be a higher pitch, and values lower than one
-            will be a lower pitch
-    """
-
-    MIN_VERSION = Game_Version(1, 1, 0)
-
-    def __init__(
-        self,
-        name: str = "Generated Note Block",
-        color: Color = Color(77, 31, 144),
-        center_color: Color = Color(26, 23, 47),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
-    ):
-        super().__init__(Block_ID.NOTE_BLOCK, name, color, position, rotation, scale)
-        self.center_color: Color = center_color
-        self.center_pattern: Block_Pattern | int = Block_Pattern.NOTE
-        self.center_pattern_color: Color = Color(176, 131, 241)
-
-        self.bounce_force: float = 50
-        self.instrument: Sound | int = Sound.PIANO
-        self.pitch: float = 1
-
-    def json(self) -> dict[str, Any]:
-        """
-        Convert the note block to JSON, as part of the exporting process.
-
-        Returns:
-            dict[str, Any]:
-                A JSON object of the note block
-        """
-        obj = super().json()
-        return obj | {
-            "center_color": self.center_color.json(),
-            "center_pattern": self.center_pattern,
-            "center_pattern_color": self.center_pattern_color.json(),
-            "bounce_force": self.bounce_force,
-            "instrument": self.instrument,
-            "pitch_scale": self.pitch,
-        }
-
-
-class Bopimo_Sign(Bopimo_Tilable_Object):
-    """
-    <INHERITED Bopimo_Tilable_Object>
-
-    A sign that, when a player interacts with (using Punch) will display text
-    on the screen that the player can read.
-
-    Incredibly useful for level makers to convey information to the player, or
-    useful to incorporate dialogue from NPCs. Remember that the name attribute
-    will be displayed to the user upon interaction.
-
-    Instance Attributes
-        text (str):
-            The contents that will be contained inside the sign and read out to
-            the user upon interaction.
-        pole_color (Color):
-            The color of the sign's pole
-        pole_pattern (Block_Pattern | int):
-            The pattern of the sign's pole
-        pole_pattern_color (Color):
-            The color of the sign pole's pattern
-        pole_pattern_opacity (int):
-            The opacity of the sign's pole
-    """
-
-    MIN_VERSION = Game_Version(1, 1, 0)
-
-    def __init__(
-        self,
-        name: str = "Generated Sign",
-        text: str = "Hello World!",
-        color: Color = Color(155, 60, 17),
-        pole_color: Color = Color(83, 41, 11),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(3, 3, 1),
-    ):
-        super().__init__(Block_ID.DIALOGUE_SIGN, name, color, position, rotation, scale)
-        self._text: str = text
-        self.pattern = Block_Pattern.PLANKS
-
-        self.pole_color: Color = pole_color
-        self.pole_pattern: Block_Pattern | int = Block_Pattern.PLANKS
-        self.pole_pattern_color: Color = Color(0, 0, 0)
-        self._pole_pattern_opacity: int = 60
-
-    @property
-    def text(self) -> str:
-        return self._text
-
-    @text.setter
-    def text(self, string: str):
-        # There is actually no character limit at the moment, but in the event one does get implemented, a check will be made here.
-        self._text = string
-
-    @property
-    def pole_pattern_opacity(self) -> int:
-        return self._pole_pattern_opacity
-
-    @pole_pattern_opacity.setter
-    def pole_pattern_opacity(self, value: int):
-        self._pole_pattern_opacity = max(0, min(value, 255))
-
-    def json(self) -> dict[str, Any]:
-        """
-        Convert the sign to JSON, as part of the exporting process.
-
-        Returns:
-            dict[str, Any]:
-                A JSON object of the sign
-        """
-        obj = super().json()
-        return obj | {
-            "text": self._text,
-            "pole_color": self.pole_color.json(),
-            "pole_pattern": self.pole_pattern,
-            "pole_pattern_color": self.pole_pattern_color.json(),
-            "pole_pattern_opacity": self._pole_pattern_opacity,
-        }
-
-
-class Bopimo_Level_Painting(Bopimo_Tilable_Object):
-    """
-    <INHERITED Bopimo_Tilable_Object> <ONLINE>
-
-    A painting block that will display the thumbnail of another Bopimo level.
-    When the player interacts with the painting by hopping into it, they will
-    exit the level and be transported to that level.
-
-    This block will not have any functionality present if using the offline
-    client.
-
-    Instance Attributes:
-        level_id (int):
-            The ID of the level that will be displayed on the painting, and the
-            player will be taken to upon contact.
-
-            To retrieve a level ID, visit a level on the Bopimo website and copy
-            the numeric ID in the link from a level page.
-    """
-
-    MIN_VERSION = Game_Version(1, 1, 0)
-
-    def __init__(
-        self,
-        name: str = "Generated Level Painting",
-        level_id: int = 4193,  # I love doing self promo LOL
-        color: Color = Color(160, 29, 175),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(16, 12, 2),
-    ):
-        super().__init__(
-            Block_ID.LEVEL_PAINTING, name, color, position, rotation, scale
-        )
-        self._level_id = level_id
-
-    @property
-    def level_id(self) -> int:
-        return self._level_id
-
-    @level_id.setter
-    def level_id(self, id: int):
-        # Keep id with a minimum value of 1
-        self._level_id = max(1, id)
-
-    def json(self) -> dict[str, Any]:
-        """
-        Convert the level painting to JSON, as part of the exporting process.
-
-        Returns:
-            dict[str, Any]:
-                A JSON object of the level painting
-        """
-        obj = super().json()
-        return obj | {"level_id": self._level_id}
 
 
 ## NPC BLOCKS
