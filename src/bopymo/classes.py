@@ -1263,17 +1263,23 @@ class Bopimo_Spring(Bopimo_Object):
             Determines whether a player's ground pound will cancel the effects
             of a spring. If set to false, the player will bounce while ground
             pounding.
+        base_color (Color):
+            The color of the base, the lowest part of the spring.
+        coil_color (Color):
+            The color that the coil of the spring will be.
     """
 
     def __init__(
         self,
         name: str = "Generated Spring",
-        color: Color = Color(227, 181, 4),
+        color: Color = Color(226, 181, 4),
         position: Vector3 = Vector3.zero(),
         rotation: Vector3 = Vector3.zero(),
         scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.SPRING, name, color, position, rotation, scale)
+        self.base_color: Color = Color(84, 84, 84)
+        self.coil_color: Color = Color(92, 92, 92)
         # Spring exclusive attributes
         self.bounce_force: float = 50
         self.can_ground_pound: bool = True
@@ -1290,6 +1296,8 @@ class Bopimo_Spring(Bopimo_Object):
         return obj | {
             "bounce_force": self.bounce_force,
             "can_ground_pound": self.can_ground_pound,
+            "base_color": self.base_color.json(),
+            "pattern_color": self.coil_color.json(),
         }
 
 
