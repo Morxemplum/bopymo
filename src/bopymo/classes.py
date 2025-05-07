@@ -2733,6 +2733,63 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
         }
 
 
+class Bopimo_Level_Painting(Bopimo_Tilable_Object):
+    """
+    <INHERITED Bopimo_Tilable_Object> <ONLINE>
+
+    A painting block that will display the thumbnail of another Bopimo level.
+    When the player interacts with the painting by hopping into it, they will
+    exit the level and be transported to that level.
+
+    This block will not have any functionality present if using the offline
+    client.
+
+    Instance Attributes:
+        level_id (int):
+            The ID of the level that will be displayed on the painting, and the
+            player will be taken to upon contact.
+
+            To retrieve a level ID, visit a level on the Bopimo website and copy
+            the numeric ID in the link from a level page.
+    """
+
+    MIN_VERSION = Game_Version(1, 1, 0)
+
+    def __init__(
+        self,
+        name: str = "Generated Level Painting",
+        level_id: int = 4193,  # I love doing self promo LOL
+        color: Color = Color(160, 29, 175),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(16, 12, 2),
+    ):
+        super().__init__(
+            Block_ID.LEVEL_PAINTING, name, color, position, rotation, scale
+        )
+        self._level_id = level_id
+
+    @property
+    def level_id(self) -> int:
+        return self._level_id
+
+    @level_id.setter
+    def level_id(self, id: int):
+        # Keep id with a minimum value of 1
+        self._level_id = max(1, id)
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the level painting to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the level painting
+        """
+        obj = super().json()
+        return obj | {"level_id": self._level_id}
+
+
 ## NPC BLOCKS
 class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
     """
