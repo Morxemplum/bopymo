@@ -2127,6 +2127,46 @@ class Bopimo_Fence(Bopimo_Tilable_Object):
         return super().json()
 
 
+class Bopimo_Tree(Bopimo_Tilable_Object):
+    """
+    <INHERITED Bopimo_Tilable_Object>
+
+    An object resembling an oak tree.
+
+    Instance Attributes:
+        leaves (bool):
+            Determines if the tree should have leaves. If set to false, they
+            will not be rendered.
+        leaves_color (Color):
+            The color of the tree's leaves
+    """
+
+    MIN_VERSION = Game_Version(1, 1, 0)
+
+    def __init__(
+        self,
+        name: str = "Generated Tree",
+        color: Color = Color(91, 40, 24),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(11, 17, 11),
+    ):
+        super().__init__(Block_ID.TREE, name, color, position, rotation, scale)
+        self.leaves: bool = True
+        self.leaves_color: Color = Color(0, 128, 0)
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the tree to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the tree
+        """
+        obj = super().json()
+        return obj | {"leaves": self.leaves, "leaves_color": self.leaves_color.json()}
+
+
 class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
     """
     <INHERITED Bopimo_Tilable_Object>
