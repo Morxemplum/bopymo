@@ -271,7 +271,7 @@ class Bopimo_Object:
         self._position_travel_speed = value
         if value != 0:
             self.__refresh_constant_travel_speed_times()
-    
+
     @property
     def position_points(self) -> Vector3Array:
         """
@@ -698,9 +698,17 @@ class Bopimo_Level:
             The skybox that the level will use. It is highly recommended to use
             the Sky enum for choosing a skybox, as this is more readable and
             future-proof.
-        sky_energy (float):
+        brightness (float):
             A positive value that represents the level's gamma/brightness. A
-            higher energy will lead to a brighter level
+            higher value will lead to a brighter level
+        sky_energy (float):
+            <REVERSE_COMPAT>
+            A multiplier value for the "brightness" attribute. This value will
+            directly change the brightness value by acting as a multiplier for
+            the default brightness value (1.2)
+        sun_energy (float):
+            <ALIAS brightness>
+            Bopimo 1.1.0's new name for the brightness value.
         ambient_color (Color):
             A color that represents the final color of a level's shadows. Be
             wary that the ambient color takes slight influence from a level's
@@ -768,7 +776,7 @@ class Bopimo_Level:
 
         # ATMOSPHERE
         self.sky: Sky | int = Sky.DAY
-        self.sky_energy: float = 1
+        self.brightness: float = 1.2
         self.ambient_color: Color = Color(0, 0, 0)
         self.weather: Weather | int = Weather.CLEAR
         self.fog_enabled: bool = False
@@ -789,6 +797,23 @@ class Bopimo_Level:
         Retrieves the total number of stars in a level
         """
         return len(self._completion_stars)
+
+    @property
+    def sky_energy(self) -> float:
+        # This gets the multiplier value that was used in versions prior to Bopimo 1.1.0
+        return self.brightness / 1.2
+
+    @sky_energy.setter
+    def sky_energy(self, mult: float):
+        self.brightness = 1.2 * mult
+
+    @property
+    def sun_energy(self) -> float:
+        return self.brightness
+
+    @sun_energy.setter
+    def sun_energy(self, value: float):
+        self.brightness = value
 
     def __block_sanity_check(self, block: Bopimo_Object):
         """
@@ -910,7 +935,7 @@ class Bopimo_Level:
             "level_lives": self.lives,
             "level_players_damage_players": self.players_damage_players,
             "level_sky": self.sky,
-            "level_sky_energy": self.sky_energy,
+            "level_sun_energy": self.brightness,
             "level_ambient_color": self.ambient_color.json(),
             "level_weather": self.weather,
             "level_fog_enabled": self.fog_enabled,
