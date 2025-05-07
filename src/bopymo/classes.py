@@ -1029,7 +1029,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
     ):
         super().__init__(Block_ID.PRIMITIVE, name, color, position, rotation, scale)
         self.pattern_scale: float = 2
-        self.pattern_scroll: Vector2_I8 = Vector2_I8(0, 0) 
+        self.pattern_scroll: Vector2_I8 = Vector2_I8(0, 0)
         self.shape: Shape | int = shape
         # Block exclusive attributes
         self._transparency_enabled: bool = False
@@ -1094,7 +1094,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
             "pattern_scale": 2 / self.pattern_scale,
             "pattern_scroll": self.pattern_scroll.json(),
             "shape": self.shape,
-            "unshaded": self.unshaded
+            "unshaded": self.unshaded,
         }
 
 
@@ -1140,6 +1140,15 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
     Respawning at a checkpoint will not reset the attempt. If a player chooses
     to restart the level, runs out of lives, or they touch another checkpoint,
     they will no longer respawn at their previous checkpoint.
+
+    Instance Attributes:
+        flag_pattern (Block_Pattern | int):
+            <ALIAS pattern>
+            The pattern that will be shown on the flag
+        flag_pattern_color (Color):
+            <ALIAS pattern_color>
+            The color of the flag pattern when the player has it as their
+            current checkpoint.
     """
 
     def __init__(
@@ -1151,6 +1160,22 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
         scale: Vector3 = Vector3(2, 4, 2),
     ):
         super().__init__(Block_ID.CHECKPOINT, name, color, position, rotation, scale)
+
+    @property
+    def flag_pattern(self) -> Block_Pattern | int:
+        return self.pattern
+
+    @flag_pattern.setter
+    def flag_pattern(self, value: Block_Pattern | int):
+        self.pattern = value
+
+    @property
+    def flag_pattern_color(self) -> Color:
+        return self.pattern_color
+
+    @flag_pattern_color.setter
+    def flag_pattern_color(self, value: Color):
+        self.pattern_color = value
 
     def json(self) -> dict[str, Any]:
         """
