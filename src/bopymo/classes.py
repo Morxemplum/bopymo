@@ -1702,6 +1702,10 @@ class Bopimo_Ice(Bopimo_Object):
     can be counteracted by jumping, so use wisely.
 
     Instance Attributes:
+        opacity (int):
+            The opacity of the ice, from 0 - 255
+        shape (Shape | int):
+            The shape that the ice will be
         slipperiness (float):
             A positive number that indicates how slippery the ice is upon
             contact. 0 will cancel out the slipperiness completely, while a
@@ -1717,7 +1721,18 @@ class Bopimo_Ice(Bopimo_Object):
         scale: Vector3 = Vector3(2, 2, 2),
     ):
         super().__init__(Block_ID.ICE, name, color, position, rotation, scale)
+        self._opacity = 255
+        self.shape: Shape | int = Shape.CUBE
         self.slipperiness: float = 1
+
+    @property
+    def opacity(self) -> int:
+        return self._opacity
+
+    @opacity.setter
+    def opacity(self, value: int):
+        # Clamp opacity to have values between 0 and 255
+        self._opacity = max(0, min(value, 255))
 
     def json(self) -> dict[str, Any]:
         """
@@ -1728,7 +1743,11 @@ class Bopimo_Ice(Bopimo_Object):
                 A JSON object of the ice
         """
         obj = super().json()
-        return obj | {"slipperiness": self.slipperiness}
+        return obj | {
+            "opacity": self._opacity,
+            "shape": self.shape,
+            "slipperiness": self.slipperiness,
+        }
 
 
 class Bopimo_Breakable_Block(Bopimo_Tilable_Object):
