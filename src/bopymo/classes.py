@@ -13,6 +13,7 @@ from bopymo.enumerators import (
     Block_Pattern,
     Decal_Type,
     Grates_Style,
+    Sound,
     Music,
     Shape,
     Sky,
@@ -1280,7 +1281,6 @@ class Bopimo_Spring(Bopimo_Object):
         super().__init__(Block_ID.SPRING, name, color, position, rotation, scale)
         self.base_color: Color = Color(84, 84, 84)
         self.coil_color: Color = Color(92, 92, 92)
-        # Spring exclusive attributes
         self.bounce_force: float = 50
         self.can_ground_pound: bool = True
 
@@ -2576,6 +2576,80 @@ class Bopimo_Statue(Bopimo_Tilable_Object):
                 A JSON object of the statue
         """
         return super().json()
+
+
+class Bopimo_Note_Block(Bopimo_Tilable_Object):
+    """
+    <INHERITED Bopimo_Tilable_Object>
+
+    A block that, when the player tries to stand on top of it, bounces the
+    player upwards, similar to a Bopimo_Spring. However, bouncing on top of a
+    note block will emit a sound (reminiscient of an instrument). Inspired by
+    Super Mario's note block.
+
+    While it is considered an action block, its feature set can be considered
+    decorational.
+
+    Instance Attributes:
+        center_color (Color):
+            The color of the central part of the note block
+        center_pattern (Block_Pattern | int):
+            The pattern of the central part of the note block. Unlike most
+            tilable objects, this pattern won't tile and will stretch when
+            the block is resized.
+        center_pattern_color (Color):
+            The color of the pattern in the central part of the note block.
+
+        bounce_force (float):
+            Affects how much the note block will propel the player. A higher
+            value will propel the player farther.
+        instrument (Sound | int):
+            The sound that will be emitted when a player bounces on the block.
+            Usually this is the sound of an instrument like the attribute is
+            named, but any sound ID will work.
+        pitch (float):
+            Resembles the pitch of the emitted sound. One is the base value,
+            a higher value will be a higher pitch, and values lower than one
+            will be a lower pitch
+    """
+
+    MIN_VERSION = Game_Version(1, 1, 0)
+
+    def __init__(
+        self,
+        name: str = "Generated Note Block",
+        color: Color = Color(77, 31, 144),
+        center_color: Color = Color(26, 23, 47),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(2, 2, 2),
+    ):
+        super().__init__(Block_ID.NOTE_BLOCK, name, color, position, rotation, scale)
+        self.center_color: Color = center_color
+        self.center_pattern: Block_Pattern | int = Block_Pattern.NOTE
+        self.center_pattern_color: Color = Color(176, 131, 241)
+
+        self.bounce_force: float = 50
+        self.instrument: Sound | int = Sound.PIANO
+        self.pitch: float = 1
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the note block to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the note block
+        """
+        obj = super().json()
+        return obj | {
+            "center_color": self.center_color.json(),
+            "center_pattern": self.center_pattern,
+            "center_pattern_color": self.center_pattern_color.json(),
+            "bounce_force": self.bounce_force,
+            "instrument": self.instrument,
+            "pitch_scale": self.pitch,
+        }
 
 
 ## NPC BLOCKS
