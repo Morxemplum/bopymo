@@ -2310,6 +2310,43 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
         return obj | {"capitulum_color": self.capitulum_color}
 
 
+class Bopimo_Cornstalk(Bopimo_Object):
+    """
+    <INHERITED Bopimo_Object>
+
+    An object that resembles a fully grown cornstalk.
+
+    Instance Attributes:
+        corn_color (Color):
+            <ALIAS pattern_color>
+            The color of the corn and top flower.
+    """
+
+    MIN_VERSION = Game_Version(1, 1, 0)
+
+    def __init__(
+        self,
+        name: str = "Generated Cornstalk",
+        color: Color = Color(0, 131, 35),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(5, 10, 5),
+    ):
+        super().__init__(Block_ID.CORNSTALK, name, color, position, rotation, scale)
+        self.corn_color: Color = Color(255, 207, 0)
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the cornstalk to JSON, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A JSON object of the cornstalk
+        """
+        obj = super().json()
+        return obj | {"pattern_color": self.corn_color.json()}
+
+
 class Bopimo_Fence(Bopimo_Tilable_Object):
     """
     <INHERITED Bopimo_Tilable_Object>
