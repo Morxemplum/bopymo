@@ -722,8 +722,13 @@ class Bopimo_Level:
             If enabled, will set the level in a fog, limiting the player's
             vision
         fog_distance (int):
-            Set how far the fog will end. A smaller value resembles a closer
-            fog.
+            Set how far the distance will be from the camera until the fog
+            starts appearing. This can be a negative value, especially if you
+            have a high fog_fade value.
+        fog_fade (float):
+            Set how far of a distance it will take from the fog starting
+            until the fog is fully opaque. A higher value will add perceived
+            distance to the level's fog.
         fog_color (Color):
             Set the color of the fog. Ideally, you'd want to match the fog to
             compliment your skybox.
@@ -781,6 +786,7 @@ class Bopimo_Level:
         self.weather: Weather | int = Weather.CLEAR
         self.fog_enabled: bool = False
         self.fog_distance: int = 0
+        self.fog_fade: float = 100
         self.fog_color: Color = Color(128, 128, 128)
         self.gravity: float = 105
 
@@ -940,6 +946,7 @@ class Bopimo_Level:
             "level_weather": self.weather,
             "level_fog_enabled": self.fog_enabled,
             "level_fog_distance": self.fog_distance,
+            "level_fog_fade": self.fog_fade,
             "level_fog_color": self.fog_color.json(),
             "level_gravity": self.gravity,
             "level_death_plane": self.death_plane,
