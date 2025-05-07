@@ -721,7 +721,7 @@ class Bopimo_Level:
         fog_enabled (bool):
             If enabled, will set the level in a fog, limiting the player's
             vision
-        fog_distance (int):
+        fog_distance (float):
             Set how far the distance will be from the camera until the fog
             starts appearing. This can be a negative value, especially if you
             have a high fog_fade value.
@@ -785,7 +785,7 @@ class Bopimo_Level:
         self.ambient_color: Color = Color(0, 0, 0)
         self.weather: Weather | int = Weather.CLEAR
         self.fog_enabled: bool = False
-        self.fog_distance: int = 0
+        self.fog_distance: float = 0
         self.fog_fade: float = 100
         self.fog_color: Color = Color(128, 128, 128)
         self.gravity: float = 105
