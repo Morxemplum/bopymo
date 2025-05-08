@@ -36,11 +36,13 @@ LOG_FMT = "[%(levelname)s] - %(message)s"
 logging.basicConfig(level=LOG_LEVEL, format=LOG_FMT)
 # Here's a quick way to see what features are deprecated, and also ensure to only send one warning per deprecation.
 DEPRECATION_WARNINGS: dict[str, bool] = {
+    # Deprecated since Bopymo 0.2
     "Getting position_points directly": False,
     "Setting position_points directly": False,
-    # TODO: The following below will be deprecations for Bopymo 0.3. Make sure they actually warn when triggered
+    # Deprecated since Bopymo 0.3
     "Using Music.ISAIAH_NEW_SONG": False,
     "Using transparency_enabled": False,
+    "Using Bopimo_Pine_Tree_Snow": False,
 }
 
 
@@ -2480,9 +2482,10 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
         position: Vector3 = Vector3.zero(),
         rotation: Vector3 = Vector3.zero(),
         scale: Vector3 = Vector3(5, 10, 5),
+        snow: bool = False,
     ):
         super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
-        self.snow: bool = False
+        self.snow: bool = snow
 
     def json(self) -> dict[str, Any]:
         """
@@ -2494,6 +2497,31 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
         """
         obj = super().json()
         return obj | {"snow": self.snow}
+
+
+class Bopimo_Pine_Tree_Snow(Bopimo_Pine_Tree):
+    """
+    <INHERITED Bopimo_Pine_Tree> <DEPRECATED>
+
+    Snowy variant of the Bopimo_Pine_Tree.
+    """
+
+    def __init__(
+        self,
+        name: str = "Generated Pine Tree",
+        color: Color = Color(0, 88, 36),
+        position: Vector3 = Vector3.zero(),
+        rotation: Vector3 = Vector3.zero(),
+        scale: Vector3 = Vector3(5, 10, 5),
+    ):
+        super().__init__(name, color, position, rotation, scale, True)
+        if not DEPRECATION_WARNINGS["Using Bopimo_Pine_Tree_Snow"]:
+            logging.warning(
+                "You are creating an instance of Bopimo_Pine_Tree_Snow, which has been removed since Bopimo 1.1.0. "
+                "This class will be removed in a future version of Bopymo. To create a snowy pine tree, use "
+                'Bopimo_Pine_Tree and set the "snow" attribute to True either on a separate line or through quickhanding.'
+            )
+            DEPRECATION_WARNINGS["Using Bopimo_Pine_Tree_Snow"] = True
 
 
 class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
