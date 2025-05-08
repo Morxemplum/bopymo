@@ -5,7 +5,7 @@ from bopymo.enumerators import Shape
 from bopymo.bopimo_types import Vector3
 
 
-def main():
+def main() -> None:
     ### WRITE YOUR LEVEL CODE HERE
     level = Bopimo_Level(
         "My Bopimo Level",

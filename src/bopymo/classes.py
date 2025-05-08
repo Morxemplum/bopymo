@@ -262,7 +262,7 @@ class Bopimo_Object:
         return self._position_travel_speed
 
     @position_travel_speed.setter
-    def position_travel_speed(self, value: float):
+    def position_travel_speed(self, value: float) -> None:
         """
         A setter method for the position_travel_speed attribute.
 
@@ -302,7 +302,7 @@ class Bopimo_Object:
         return Vector3Array([])
 
     @position_points.setter
-    def position_points(self, points: Vector3Array):
+    def position_points(self, points: Vector3Array) -> None:
         """
         <DEPRECATED>
         A setter method for the position_points attribute. This setter method
@@ -335,7 +335,7 @@ class Bopimo_Object:
         if self._position_travel_speed != 0:
             self.__refresh_constant_travel_speed_times()
 
-    def add_position_point(self, position: Vector3, time: float = 0.0):
+    def add_position_point(self, position: Vector3, time: float = 0.0) -> None:
         """
         Adds a position point to the object's position points, along with an
         associated travel time. If a position travel speed has been given to
@@ -373,7 +373,7 @@ class Bopimo_Object:
 
     def add_position_points(
         self, position_times: List[tuple[Vector3, float]] | List[Vector3]
-    ):
+    ) -> None:
         """
         Adds a list of position points to the object's position points, given
         in tuple pairs of the position, and the associated travel time. If a
@@ -445,7 +445,9 @@ class Bopimo_Object:
         """
         return self._position_points.get_vector(index)
 
-    def set_position_point(self, index: int, position: Vector3, time: float = 0.0):
+    def set_position_point(
+        self, index: int, position: Vector3, time: float = 0.0
+    ) -> None:
         """
         Sets a position point in the object's position points, along with an
         associated travel time, at the given index. If a position travel speed
@@ -505,7 +507,7 @@ class Bopimo_Object:
         else:
             return self._position_points.remove_vector(index)
 
-    def clear_position_points(self):
+    def clear_position_points(self) -> None:
         """
         Removes all of the position points and associated travel times of the
         object.
@@ -632,7 +634,7 @@ class Bopimo_Tilable_Object(Bopimo_Object):
         return self._pattern_opacity
 
     @pattern_opacity.setter
-    def pattern_opacity(self, value: int):
+    def pattern_opacity(self, value: int) -> None:
         # Clamp pattern opacity to have values between 0 and 255
         self._pattern_opacity = max(0, min(value, 255))
 
@@ -812,7 +814,7 @@ class Bopimo_Level:
         return self.brightness / 1.2
 
     @sky_energy.setter
-    def sky_energy(self, mult: float):
+    def sky_energy(self, mult: float) -> None:
         self.brightness = 1.2 * mult
 
     @property
@@ -820,10 +822,10 @@ class Bopimo_Level:
         return self.brightness
 
     @sun_energy.setter
-    def sun_energy(self, value: float):
+    def sun_energy(self, value: float) -> None:
         self.brightness = value
 
-    def __block_sanity_check(self, block: Bopimo_Object):
+    def __block_sanity_check(self, block: Bopimo_Object) -> None:
         """
         <PRIVATE>
         This method is meant to encompass all of the additional sanity checks
@@ -986,7 +988,7 @@ class Bopimo_Level:
 
     # TODO: Add a function that can import a bopjson file.
 
-    def export(self, file_path: str):
+    def export(self, file_path: str) -> None:
         """
         Exports the Bopimo level to a bopjson file. This function will perform
         level-wide sanity checks, and also time the exporting process.
@@ -1097,7 +1099,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         return self._transparency_enabled
 
     @transparency_enabled.setter
-    def transparency_enabled(self, value: bool):
+    def transparency_enabled(self, value: bool) -> None:
         if not DEPRECATION_WARNINGS["Using transparency_enabled"]:
             logging.warning(
                 'The property "transparency_enabled" has been removed since Bopimo 1.1.0, so using this property is deprecated. '
@@ -1113,7 +1115,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         return self.TRANSPARENCY_LOOKUP.index(self._opacity)
 
     @transparency.setter
-    def transparency(self, value: int):
+    def transparency(self, value: int) -> None:
         if value < 0 or value > 8:
             raise ValueError("Transparency value must be a value between 0-8")
         self._opacity = self.TRANSPARENCY_LOOKUP[value]
@@ -1123,7 +1125,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         return self._opacity
 
     @opacity.setter
-    def opacity(self, value: int):
+    def opacity(self, value: int) -> None:
         # Clamp opacity to have values between 0 and 255
         self._opacity = max(0, min(value, 255))
 
@@ -1214,7 +1216,7 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
         return self.pattern
 
     @flag_pattern.setter
-    def flag_pattern(self, value: Block_Pattern | int):
+    def flag_pattern(self, value: Block_Pattern | int) -> None:
         self.pattern = value
 
     @property
@@ -1222,7 +1224,7 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
         return self.pattern_color
 
     @flag_pattern_color.setter
-    def flag_pattern_color(self, value: Color):
+    def flag_pattern_color(self, value: Color) -> None:
         self.pattern_color = value
 
     def json(self) -> dict[str, Any]:
@@ -1399,11 +1401,11 @@ class Bopimo_Magma(Bopimo_Object):
         return self._damage_amount
 
     @damage_amount.setter
-    def damage_amount(self, value: float):
+    def damage_amount(self, value: float) -> None:
         self._damage_amount = value
         self.__clamp()
 
-    def __clamp(self):
+    def __clamp(self) -> None:
         """
         <PRIVATE>
         A clamping function that serves as an internal sanity check, stopping
@@ -1785,7 +1787,7 @@ class Bopimo_Ice(Bopimo_Object):
         return self._opacity
 
     @opacity.setter
-    def opacity(self, value: int):
+    def opacity(self, value: int) -> None:
         # Clamp opacity to have values between 0 and 255
         self._opacity = max(0, min(value, 255))
 
@@ -1949,7 +1951,7 @@ class Bopimo_Portal(Bopimo_Tilable_Object):
         return self._opacity
 
     @opacity.setter
-    def opacity(self, value: int):
+    def opacity(self, value: int) -> None:
         self._opacity = max(0, min(value, 255))
 
     @property
@@ -1957,7 +1959,7 @@ class Bopimo_Portal(Bopimo_Tilable_Object):
         return self.pattern_color
 
     @secondary_color.setter
-    def secondary_color(self, value: Color):
+    def secondary_color(self, value: Color) -> None:
         self.pattern_color = value
 
     def json(self) -> dict[str, Any]:
@@ -2210,7 +2212,7 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
         return self._text
 
     @text.setter
-    def text(self, string: str):
+    def text(self, string: str) -> None:
         # There is actually no character limit at the moment, but in the event one does get implemented, a check will be made here.
         self._text = string
 
@@ -2219,7 +2221,7 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
         return self._pole_pattern_opacity
 
     @pole_pattern_opacity.setter
-    def pole_pattern_opacity(self, value: int):
+    def pole_pattern_opacity(self, value: int) -> None:
         self._pole_pattern_opacity = max(0, min(value, 255))
 
     def json(self) -> dict[str, Any]:
@@ -2281,7 +2283,7 @@ class Bopimo_Level_Painting(Bopimo_Tilable_Object):
         return self._level_id
 
     @level_id.setter
-    def level_id(self, id: int):
+    def level_id(self, id: int) -> None:
         # Keep id with a minimum value of 1
         self._level_id = max(1, id)
 
@@ -2334,7 +2336,7 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
         return self.color
 
     @bud_color.setter
-    def bud_color(self, value: Color):
+    def bud_color(self, value: Color) -> None:
         self.color = value
 
     @property
@@ -2342,7 +2344,7 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
         return self.pattern_color
 
     @stem_color.setter
-    def stem_color(self, value: Color):
+    def stem_color(self, value: Color) -> None:
         self.pattern_color = value
 
     def json(self) -> dict[str, Any]:
@@ -3339,7 +3341,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
             [0, 0, 1],
         )
 
-        return dot(dot(MATRIX_Y, MATRIX_X), MATRIX_Z)
+        return List[List[float]](dot(dot(MATRIX_Y, MATRIX_X), MATRIX_Z))
 
     def calculate_center_vector(self, scale: Vector3) -> Vector3:
         """

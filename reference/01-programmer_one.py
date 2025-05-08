@@ -25,7 +25,7 @@ BASE_COLOR = Color(110, 110, 110)
 STAR_COLOR = Color(255, 213, 0)
 
 
-def main():
+def main() -> None:
     level = Bopimo_Level(
         "Programmer's Playground #1: Gradient Fractal",
         "This level was completely generated with Python! I basically reverse engineered the Bopimo level format and used it to not only create some cool concepts, but also make a complete level using what I made.",

@@ -5,7 +5,7 @@ from bopymo.classes import Bopimo_Block, Bopimo_Level, Game_Version, Bopimo_Rose
 from bopymo.enumerators import Shape
 
 
-def main():
+def main() -> None:
     level = Bopimo_Level(
         "New Kinematics Test",
         "This is a quick demonstration of the new time-based kinematic system in Bopimo 1.0.14",

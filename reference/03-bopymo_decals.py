@@ -10,7 +10,7 @@ SHIRT_ID = 3915
 PANTS_RIGHT_ID = 3566
 
 
-def main():
+def main() -> None:
     level = Bopimo_Level(
         "Bopymo Decal Demonstration",
         "Experience making decals more intuitively and simpler in Bopymo.",

@@ -256,7 +256,7 @@ def section_three(start_block: Bopimo_Object) -> List[Bopimo_Object]:
     return blocks
 
 
-def main():
+def main() -> None:
     ## CONFIGURATION
 
     level = Bopimo_Level(

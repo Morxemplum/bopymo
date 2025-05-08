@@ -78,7 +78,7 @@ class Color:
             return (1, t, g)
         return (1, 1, 1)  # Fallback
 
-    def __clamp(self):
+    def __clamp(self) -> None:
         """
         <PRIVATE>
         A clamping function that serves as an internal sanity check, stopping
@@ -311,7 +311,7 @@ class Vector2:
 
 
 class Vector2_I8(Vector2):
-    """ 
+    """
     A subtype of the Vector2 class where the values are 8 bit signed integers
     instead of floating point numbers.
 
@@ -319,12 +319,13 @@ class Vector2_I8(Vector2):
     let me switch the type when overriding an attribute, and since I don't want
     to duplicate code, this is the easier way to do it.
     """
+
     bopjson_type_name: str = "Vector2I8"
 
     def __init__(self, x: int, y: int):
         self.x: float = x
         self.y: float = y
-    
+
     def to_obj(self) -> Mapping[str, int]:
         """
         Converts the vector into a more literal dictionary, compatible with
@@ -355,7 +356,7 @@ class Vector2_I8(Vector2):
                 A bopjson vector object
         """
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
-    
+
     ## DUNDER METHODS
 
     def __iter__(self) -> Iterator[int]:
@@ -363,6 +364,7 @@ class Vector2_I8(Vector2):
 
     def __str__(self) -> str:
         return f"{self.bopjson_type_name}({int(self.x)}, {int(self.y)})"
+
 
 class Vector3:
     """
@@ -434,7 +436,7 @@ class Vector3:
             [sin_y, cos_y, 0],
             [0, 0, 1],
         )
-        return np.dot(np.dot(MATRIX_P, MATRIX_R), MATRIX_Y)
+        return np.array(np.dot(np.dot(MATRIX_P, MATRIX_R), MATRIX_Y))
 
     ## CLASS METHODS
 
@@ -696,7 +698,7 @@ class Vector3Array:
 
     ## INSTANCE METHODS
 
-    def add_vector(self, vector: Vector3):
+    def add_vector(self, vector: Vector3) -> None:
         """
         Adds a vector into the array
 
@@ -706,7 +708,7 @@ class Vector3Array:
         """
         self._list.append(vector)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Clears the array of all its elements.
         """
@@ -746,7 +748,7 @@ class Vector3Array:
         """
         return self._list[index]
 
-    def set_vector(self, index: int, vector: Vector3):
+    def set_vector(self, index: int, vector: Vector3) -> None:
         """
         Replace a vector in the array with a new one.
 
@@ -824,7 +826,7 @@ class Vector3Array:
     def __iter__(self) -> Iterator[Vector3]:
         return iter(self._list)
 
-    def __next__(self):
+    def __next__(self) -> Vector3:
         return next(self.__iter__())
 
     def __len__(self) -> int:
@@ -875,7 +877,7 @@ class ColorArray:
         self._list = color_list
 
     ## INSTANCE METHODS
-    def add_color(self, color: Color):
+    def add_color(self, color: Color) -> None:
         """
         Adds a color into the array
 
@@ -885,7 +887,7 @@ class ColorArray:
         """
         self._list.append(color)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Clears the array of all its elements
         """
@@ -925,7 +927,7 @@ class ColorArray:
         """
         return self._list[index]
 
-    def set_color(self, index: int, color: Color):
+    def set_color(self, index: int, color: Color) -> None:
         """
         Replace a color in the array with a new one.
 
@@ -1003,7 +1005,7 @@ class ColorArray:
     def __iter__(self) -> Iterator[Color]:
         return iter(self._list)
 
-    def __next__(self):
+    def __next__(self) -> Color:
         return next(self.__iter__())
 
     def __len__(self) -> int:
@@ -1063,7 +1065,7 @@ class IntArray:
 
     ## INSTANCE METHODS
 
-    def add_int(self, integer: Bopimo_Integer):
+    def add_int(self, integer: Bopimo_Integer) -> None:
         """
         Adds an integer into the array
 
@@ -1073,7 +1075,7 @@ class IntArray:
         """
         self._list.append(integer)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Clears the array of all its elements.
         """
@@ -1113,7 +1115,7 @@ class IntArray:
         """
         return self._list[index]
 
-    def set_int(self, index: int, integer: Bopimo_Integer):
+    def set_int(self, index: int, integer: Bopimo_Integer) -> None:
         """
         Replace an integer in the array with a new one.
 
@@ -1191,7 +1193,7 @@ class IntArray:
     def __iter__(self) -> Iterator[int]:
         return iter(self._list)
 
-    def __next__(self):
+    def __next__(self) -> int:
         return next(self.__iter__())
 
     def __len__(self) -> int:
@@ -1351,7 +1353,7 @@ class Float32Array:
 
     ## INSTANCE METHODS
 
-    def add_float(self, f: float | np.float32):
+    def add_float(self, f: float | np.float32) -> None:
         """
         Adds a float into the array
 
@@ -1363,7 +1365,7 @@ class Float32Array:
             f = np.float32(f)
         self._list.append(f)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Clears the array of all its elements.
         """
@@ -1403,7 +1405,7 @@ class Float32Array:
         """
         return self._list[index].item()
 
-    def set_float(self, index: int, f: float | np.float32):
+    def set_float(self, index: int, f: float | np.float32) -> None:
         """
         Replace a float in the array with a new one.
 
@@ -1494,7 +1496,7 @@ class Float32Array:
     def __iter__(self) -> Iterator[np.float32]:
         return iter(self._list)
 
-    def __next__(self):
+    def __next__(self) -> np.float32:
         return next(self.__iter__())
 
     def __len__(self) -> int:
