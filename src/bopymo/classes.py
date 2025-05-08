@@ -952,6 +952,19 @@ class Bopimo_Level:
             "level_death_plane": self.death_plane,
             "level_blocks": {"type": "Container_Array", "value": []},
         }
+        # Check for old values on Music
+        for song in self.music:
+            if (
+                isinstance(song, Music)
+                and song == Music.ISAIAH_NEW_SONG
+                and not DEPRECATION_WARNINGS["Using Music.ISAIAH_NEW_SONG"]
+            ):
+                logging.warning(
+                    "Your level's music includes the value Music.ISAIAH_NEW_SONG, which has been renamed to Music.ORGAN. "
+                    "This old name will be removed in a future version of Bopymo. Please change this value to use the new name."
+                )
+                DEPRECATION_WARNINGS["Using Music.ISAIAH_NEW_SONG"] = True
+
         # Append all the blocks in JSON
         uid: int
         block: Bopimo_Object
