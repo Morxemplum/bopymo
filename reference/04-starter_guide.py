@@ -3,7 +3,7 @@
 from typing import List
 
 from bopymo.bopimo_types import Color, Int32Array, Vector3
-from bopymo.enumerators import Block_ID, Block_Pattern, Music, Sky
+from bopymo.enumerators import Shape, Block_Pattern, Music, Sky
 from bopymo.classes import (
     Bopimo_Block,
     Bopimo_Cannon,
@@ -50,15 +50,13 @@ def section_two(start: Vector3) -> List[Bopimo_Object]:
     GAP_SIZE = 10
     ROTATION_SPEED = 45
     COURSE_TWO_COLOR = Color(255, 155, 155)  # Pink
-    turtle_pos = start + Vector3(
-        0, 0, PLATFORM_SIZE / 2 + PIVOT_RADIUS + GAP_SIZE
-    )
+    turtle_pos = start + Vector3(0, 0, PLATFORM_SIZE / 2 + PIVOT_RADIUS + GAP_SIZE)
 
     # Part One: Rotation Platforms
     for i in range(0, NUM_PLATFORMS):
         plat_rot = Vector3(0, 180 * (i % 2), 0)
         rot_platform = Bopimo_Block(
-            id=Block_ID.CYLINDER,
+            shape=Shape.CYLINDER,
             color=COURSE_TWO_COLOR,
             position=turtle_pos,
             rotation=plat_rot,
@@ -192,16 +190,16 @@ def section_three(start_block: Bopimo_Object) -> List[Bopimo_Object]:
     turtle_pos += Vector3(0, -spring.bounce_force * 2 / 3 + 25, 114)
 
     # Part Three: Speeding Revolution
-    platform = Bopimo_Block(
+    platform_intermission = Bopimo_Block(
         color=SECTION_THREE_COLOR,
         position=turtle_pos,
         scale=Vector3(PLATFORM_SIZE, 2, PLATFORM_SIZE),
     )
-    blocks.append(platform)
+    blocks.append(platform_intermission)
 
     blocks.append(
         Bopimo_Speed_Panel(
-            position=platform.position + Vector3(0, 1.5, 0),
+            position=platform_intermission.position + Vector3(0, 1.5, 0),
             scale=Vector3(5, 1, 5),
             speed=50,
             duration=15,
@@ -210,20 +208,20 @@ def section_three(start_block: Bopimo_Object) -> List[Bopimo_Object]:
 
     platform_length = 150
     ROTATION_SPEED = 45
-    turtle_pos += Vector3(
-        0, 0, PLATFORM_SIZE / 2 + platform_length / 2 + GAP_SIZE
-    )
+    turtle_pos += Vector3(0, 0, PLATFORM_SIZE / 2 + platform_length / 2 + GAP_SIZE)
     for i in range(0, 5):
-        platform = Bopimo_Block(
+        platform_rot = Bopimo_Block(
             color=SECTION_THREE_COLOR,
             position=turtle_pos,
             rotation=Vector3(0, 90 * i, 0),
             scale=Vector3(PLATFORM_SIZE, 2, platform_length),
         )
-        platform.rotation_enabled = True
-        platform.rotation_direction = Vector3.up(*platform.rotation.to_radians())
-        platform.rotation_speed = ROTATION_SPEED
-        blocks.append(platform)
+        platform_rot.rotation_enabled = True
+        platform_rot.rotation_direction = Vector3.up(
+            *platform_rot.rotation.to_radians()
+        )
+        platform_rot.rotation_speed = ROTATION_SPEED
+        blocks.append(platform_rot)
         turtle_pos += Vector3(0, 0, (platform_length + GAP_SIZE))
     turtle_pos -= Vector3(0, 0, platform_length / 2)
 
@@ -248,7 +246,7 @@ def section_three(start_block: Bopimo_Object) -> List[Bopimo_Object]:
     PLATE_OFFSET = Vector3(0, 0, 250)
     PLATE_SIZE = 75
     plate = Bopimo_Block(
-        id=Block_ID.CYLINDER,
+        shape=Shape.CYLINDER,
         position=cannon.position + PLATE_OFFSET,
         scale=Vector3(PLATE_SIZE, 2, PLATE_SIZE),
     )
@@ -279,7 +277,7 @@ def main():
     ## LEVEL CODE
 
     baseplate = Bopimo_Block(
-        id=Block_ID.CYLINDER,
+        shape=Shape.CYLINDER,
         position=Vector3(0, -6, 0),
         scale=Vector3(32, 2, 32),
         color=Color(232, 182, 118),
@@ -291,9 +289,7 @@ def main():
     SPAWN_OFFSET = Vector3(0, baseplate.scale.y / 2 + 0.5, 0)
     level.add_object(Bopimo_Spawn(position=baseplate.position + SPAWN_OFFSET))
 
-    c_one = section_one(
-        start=baseplate.position + Vector3(0, 0, baseplate.scale.z / 2)
-    )
+    c_one = section_one(start=baseplate.position + Vector3(0, 0, baseplate.scale.z / 2))
     level.add_objects(c_one)
 
     last_pos = c_one[-1].position + Vector3(0, 0, c_one[-1].scale.z / 2)

@@ -3,9 +3,10 @@ from copy import copy, deepcopy
 from enum import IntEnum
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Iterator, List, Self
+from typing import Any, Iterator, List, Mapping, Self
 
 ## TYPES
+
 
 class Color:
     """
@@ -90,9 +91,7 @@ class Color:
     ## CLASS METHODS
 
     @classmethod
-    def from_hsv(
-        cls, hue: int = 0, saturation: float = 1, value: float = 1
-    ) -> Self:
+    def from_hsv(cls, hue: int = 0, saturation: float = 1, value: float = 1) -> Self:
         """
         <CONSTRUCTOR>
         Given HSV values, convert them to RGB and create a color object.
@@ -108,13 +107,11 @@ class Color:
                 0 - 1
 
         Returns:
-            Bopimo_Color:
+            Color:
                 A newly created color object, converted from HSV
         """
         r, g, b = cls.__from_hs(hue, saturation)
-        c = cls(
-            int(r * value * 255), int(g * value * 255), int(b * value * 255)
-        )
+        c = cls(int(r * value * 255), int(g * value * 255), int(b * value * 255))
         c.__clamp()
         return c
 
@@ -126,7 +123,7 @@ class Color:
         makers don't want to import the copy module.
 
         Returns:
-            Bopimo_Color:
+            Color:
                 A new color object with the same attributes as the current.
         """
         return copy(self)
@@ -179,6 +176,193 @@ class Color:
             raise TypeError()
         return not (self == other)
 
+
+class Vector2:
+    """
+    A Bopimo type that represents a specialized two element array, representing
+    2D coordinates for the X and Y axes.
+
+    Class Attributes:
+        bopjson_type_name (str):
+            The name of the type as detailed in the bopjson format
+
+    Instance Attributes:
+        x (float):
+            The value of the coordinate in the X axis
+        y (float):
+            The value of the coordinate in the Y axis
+    """
+
+    bopjson_type_name: str = "Vector2F32"
+
+    def __init__(self, x: float, y: float):
+        self.x: float = x
+        self.y: float = y
+
+    ## CLASS METHODS
+
+    @classmethod
+    def zero(cls) -> Self:
+        """
+        <CONSTRUCTOR>
+        A shorthand method of creating a zero vector
+
+        Returns:
+            Self:
+                A newly created zero vector
+        """
+        return cls(0, 0)
+
+    @classmethod
+    def one(cls) -> Self:
+        """
+        <CONSTRUCTOR>
+        A shorthand method of creating a one vector
+
+        Returns:
+            Self:
+                A newly created one vector
+        """
+        return cls(1, 1)
+
+    ## INSTANCE METHODS
+
+    def copy(self) -> Self:
+        """
+        Creates an identical copy of itself. A dedicated method in case level
+        makers don't want to import the copy module.
+
+        Returns:
+            Vector2:
+                A new vector object with the same attributes as the current.
+        """
+        return copy(self)
+
+    def to_obj(self) -> Mapping[str, float]:
+        """
+        Converts the vector into a more literal dictionary, compatible with
+        normal JSON.
+
+        Returns:
+            dict[str, float]:
+                A dictionary equivalent of the vector object.
+        """
+        return {"x": self.x, "y": self.y}
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the vector to bopjson, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A bopjson vector object
+        """
+        return {"type": self.bopjson_type_name, "value": self.to_obj()}
+
+    ## DUNDER METHODS
+
+    def __copy__(self) -> Self:
+        return self.__class__(self.x, self.y)
+
+    def __iter__(self) -> Iterator[float]:
+        return iter((self.x, self.y))
+
+    def __str__(self) -> str:
+        return f"{self.bopjson_type_name}({self.x}, {self.y})"
+
+    ### OPERATOR METHODS
+
+    def __add__(self, other: Self) -> Self:
+        return self.__class__(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other: Self) -> Self:
+        return self.__class__(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other: int | float) -> Self:
+        return self.__class__(self.x * other, self.y * other)
+
+    def __div__(self, other: int | float) -> Self:
+        if other == 0:
+            raise ZeroDivisionError()
+        return self.__class__(self.x / other, self.y / other)
+
+    def __truediv__(self, other: int | float) -> Self:
+        return self.__div__(other)
+
+    def __divmod__(self, other: int | float) -> Self:
+        if other == 0:
+            raise ZeroDivisionError()
+        return self.__class__(self.x % other, self.y % other)
+
+    def __neg__(self) -> Self:
+        return self.__class__(-self.x, -self.y)
+
+    ### EQUALITY METHODS
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            raise TypeError()
+        return (self.x == other.x) and (self.y == other.y)
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            raise TypeError()
+        return not (self == other)
+
+
+class Vector2_I8(Vector2):
+    """ 
+    A subtype of the Vector2 class where the values are 8 bit signed integers
+    instead of floating point numbers.
+
+    Internally, the values are still stored as floats, because Python does not
+    let me switch the type when overriding an attribute, and since I don't want
+    to duplicate code, this is the easier way to do it.
+    """
+    bopjson_type_name: str = "Vector2I8"
+
+    def __init__(self, x: int, y: int):
+        self.x: float = x
+        self.y: float = y
+    
+    def to_obj(self) -> Mapping[str, int]:
+        """
+        Converts the vector into a more literal dictionary, compatible with
+        normal JSON.
+
+        Returns:
+            dict[str, int]:
+                A dictionary equivalent of the vector object.
+        """
+        lower_bound = -(2**7)
+        upper_bound = (2**7) - 1
+        if self.x < lower_bound or self.x > upper_bound:
+            raise OverflowError(
+                f"You have ran into an overflow/underflow in a signed 8 bit integer Vector 2 with the X value"
+            )
+        if self.y < lower_bound or self.y > upper_bound:
+            raise OverflowError(
+                f"You have ran into an overflow/underflow in a signed 8 bit integer Vector 2 with the Y value"
+            )
+        return {"x": int(self.x), "y": int(self.y)}
+
+    def json(self) -> dict[str, Any]:
+        """
+        Convert the vector to bopjson, as part of the exporting process.
+
+        Returns:
+            dict[str, Any]:
+                A bopjson vector object
+        """
+        return {"type": self.bopjson_type_name, "value": self.to_obj()}
+    
+    ## DUNDER METHODS
+
+    def __iter__(self) -> Iterator[int]:
+        return iter((int(self.x), int(self.y)))
+
+    def __str__(self) -> str:
+        return f"{self.bopjson_type_name}({int(self.x)}, {int(self.y)})"
 
 class Vector3:
     """
@@ -385,7 +569,7 @@ class Vector3:
         makers don't want to import the copy module.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 A new vector object with the same attributes as the current.
         """
         return copy(self)
@@ -396,7 +580,7 @@ class Vector3:
         equivalent vector in degrees.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The vector converted to degrees.
         """
         return self.__class__(
@@ -409,7 +593,7 @@ class Vector3:
         equivalent vector in radians.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The vector converted to radians.
         """
         return self.__class__(
@@ -499,7 +683,7 @@ class Vector3Array:
             The name of the type as detailed in the bopjson format
 
     Instance Attributes:
-        list (List[Bopimo_Vector3]):
+        list (List[Vector3]):
             The underlying data structure that stores the vectors
     """
 
@@ -517,7 +701,7 @@ class Vector3Array:
         Adds a vector into the array
 
         Parameters:
-            vector (Bopimo_Vector3):
+            vector (Vector3):
                 The Bopimo vector to be added into the array
         """
         self._list.append(vector)
@@ -541,7 +725,7 @@ class Vector3Array:
                 this to False.
 
         Returns:
-            Bopimo_Vector3Array:
+            Vector3Array:
                 A newly created array containing identical elements
         """
         if deep:
@@ -557,7 +741,7 @@ class Vector3Array:
                 The position in the list to grab a vector from.
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The vector at the given index
         """
         return self._list[index]
@@ -569,7 +753,7 @@ class Vector3Array:
         Parameters:
             index (int):
                 The position in the list to set a vector in
-            vector (Bopimo_Vector3):
+            vector (Vector3):
                 The new vector to replace in the array
         """
         self._list[index] = vector
@@ -593,7 +777,7 @@ class Vector3Array:
                 The position in the list to remove a vector from
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The removed vector from the list
         """
         return self._list.pop(index)
@@ -629,9 +813,7 @@ class Vector3Array:
 
     ### OPERATOR METHODS
 
-    def __add__(
-        self, other: "Vector3Array" | List[Vector3]
-    ) -> "Vector3Array":
+    def __add__(self, other: "Vector3Array" | List[Vector3]) -> "Vector3Array":
         if isinstance(other, Vector3Array):
             return Vector3Array(self._list + other._list)
         else:
@@ -681,7 +863,7 @@ class ColorArray:
             The name of the type as detailed in the bopjson format
 
     Instance Attributes:
-        list (List[Bopimo_Color]):
+        list (List[Color]):
             The underlying data structure that stores the color
     """
 
@@ -698,7 +880,7 @@ class ColorArray:
         Adds a color into the array
 
         Parameters:
-            color (Bopimo_Color):
+            color (Color):
                 The Bopimo color to be added into the array
         """
         self._list.append(color)
@@ -722,7 +904,7 @@ class ColorArray:
                 this to False.
 
         Returns:
-            Bopimo_ColorArray:
+            ColorArray:
                 A newly created array containing identical elements
         """
         if deep:
@@ -738,7 +920,7 @@ class ColorArray:
                 The position in the list to grab a color from.
 
         Returns:
-            Bopimo_Color:
+            Color:
                 The color object at the given index
         """
         return self._list[index]
@@ -750,7 +932,7 @@ class ColorArray:
         Parameters:
             index (int):
                 The position in the list to set a color in
-            color (Bopimo_Vector3):
+            color (Vector3):
                 The new color to replace in the array
         """
         self._list[index] = color
@@ -774,7 +956,7 @@ class ColorArray:
                 The position in the list to remove a color from
 
         Returns:
-            Bopimo_Vector3:
+            Vector3:
                 The removed color from the list
         """
         return self._list.pop(index)
@@ -810,9 +992,7 @@ class ColorArray:
 
     ### OPERATOR METHODS
 
-    def __add__(
-        self, other: "ColorArray" | List[Color]
-    ) -> "ColorArray":
+    def __add__(self, other: "ColorArray" | List[Color]) -> "ColorArray":
         if isinstance(other, ColorArray):
             return ColorArray(self._list + other._list)
         else:
@@ -912,7 +1092,7 @@ class IntArray:
                 this to False.
 
         Returns:
-            Bopimo_IntArray:
+            IntArray:
                 A newly created array containing identical elements
         """
         if deep:
@@ -1202,7 +1382,7 @@ class Float32Array:
                 this to False.
 
         Returns:
-            Bopimo_Float32Array:
+            Float32Array:
                 A newly created array containing identical elements
         """
         if deep:
@@ -1294,9 +1474,7 @@ class Float32Array:
 
     def __add__(
         self,
-        other: (
-            "Float32Array" | List[float] | List[np.float32] | NDArray[np.float32]
-        ),
+        other: "Float32Array" | List[float] | List[np.float32] | NDArray[np.float32],
     ) -> Self:
         if isinstance(other, Float32Array):
             return self.__class__(self._list + other._list)
@@ -1342,6 +1520,7 @@ class Float32Array:
         if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
+
 
 ## ALIASES FOR REVERSE COMPATIBILITY
 

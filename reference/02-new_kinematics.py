@@ -2,7 +2,7 @@
 import math
 from bopymo.bopimo_types import Vector3
 from bopymo.classes import Bopimo_Block, Bopimo_Level, Game_Version, Bopimo_Rose
-from bopymo.enumerators import Block_ID
+from bopymo.enumerators import Shape
 
 
 def main():
@@ -12,7 +12,7 @@ def main():
     )
 
     baseplate = Bopimo_Block(
-        id=Block_ID.CYLINDER,
+        shape=Shape.CYLINDER,
         name="Baseplate",
         position=Vector3(0, -6, 0),
         scale=Vector3(250, 6, 250),
@@ -27,9 +27,7 @@ def main():
     block.nametag = True
     block.position_enabled = True
     block.position_travel_speed = 10
-    block.add_position_points(
-        [Vector3.zero(), Vector3(0, 0, 10), Vector3(10, 0, 10)]
-    )
+    block.add_position_points([Vector3.zero(), Vector3(0, 0, 10), Vector3(10, 0, 10)])
 
     block_two = Bopimo_Block(name="New Kinematics", position=Vector3(0, 5, 0))
 

@@ -1,8 +1,14 @@
 # Written using Bopymo 0.3 and Python 3.13.3
 from typing import List
 from bopymo.bopimo_types import Color, Int32Array, Vector3
-from bopymo.classes import Bopimo_Block, Bopimo_Completion_Star, Bopimo_Level, Bopimo_Object, Bopimo_Spawn
-from bopymo.enumerators import Block_ID, Music, Sky
+from bopymo.classes import (
+    Bopimo_Block,
+    Bopimo_Completion_Star,
+    Bopimo_Level,
+    Bopimo_Object,
+    Bopimo_Spawn,
+)
+from bopymo.enumerators import Shape, Music, Sky
 import math
 
 
@@ -37,7 +43,7 @@ def main():
     )
 
     baseplate = Bopimo_Block(
-        id=Block_ID.CYLINDER,
+        shape=Shape.CYLINDER,
         name="Baseplate",
         color=BASE_COLOR,
         scale=Vector3(250, 6, 250),
@@ -55,7 +61,7 @@ def main():
         # Have multiples of 8
         for r in range(0, 360, 45):
             platform = Bopimo_Block(
-                id=Block_ID.CUBE,
+                shape=Shape.CUBE,
                 name="Moving Platform",
                 position=Vector3(0, 2, 0),
                 rotation=Vector3(0, r, 0),
@@ -77,7 +83,7 @@ def main():
     for i in range(0, 4):
         diameter = 145 - 31 * i
         platform = Bopimo_Block(
-            id=Block_ID.CYLINDER,
+            shape=Shape.CYLINDER,
             name="Platform",
             color=BASE_COLOR,
             position=Vector3(0, 6.5 + i * 7, 0),
@@ -89,7 +95,7 @@ def main():
     # Hue cycle (Rainbow)
     for i in range(0, 360, math.floor(360 / 30)):
         platform = Bopimo_Block(
-            id=Block_ID.CYLINDER,
+            shape=Shape.CYLINDER,
             name="Moving Inner Platform",
             position=Vector3(0, 6.5, 0),
             rotation=Vector3(0, i, 0),
@@ -107,14 +113,14 @@ def main():
     # Grayscale
     for i in range(0, 360, math.floor(360 / 24)):
         platform = Bopimo_Block(
-            id=Block_ID.CYLINDER,
+            shape=Shape.CYLINDER,
             name="Moving Inner Platform",
             position=Vector3(0, 10, 0),
             rotation=Vector3(0, i, 0),
             scale=Vector3(10, 14, 10),
         )
-        color = int(math.fabs((180 - i) / 180) * 255)
-        platform.color = Color(color, color, color)
+        color_gs = int(math.fabs((180 - i) / 180) * 255)
+        platform.color = Color(color_gs, color_gs, color_gs)
         platform.pattern_color = platform.color
         platform.rotation_enabled = True
         platform.rotation_direction = Vector3(0, 1, 0)
@@ -126,7 +132,7 @@ def main():
     # RGB
     for i in range(0, 18):
         platform = Bopimo_Block(
-            id=Block_ID.CYLINDER,
+            shape=Shape.CYLINDER,
             name="Moving Inner Platform",
             color=rgb[i % 3],
             position=Vector3(0, 13.5, 0),
@@ -149,7 +155,7 @@ def main():
     # CMYK
     for i in range(0, 12):
         platform = Bopimo_Block(
-            id=Block_ID.CYLINDER,
+            shape=Shape.CYLINDER,
             name="Moving Inner Platform",
             position=Vector3(0, 17, 0),
             rotation=Vector3(0, i * 30, 0),

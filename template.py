@@ -1,8 +1,9 @@
-# Import new classes when necessary. 
+# Import new classes when necessary.
 # Usually language servers will fill this in for you when autocompleting.
 from bopymo.classes import Bopimo_Block, Bopimo_Level
-from bopymo.enumerators import Block_ID
+from bopymo.enumerators import Shape
 from bopymo.bopimo_types import Vector3
+
 
 def main():
     ### WRITE YOUR LEVEL CODE HERE
@@ -12,7 +13,7 @@ def main():
     )
 
     baseplate = Bopimo_Block(
-        id=Block_ID.CYLINDER,
+        shape=Shape.CYLINDER,
         name="Baseplate",
         position=Vector3(0, -6, 0),
         scale=Vector3(250, 6, 250),
