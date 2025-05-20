@@ -2099,6 +2099,14 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
     While it is considered an action block, its feature set can be considered
     decorational.
 
+    Class Attributes:
+        PITCH_BASE (List[float]):
+            A list of base frequencies (at octave 0) for the notes C all the
+            way to B. Values are measured in Hertz. 
+        KEY_INDEX (dict[str, int]):
+            A dictionary that maps associated keys to the proper index in
+            PITCH_BASE.
+
     Instance Attributes:
         center_color (Color):
             The color of the central part of the note block
@@ -2124,6 +2132,40 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
 
     MIN_VERSION = Game_Version(1, 1, 0)
 
+    KEY_INDEX: dict[str, int] = {
+        "c": 0,
+        "c#": 1,
+        "db": 1,
+        "d": 2,
+        "d#": 3,
+        "eb": 3,
+        "e": 4,
+        "f": 5,
+        "f#": 6,
+        "gb": 6,
+        "g": 7,
+        "g#": 8,
+        "ab": 8,
+        "a": 9,
+        "a#": 10,
+        "bb": 10,
+        "b": 11,
+    }
+    PITCH_BASE: List[float] = [
+        16.351875,
+        17.32375,
+        18.35375,
+        19.445625,
+        20.601875,
+        21.826875,
+        23.124375,
+        24.5,
+        25.95625,
+        27.5,
+        29.135,
+        30.8675,
+    ]
+
     def __init__(
         self,
         name: str = "Generated Note Block",
@@ -2141,6 +2183,77 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
         self.bounce_force: float = 50
         self.instrument: Sound | int = Sound.PIANO
         self.pitch: float = 1
+
+    def tune(self, key: str, octave: int) -> None:
+        """
+        For instruments, calculates the appropriate pitch value for the note
+        block based on the more familiar music key notation (A - G), and sets
+        the pitch to said value. This is extremely useful if you are a musician
+        and are looking for proper keys to tune notes.
+
+        The parameters have been ordered to mimic Scientific Pitch Notation.
+        https://en.wikipedia.org/wiki/Scientific_pitch_notation
+
+        Keep in mind that due to how pitch shifting works, you cannot perfectly
+        recreate other notes with just shifting. The farther the resulting
+        pitch is from the reference, the more timbre is lost and will not sound
+        like the intended instrument.
+
+        Parameters:
+            key (str):
+                A short string value that resembles the key of the note
+
+                Keys are formatted using Scientific Pitch Notation, with # to
+                represent sharp, and b to represent flat notes.
+            octave (int):
+                A value from 0 - 8 that will determine the octave of the note.
+        """
+        if key.lower() not in self.KEY_INDEX:
+            raise ValueError(f"Key value for tuning is not a proper note value ({key})")
+        if octave < 0 or octave > 8:
+            raise ValueError(
+                f"Octave value is outside acceptable range of 0 - 8 ({octave})"
+            )
+
+        ki = self.KEY_INDEX[key.lower()]
+        frequency: float = self.PITCH_BASE[ki] * (2**octave)
+
+        divisor: float
+        # Formatted as Note Index, then octave
+        lowest: tuple[int, int]
+        highest: tuple[int, int]
+        match (self.instrument):
+            # Ref, Low, High
+            case Sound.PIANO | Sound.CHORD:
+                # C5, A0, C8
+                divisor = self.PITCH_BASE[self.KEY_INDEX["c"]] * (2**5)
+                lowest = (9, 0)
+                highest = (0, 8)
+            case Sound.VIOLA:
+                # C5, C3, G5
+                divisor = self.PITCH_BASE[self.KEY_INDEX["c"]] * (2**5)
+                lowest = (0, 3)
+                highest = (7, 5)
+            case Sound.SYNTH:
+                # C5, C0, B8 (No limit)
+                divisor = self.PITCH_BASE[self.KEY_INDEX["c"]] * (2**5)
+                lowest = (0, 0)
+                highest = (11, 8)
+            case _:
+                raise ValueError("Note block is set to a non-instrument value")
+
+        if octave <= lowest[1] or octave >= highest[1]:
+            if (
+                ki < lowest[0]
+                or ki > highest[0]
+                or octave < lowest[1]
+                or octave > highest[1]
+            ):
+                logging.warning(
+                    f"You've defined a note ({key}{octave}) that is outside the physical range of the instrument {self.instrument}. Expect strange behavior!"
+                )
+
+        self.pitch = frequency / divisor
 
     def json(self) -> dict[str, Any]:
         """
