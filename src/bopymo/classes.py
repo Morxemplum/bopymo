@@ -2102,7 +2102,7 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
     Class Attributes:
         PITCH_BASE (List[float]):
             A list of base frequencies (at octave 0) for the notes C all the
-            way to B. Values are measured in Hertz. 
+            way to B. Values are measured in Hertz.
         KEY_INDEX (dict[str, int]):
             A dictionary that maps associated keys to the proper index in
             PITCH_BASE.
@@ -2285,6 +2285,17 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
     useful to incorporate dialogue from NPCs. Remember that the name attribute
     will be displayed to the user upon interaction.
 
+    Class Attributes:
+        CHARS_PER_LINE (int):
+            A rough estimate of the amount of characters that should fit on a
+            single line of the text display.
+
+            This value was achieved based on a worst case scenario of the
+            widest character in the font.
+        LINES_PER_SECTION (int):
+            How many lines of text can be displayed in a single section before
+            the user has to click to advance the text.
+
     Instance Attributes
         text (str):
             The contents that will be contained inside the sign and read out to
@@ -2300,6 +2311,8 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
     """
 
     MIN_VERSION = Game_Version(1, 1, 0)
+    CHARS_PER_LINE: int = 99
+    LINES_PER_SECTION: int = 4
 
     def __init__(
         self,
@@ -2336,6 +2349,132 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
     @pole_pattern_opacity.setter
     def pole_pattern_opacity(self, value: int) -> None:
         self._pole_pattern_opacity = max(0, min(value, 255))
+
+    def __wrap_string(self, string: str) -> tuple[str, int]:
+        """
+        Given a string (without new line characters), split the string into
+        separate lines based on CHARS_PER_LINE, mimicking how many chars
+        can be fit into a Bopimo sign section.
+
+        This is a helper function for the merge_strings funciton
+
+        Parameters:
+            string (str):
+                The string that we want to perform formatting on. Usually will
+                have more than CHARS_PER_LINE characters, otherwise it will
+                return itself.
+
+        Returns:
+            tuple(str, int):
+                The formatted string, plus how many line breaks are included.
+        """
+        assert (
+            "\n" not in string
+        ), f"Seems like a newline character slipped past our logic. {string}"
+        if len(string) < self.CHARS_PER_LINE + 1:
+            return (string, 0)
+
+        pos: int = self.CHARS_PER_LINE + 1
+        breaks: int = 0
+        final_str: str = string
+
+        while pos < len(final_str):
+            if final_str[pos].isspace():
+                final_str = final_str[:pos] + "\n" + final_str[pos + 1 :]
+                breaks += 1
+            else:
+                li: int = pos
+                ri: int = pos + 1
+                hyphen: bool = False
+                while not final_str[li].isspace():
+                    # For extra long words, we'll break them up with a hyphen instead
+                    if ri - li > 8:
+                        hyphen = True
+                        break
+                    li -= 1
+                    # Stop the right index from going out of bounds
+                    if ri < len(final_str) and not final_str[ri].isspace():
+                        ri += 1
+                if not hyphen:
+                    sp: int = li
+                    final_str = final_str[:sp] + "\n" + final_str[sp + 1 :]
+                    breaks += 1
+                    pos = sp + 1
+                else:
+                    final_str = final_str[: pos - 2] + "-\n" + final_str[pos - 2 :]
+                    breaks += 1
+
+            pos += self.CHARS_PER_LINE
+
+        return (final_str, breaks)
+
+    def merge_strings(self, strings: List[str]) -> None:
+        """
+        Given a list of strings, will take the list of strings and try to merge
+        them so Bopimo's engine will display each string as a separate section
+        that the user must click to advance through each one.
+
+        WARNING: This method is unreliable. I cannot accurately calculate how
+        many characters can fit in a line, as GUI scale and monitor aspect
+        ratio can change, alongside the text not using a monospace font. This
+        is done under the assumption that the player is on either a 1920x1080
+        display or 3840x2160 with GUI scale at 200%. I am hoping a more native
+        implementation may come along in a future version.
+
+        Parameters:
+            strings (List[str]):
+                The list of strings that will be displayed in separate sections
+        """
+        wrapped_str: str
+        breaks: int
+        final_string: str = ""
+        for string in strings:
+            # Short string check
+            if (len(string) < self.CHARS_PER_LINE + 1) and ("\n" not in string):
+                final_string += f"{string}\n\n\n\n"
+                continue
+            # Long string check
+            if len(string) > self.CHARS_PER_LINE * self.LINES_PER_SECTION:
+                raise ValueError(
+                    f"You have a string whose length exceeds the amount of maximum characters in a section ({self.CHARS_PER_LINE * self.LINES_PER_SECTION}). "
+                    "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
+                    "Break this string up into multiple strings. "
+                    f"(Current string length: {len(string)})"
+                )
+            lines_needed: int = self.LINES_PER_SECTION
+            # Pre-existing new lines will affect how we do the calculation
+            if string.find("\n") == -1:
+                wrapped_str, breaks = self.__wrap_string(string)
+                lines_needed -= breaks
+                final_string += wrapped_str + ("\n" * lines_needed)
+            else:
+                broken_str: List[str] = string.split(sep="\n")
+                if len(broken_str) - 1 > self.LINES_PER_SECTION:
+                    raise ValueError(
+                        f"You have a string with new line characters that exceed the amount of maximum lines in a section ({self.LINES_PER_SECTION}). "
+                        "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
+                        "Break this string up into multiple strings. "
+                        f'(Current string: "{repr(string)}")'  # Display the string literal
+                    )
+                lines_needed -= len(broken_str) - 1
+                for i, substr in enumerate(broken_str):
+                    wrapped_str, breaks = self.__wrap_string(substr)
+                    lines_needed -= breaks
+                    final_string += wrapped_str
+                    # Readd the new line character
+                    if i < len(broken_str) - 1:
+                        final_string += "\n"
+                    if lines_needed < 0:
+                        raise ValueError(
+                            f"You have a string with new line characters whose length exceeds the amount of maximum lines in a section ({self.LINES_PER_SECTION}). "
+                            "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
+                            "Break this string up into multiple strings. "
+                            f'(Current string: "{repr(string)}")'  # Display the string literal
+                        )
+                if lines_needed > 0:
+                    final_string += "\n" * lines_needed
+        # Set the sign to our formatted text
+        self.text = final_string
 
     def json(self) -> dict[str, Any]:
         """
