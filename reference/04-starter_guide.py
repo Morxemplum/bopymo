@@ -12,8 +12,8 @@ from bopymo.classes import (
     Bopimo_Disappearing_Block,
     Bopimo_Grates,
     Bopimo_Ice,
-    Bopimo_Lava,
     Bopimo_Level,
+    Bopimo_Magma,
     Bopimo_Object,
     Bopimo_Pine_Tree,
     Bopimo_Spawn,
@@ -130,7 +130,7 @@ def section_three(start_block: Bopimo_Object) -> List[Bopimo_Object]:
     # Part One: Slippery Lava Pillars
     platform_length = 200
     PLATFORM_SIZE = 20
-    LAVA_HEIGHT = 50
+    MAGMA_HEIGHT = 50
     turtle_pos = start_block.position + Vector3(
         0, 0, start_block.scale.z / 2 + platform_length / 2
     )
@@ -142,13 +142,13 @@ def section_three(start_block: Bopimo_Object) -> List[Bopimo_Object]:
     turtle_pos -= Vector3(0, 0, platform_length / 2)
 
     for i in range(1, 4):
-        lava = Bopimo_Lava(
+        magma = Bopimo_Magma(
             position=turtle_pos
-            + Vector3(0, LAVA_HEIGHT / 2 + 1, platform_length * i / 4),
-            scale=Vector3(PLATFORM_SIZE, LAVA_HEIGHT, PLATFORM_SIZE),
+            + Vector3(0, MAGMA_HEIGHT / 2 + 1, platform_length * i / 4),
+            scale=Vector3(PLATFORM_SIZE, MAGMA_HEIGHT, PLATFORM_SIZE),
             damage=50,
         )
-        blocks.append(lava)
+        blocks.append(magma)
     turtle_pos += Vector3(0, 0, platform_length)
 
     # Part Two: Disappearing Platforms
