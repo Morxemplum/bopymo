@@ -846,10 +846,6 @@ class Bopimo_Level:
                     raise KeyError(
                         f'A destination in Portal "{block.name}" has a destination ({dest}) that does not exist in the level. Did you forget to call add_object?'
                     )
-                if not isinstance(self._blocks[dest], Bopimo_Portal):
-                    raise TypeError(
-                        f'A destination in Portal "{block.name}" has a destination (Name: {self._blocks[dest].name}, UID: {dest}) that is NOT a Portal object (Got {self._blocks[dest].__class__})'
-                    )
 
     def remove_object(self, uid: int) -> Bopimo_Object:
         """
