@@ -188,6 +188,8 @@ class Sky(IntEnum):
     DEPENDENCE = 21
     RAPTURE = 22
     WASTES = 23
+    PERPLEXION = 24
+    AZURE = 25
 
 
 class Weather(IntEnum):
