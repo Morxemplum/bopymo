@@ -672,6 +672,12 @@ class Bopimo_Level:
 
             A warning will be thrown in the console if you export a level past
             this limit.
+        SERVER_STAR_LIMIT (int):
+            A constant integer representing the limit of how many completion
+            stars can be included in a level. 
+
+            A warning will be thrown in the console if you export a level past
+            this limit.
 
     Instance Attributes:
         game_version (Game_Version):
@@ -760,6 +766,7 @@ class Bopimo_Level:
     """
 
     SERVER_BLOCK_LIMIT = 2048
+    SERVER_STAR_LIMIT = 255
 
     def __init__(
         self,
@@ -998,6 +1005,12 @@ class Bopimo_Level:
         if len(self._blocks) > Bopimo_Level.SERVER_BLOCK_LIMIT:
             logging.warning(
                 f"Your level has {len(self._blocks)} blocks, which exceeds the server block limit of {Bopimo_Level.SERVER_BLOCK_LIMIT}. "
+                "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
+                "not publish your level online."
+            )
+        if len(self._completion_stars) > Bopimo_Level.SERVER_STAR_LIMIT:
+            logging.warning(
+                f"Your level has {len(self._completion_stars)} completion stars, which exceeds the server star limit of {Bopimo_Level.SERVER_STAR_LIMIT}. "
                 "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
                 "not publish your level online."
             )
