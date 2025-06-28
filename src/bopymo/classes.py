@@ -2124,9 +2124,16 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
             Resembles the pitch of the emitted sound. One is the base value,
             a higher value will be a higher pitch, and values lower than one
             will be a lower pitch
+        distance (float):
+            In terms of units, encompasses a sphere of the sound's hearing
+            range, located at the note block's position and the radius being
+            this value. When a player's camera is within the sphere, the sound
+            can be heard at full clarity. When the camera goes outside this
+            sphere, the sound can no longer be heard at full clarity and
+            attenuates based on how far away the player is from the note block.
     """
 
-    MIN_VERSION = Game_Version(1, 1, 0)
+    MIN_VERSION = Game_Version(1, 1, 2)
 
     KEY_INDEX: dict[str, int] = {
         "c": 0,
@@ -2177,6 +2184,7 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
         self.center_pattern_color: Color = Color(176, 131, 241)
 
         self.bounce_force: float = 50
+        self.distance: float = 10.0
         self.instrument: Sound | int = Sound.PIANO
         self.pitch: float = 1
 
@@ -2267,6 +2275,7 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
             "bounce_force": self.bounce_force,
             "instrument": self.instrument,
             "pitch_scale": self.pitch,
+            "sound_distance": self.distance,
         }
 
 
