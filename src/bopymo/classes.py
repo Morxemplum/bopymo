@@ -124,7 +124,7 @@ class Game_Version:
 
 # This is a constant that is used to represent the latest version of Bopimo
 # If your level doesn't specify a version, this value will be used by default
-GAME_VERSION = Game_Version(1, 1, 0)
+GAME_VERSION = Game_Version(1, 1, 2)
 
 ### BOPIMO CLASSES
 
@@ -771,8 +771,8 @@ class Bopimo_Level:
         self.time_of_save: datetime.datetime = datetime.datetime.now(datetime.UTC)
 
         assert self.game_version >= Game_Version(
-            1, 1, 0
-        ), "Bopymo 0.3 requires a minimum Bopjson version of 1.1.0 to work correctly."
+            1, 1, 2
+        ), "Bopymo 0.4 requires a minimum Bopjson version of 1.1.2 to work correctly."
 
         # LEVEL INFORMATION
         self.name: str = name
