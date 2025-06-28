@@ -973,7 +973,8 @@ class Bopimo_Level:
             match block:
                 # Completion Stars are a special case as they have an additional ID system
                 case Bopimo_Completion_Star():
-                    star_id: int = self._completion_stars.index(uid)
+                    # As of Bopimo 1.1.2, Star IDs are now 1-based instead of 0-based
+                    star_id: int = self._completion_stars.index(uid) + 1
                     obj["level_blocks"]["value"].append(
                         {"uid": uid} | block.json(star_id)
                     )
@@ -1271,7 +1272,7 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
         self.mute: bool = False
         self.float_height: float = 1.5
 
-    def json(self, star_id: int = 0) -> dict[str, Any]:
+    def json(self, star_id: int = 1) -> dict[str, Any]:
         """
         Convert the star to JSON, as part of the exporting process.
 
