@@ -1,4 +1,6 @@
 from bopymo.bopimo_types import (
+    JSON_Value,
+    Matrix3,
     Color,
     Vector2_I8,
     Vector3,
@@ -24,11 +26,12 @@ from copy import deepcopy
 import datetime
 import logging
 import math
-from numpy import dot
+from numpy import dot, float32, int32
 import json
 import random
 import time
-from typing import Any, List, Self
+from typing import Self, cast, override
+from numpy.typing import NDArray
 
 # Change how much information you want to display on the console when you use Bopymo.
 LOG_LEVEL = logging.INFO
@@ -60,10 +63,11 @@ class Game_Version:
     """
 
     def __init__(self, major: int, minor: int, micro: int):
-        self.major = major
-        self.minor = minor
-        self.micro = micro
+        self.major: int = major
+        self.minor: int = minor
+        self.micro: int = micro
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Game_Version):
             raise TypeError()
@@ -113,11 +117,13 @@ class Game_Version:
             raise TypeError()
         return self > other or self == other
 
+    @override
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, Game_Version):
             raise TypeError()
         return not (self == other)
 
+    @override
     def __str__(self) -> str:
         return f"{self.major}.{self.minor}.{self.micro}"
 
@@ -194,24 +200,24 @@ class Bopimo_Object:
             How fast the object will rotate, in a constant speed.
     """
 
-    MIN_VERSION = Game_Version(1, 0, 14)
+    MIN_VERSION: Game_Version = Game_Version(1, 0, 14)
 
     def __init__(
         self,
         id: Block_ID | int = Block_ID.NULL,
         name: str = "Object",
-        color: Color = Color(0, 0, 0),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         self.id: Block_ID | int = id
         self.name: str = name
         self.nametag: bool = False
-        self.color: Color = color
-        self.position: Vector3 = position
-        self.rotation: Vector3 = rotation
-        self.scale: Vector3 = scale
+        self.color: Color = color if color else Color(0, 0, 0)
+        self.position: Vector3 = position if position else Vector3.zero()
+        self.rotation: Vector3 = rotation if rotation else Vector3.zero()
+        self.scale: Vector3 = scale if scale else Vector3(2, 2, 2)
 
         # TODO: Add "movement_flags". They're currently in the code, but not functional at the moment.
 
@@ -372,7 +378,7 @@ class Bopimo_Object:
             self._position_travel_times.add_float(distance / self.position_travel_speed)
 
     def add_position_points(
-        self, position_times: List[tuple[Vector3, float]] | List[Vector3]
+        self, position_times: list[tuple[Vector3, float]] | list[Vector3]
     ) -> None:
         """
         Adds a list of position points to the object's position points, given
@@ -385,8 +391,8 @@ class Bopimo_Object:
         operations that would be performed to calculate the final travel time.
 
         Parameters:
-            position_times (List[ tuple[Vector3, float] ]
-                            | List[Vector3]):
+            position_times (list[ tuple[Vector3, float] ]
+                            | list[Vector3]):
                 A sequence of position point and time range pairs to add to the
                 object's position points and travel times. If doing speed-based
                 kinematics, just a sequence of position points.
@@ -515,7 +521,7 @@ class Bopimo_Object:
         self._position_points.clear()
         self._position_travel_times.clear()
 
-    def copy(self, deep_copy: bool = True, **kwargs: Any) -> Self:
+    def copy(self, deep_copy: bool = True, **kwargs: object) -> Self:
         """
         Makes a copy of the Bopimo object, retaining the instance attributes.
         This method allows level makers to copy objects without the need to
@@ -527,7 +533,7 @@ class Bopimo_Object:
                 by default as it is much more intuitive to level makers to
                 deep copy. However, if you want a true shallow copy, set this
                 to False.
-            **kwargs (Any):
+            **kwargs (object):
                 Any available object attributes can be specified to quickhand
                 modifications to a copy.
 
@@ -537,12 +543,12 @@ class Bopimo_Object:
         """
         return self.__copy__(deep_copy, **kwargs)
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Converts the object to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the Bopimo Object
         """
         return {
@@ -563,7 +569,7 @@ class Bopimo_Object:
         }
 
     # Only keyword arguments are supported, because you should be using keyword arguments anyway when quickhanding Bopymo objects
-    def __copy__(self, deep_copy: bool = True, **kwargs: Any) -> Self:
+    def __copy__(self, deep_copy: bool = True, **kwargs: object) -> Self:
         copied_object = self.__class__()
         dictionary = self.__dict__
         # While this goes against convention to make deepcopying the default behavior, I am doing this for multiple reasons:
@@ -588,9 +594,10 @@ class Bopimo_Object:
                 raise KeyError(
                     f"{attribute} is not a valid attribute of {self.__class__}. To quickhand non-standard attributes, make sure they are declared in the object you're copying."
                 )
-            if not isinstance(value, copied_object.__dict__[attribute].__class__):
+            attr: object = cast(object, copied_object.__dict__[attribute])
+            if not isinstance(value, attr.__class__):
                 raise TypeError(
-                    f'Quickhanded "{attribute}" attribute has an incompatible type. Expected {copied_object.__dict__[attribute].__class__}, got {value.__class__}'
+                    f'Quickhanded "{attribute}" attribute has an incompatible type. Expected {attr.__class__}, got {value.__class__}'
                 )
             copied_object.__dict__[attribute] = value
 
@@ -619,10 +626,10 @@ class Bopimo_Tilable_Object(Bopimo_Object):
         self,
         id: Block_ID | int = Block_ID.NULL,
         name: str = "Tilable Object",
-        color: Color = Color(0, 0, 0),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         super().__init__(id, name, color, position, rotation, scale)
         self.pattern: Block_Pattern | int = Block_Pattern.CHECKERBOARD
@@ -638,12 +645,13 @@ class Bopimo_Tilable_Object(Bopimo_Object):
         # Clamp pattern opacity to have values between 0 and 255
         self._pattern_opacity = max(0, min(value, 255))
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Converts the object to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the Bopimo Object
         """
         obj = super().json()
@@ -674,7 +682,7 @@ class Bopimo_Level:
             this limit.
         SERVER_STAR_LIMIT (int):
             A constant integer representing the limit of how many completion
-            stars can be included in a level. 
+            stars can be included in a level.
 
             A warning will be thrown in the console if you export a level past
             this limit.
@@ -758,15 +766,15 @@ class Bopimo_Level:
         star_amount (int)
             <READ_ONLY>
             An attribute detailing how many completion stars are in the level.
-        completion_stars (List[int])
+        completion_stars (list[int])
             <PRIVATE>
             A list that contains UID references to all of the level's
             completion stars. The order that the stars are in are associated
             with their "star ID" in a level.
     """
 
-    SERVER_BLOCK_LIMIT = 2048
-    SERVER_STAR_LIMIT = 255
+    SERVER_BLOCK_LIMIT: int = 2048
+    SERVER_STAR_LIMIT: int = 255
 
     def __init__(
         self,
@@ -806,7 +814,7 @@ class Bopimo_Level:
         self._blocks: dict[int, Bopimo_Object] = {}
 
         # COMPLETION STAR MANAGEMENT
-        self._completion_stars: List[int] = []
+        self._completion_stars: list[int] = []
 
     @property
     def star_amount(self) -> int:
@@ -905,41 +913,41 @@ class Bopimo_Level:
         uid: int = random.randrange(1, 2**32)
         # If we encounter collisions, regenerate the uid
         while uid in self._blocks:
-            uid = random.randrange(1, 2**32)
+            uid = random.randrange(1, cast(int, 2**32))
         self.__block_sanity_check(obj)
         self._blocks[uid] = obj
         if isinstance(obj, Bopimo_Completion_Star):
             self._completion_stars.append(uid)
         return uid
 
-    def add_objects(self, obj_list: List[Bopimo_Object]) -> List[int]:
+    def add_objects(self, obj_list: list[Bopimo_Object]) -> list[int]:
         """
         Adds multiple objects to the level.
 
         Parameters:
-            obj_list (List[Bopimo_Object]):
+            obj_list (list[Bopimo_Object]):
                 A list of objects that will be added to the level
 
         Returns:
-            List[int]:
+            list[int]:
                 A list of newly generated UIDs, ordered by the objects in the
                 input list
         """
-        uid_list: List[int] = []
+        uid_list: list[int] = []
         for obj in obj_list:
             uid = self.add_object(obj)
             uid_list.append(uid)
         return uid_list
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Converts the level to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the level
         """
-        obj: dict[str, Any] = {
+        obj: dict[str, JSON_Value] = {
             "GAME_VERSION": str(self.game_version),
             "TIME_OF_SAVE": self.time_of_save.strftime("%Y-%m-%d %H:%M:%S"),
             "level_name": self.name,
@@ -968,13 +976,15 @@ class Bopimo_Level:
             ):
                 logging.warning(
                     "Your level's music includes the value Music.ISAIAH_NEW_SONG, which has been renamed to Music.ORGAN. "
-                    "This old name will be removed in a future version of Bopymo. Please change this value to use the new name."
+                    + "This old name will be removed in a future version of Bopymo. Please change this value to use the new name."
                 )
                 DEPRECATION_WARNINGS["Using Music.ISAIAH_NEW_SONG"] = True
 
         # Append all the blocks in JSON
         uid: int
         block: Bopimo_Object
+        assert isinstance(obj["level_blocks"], dict)
+        assert isinstance(obj["level_blocks"]["value"], list)
         for uid, block in self._blocks.items():
             self.__block_sanity_check(block)
             match block:
@@ -1005,17 +1015,19 @@ class Bopimo_Level:
         if len(self._blocks) > Bopimo_Level.SERVER_BLOCK_LIMIT:
             logging.warning(
                 f"Your level has {len(self._blocks)} blocks, which exceeds the server block limit of {Bopimo_Level.SERVER_BLOCK_LIMIT}. "
-                "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
-                "not publish your level online."
+                + "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
+                + "not publish your level online."
             )
         if len(self._completion_stars) > Bopimo_Level.SERVER_STAR_LIMIT:
             logging.warning(
                 f"Your level has {len(self._completion_stars)} completion stars, which exceeds the server star limit of {Bopimo_Level.SERVER_STAR_LIMIT}. "
-                "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
-                "not publish your level online."
+                + "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
+                + "not publish your level online."
             )
         with open(f"{file_path}.bopjson", "w") as file:
-            file.write(json.dumps(self.json()))
+            file.write(
+                json.dumps(self.json())
+            )  # pyright: ignore[reportUnusedCallResult]
         end = time.perf_counter()
         export_time: int = int((end - start) * 1000)
         logging.info(
@@ -1034,7 +1046,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
     cylinders, or anything similar, you'll declare them with this class.
 
     Class Attributes:
-        TRANSPARENCY_LOOKUP (List[int]):
+        TRANSPARENCY_LOOKUP (list[int]):
             A transparency lookup table that has equivalent opacity values for
             the old "transparency" attribute before Bopimo 1.1.0. While the
             original implementation went from 0-7, an 8 value has been added to
@@ -1076,18 +1088,25 @@ class Bopimo_Block(Bopimo_Tilable_Object):
             block will still cast shadows.
     """
 
-    TRANSPARENCY_LOOKUP: List[int] = [0, 31, 63, 95, 127, 159, 191, 223, 255]
+    TRANSPARENCY_LOOKUP: list[int] = [0, 31, 63, 95, 127, 159, 191, 223, 255]
 
     def __init__(
         self,
         shape: Shape | int = Shape.CUBE,
         name: str = "Generated Block",
-        color: Color = Color(34, 139, 34),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.PRIMITIVE, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.PRIMITIVE,
+            name,
+            color if color else Color(34, 139, 34),
+            position,
+            rotation,
+            scale,
+        )
         self.pattern_scale: float = 2
         self.pattern_scroll: Vector2_I8 = Vector2_I8(0, 0)
         self.shape: Shape | int = shape
@@ -1102,8 +1121,8 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         if not DEPRECATION_WARNINGS["Using transparency_enabled"]:
             logging.warning(
                 'The property "transparency_enabled" has been removed since Bopimo 1.1.0, so using this property is deprecated. '
-                "This attribute will be removed in a future version of Bopymo. Remove any lines getting this property and get "
-                '"opacity" directly.'
+                + "This attribute will be removed in a future version of Bopymo. Remove any lines getting this property and get "
+                + '"opacity" directly.'
             )
             DEPRECATION_WARNINGS["Using transparency_enabled"] = True
         return self._transparency_enabled
@@ -1113,8 +1132,8 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         if not DEPRECATION_WARNINGS["Using transparency_enabled"]:
             logging.warning(
                 'The property "transparency_enabled" has been removed since Bopimo 1.1.0, so using this property is deprecated. '
-                "This attribute will be removed in a future version of Bopymo. Remove any lines setting this property and set "
-                '"opacity" directly.'
+                + "This attribute will be removed in a future version of Bopymo. Remove any lines setting this property and set "
+                + '"opacity" directly.'
             )
             DEPRECATION_WARNINGS["Using transparency_enabled"] = True
         self._transparency_enabled = value
@@ -1139,12 +1158,13 @@ class Bopimo_Block(Bopimo_Tilable_Object):
         # Clamp opacity to have values between 0 and 255
         self._opacity = max(0, min(value, 255))
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Converts the block to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the level
         """
         obj = super().json()
@@ -1174,19 +1194,27 @@ class Bopimo_Spawn(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Spawn",
-        color: Color = Color(160, 30, 176),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(4, 1, 4),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.SPAWN, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.SPAWN,
+            name,
+            color if color else Color(160, 30, 176),
+            position,
+            rotation,
+            scale if scale else Vector3(4, 1, 4),
+        )
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the spawn to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the spawn
         """
         return super().json()
@@ -1214,12 +1242,19 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Checkpoint",
-        color: Color = Color(160, 30, 176),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 4, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.CHECKPOINT, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.CHECKPOINT,
+            name,
+            color if color else Color(160, 30, 176),
+            position,
+            rotation,
+            scale if scale else Vector3(2, 4, 2),
+        )
 
     @property
     def flag_pattern(self) -> Block_Pattern | int:
@@ -1227,7 +1262,7 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
 
     @flag_pattern.setter
     def flag_pattern(self, value: Block_Pattern | int) -> None:
-        self.pattern = value
+        self.pattern: Block_Pattern | int = value
 
     @property
     def flag_pattern_color(self) -> Color:
@@ -1235,14 +1270,15 @@ class Bopimo_Checkpoint(Bopimo_Tilable_Object):
 
     @flag_pattern_color.setter
     def flag_pattern_color(self, value: Color) -> None:
-        self.pattern_color = value
+        self.pattern_color: Color = value
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the checkpoint to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the checkpoint
         """
         return super().json()
@@ -1274,18 +1310,24 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Completion Star",
-        color: Color = Color(94, 0, 176),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(4, 4, 4),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         super().__init__(
-            Block_ID.COMPLETION_STAR, name, color, position, rotation, scale
+            Block_ID.COMPLETION_STAR,
+            name,
+            color if color else Color(94, 0, 176),
+            position,
+            rotation,
+            scale if scale else Vector3(4, 4, 4),
         )
         self.mute: bool = False
         self.float_height: float = 1.5
 
-    def json(self, star_id: int = 1) -> dict[str, Any]:
+    @override
+    def json(self, star_id: int = 1) -> dict[str, JSON_Value]:
         """
         Convert the star to JSON, as part of the exporting process.
 
@@ -1295,7 +1337,7 @@ class Bopimo_Completion_Star(Bopimo_Tilable_Object):
                 to the level
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the star
         """
         obj = super().json()
@@ -1332,23 +1374,31 @@ class Bopimo_Spring(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Spring",
-        color: Color = Color(226, 181, 4),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.SPRING, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.SPRING,
+            name,
+            color if color else Color(226, 181, 4),
+            position,
+            rotation,
+            scale,
+        )
         self.base_color: Color = Color(84, 84, 84)
         self.coil_color: Color = Color(92, 92, 92)
         self.bounce_force: float = 50
         self.can_ground_pound: bool = True
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the spring to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the spring
         """
         obj = super().json()
@@ -1392,15 +1442,24 @@ class Bopimo_Magma(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Magma",
-        color: Color = Color(96, 20, 0),
-        pattern_color: Color = Color(246, 84, 20),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        pattern_color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
         damage: float = 25,
     ):
-        super().__init__(Block_ID.MAGMA, name, color, position, rotation, scale)
-        self.pattern_color: Color = pattern_color
+        super().__init__(
+            Block_ID.MAGMA,
+            name,
+            color if color else Color(96, 20, 0),
+            position,
+            rotation,
+            scale,
+        )
+        self.pattern_color: Color = (
+            pattern_color if pattern_color else Color(246, 84, 20)
+        )
         self._damage_amount: float = damage
         self.pattern_scale: float = 4
         self.shape: Shape | int = Shape.CUBE
@@ -1423,12 +1482,13 @@ class Bopimo_Magma(Bopimo_Object):
         """
         self._damage_amount = max(0, self.damage_amount)
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the magma to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the magma
         """
         obj = super().json()
@@ -1467,21 +1527,29 @@ class Bopimo_Water(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Water",
-        color: Color = Color(71, 130, 255),
-        foam_color: Color = Color(255, 255, 255),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(4, 4, 4),
+        color: Color | None = None,
+        foam_color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.WATER, name, color, position, rotation, scale)
-        self.pattern_color = foam_color
+        super().__init__(
+            Block_ID.WATER,
+            name,
+            color if color else Color(71, 130, 255),
+            position,
+            rotation,
+            scale if scale else Vector3(4, 4, 4),
+        )
+        self.pattern_color: Color = foam_color if foam_color else Color(255, 255, 255)
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the water to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_value]:
                 A JSON object of the water
         """
         return super().json()
@@ -1505,20 +1573,28 @@ class Bopimo_Ladder(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Ladder",
-        color: Color = Color(78, 52, 46),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 1),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.LADDER, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.LADDER,
+            name,
+            color if color else Color(78, 52, 46),
+            position,
+            rotation,
+            scale if scale else Vector3(2, 2, 1),
+        )
         self.climbing_speed: float = 1
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the ladder to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the ladder
         """
         obj = super().json()
@@ -1553,23 +1629,31 @@ class Bopimo_Token(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Token",
-        color: Color = Color(236, 126, 0),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.TOKEN, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.TOKEN,
+            name,
+            color if color else Color(236, 126, 0),
+            position,
+            rotation,
+            scale,
+        )
         self.heal_amount: float = 5
         self.regeneration_time: float = 45
         self.worth: int = 1
         self.model: int = 0
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the token to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the token
         """
         obj = super().json()
@@ -1605,26 +1689,32 @@ class Bopimo_Disappearing_Block(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Disappearing Block",
-        color: Color = Color(122, 9, 0),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         super().__init__(
-            Block_ID.DISAPPEARING_BLOCK, name, color, position, rotation, scale
+            Block_ID.DISAPPEARING_BLOCK,
+            name,
+            color if color else Color(122, 9, 0),
+            position,
+            rotation,
+            scale,
         )
-        self.pattern = Block_Pattern.X
+        self.pattern: Block_Pattern | int = Block_Pattern.X
         self.disappears_after: float = 2
         self.regeneration_time: float = 5
         self.players_only: bool = False
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the disappearing block to JSON, as part of the exporting
         process
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the disappearing block
         """
         obj = super().json()
@@ -1656,20 +1746,28 @@ class Bopimo_Grates(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Grates",
-        color: Color = Color(0, 10, 18),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(4, 1, 4),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.GRATES, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.GRATES,
+            name,
+            color if color else Color(0, 10, 18),
+            position,
+            rotation,
+            scale if scale else Vector3(4, 1, 4),
+        )
         self.style: Grates_Style | int = Grates_Style.GRID
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the grates to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the grates
         """
         obj = super().json()
@@ -1695,23 +1793,31 @@ class Bopimo_Speed_Panel(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Speed Panel",
-        color: Color = Color(27, 0, 32),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(3, 1, 3),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
         speed: float = 30,
         duration: float = 10,
     ):
-        super().__init__(Block_ID.SPEED_PANEL, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.SPEED_PANEL,
+            name,
+            color if color else Color(27, 0, 32),
+            position,
+            rotation,
+            scale if scale else Vector3(3, 1, 3),
+        )
         self.new_speed: float = speed
         self.duration: float = duration
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the speed panel to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the speed panel
         """
         obj = super().json()
@@ -1739,21 +1845,29 @@ class Bopimo_Boost_Panel(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Boost Panel",
-        color: Color = Color(0, 2, 34),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(3, 1, 3),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.BOOST_PANEL, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.BOOST_PANEL,
+            name,
+            color if color else Color(0, 2, 34),
+            position,
+            rotation,
+            scale if scale else Vector3(3, 1, 3),
+        )
         self.boost: float = 75
         self.vertical_boost: float = 15
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the boost panel to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the boost panel
         """
         obj = super().json()
@@ -1782,13 +1896,20 @@ class Bopimo_Ice(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Ice",
-        color: Color = Color(138, 220, 223),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.ICE, name, color, position, rotation, scale)
-        self._opacity = 255
+        super().__init__(
+            Block_ID.ICE,
+            name,
+            color if color else Color(138, 220, 223),
+            position,
+            rotation,
+            scale,
+        )
+        self._opacity: int = 255
         self.shape: Shape | int = Shape.CUBE
         self.slipperiness: float = 1
 
@@ -1801,12 +1922,13 @@ class Bopimo_Ice(Bopimo_Object):
         # Clamp opacity to have values between 0 and 255
         self._opacity = max(0, min(value, 255))
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the ice to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the ice
         """
         obj = super().json()
@@ -1838,24 +1960,30 @@ class Bopimo_Breakable_Block(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Breakable Block",
-        color: Color = Color(129, 0, 40),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         super().__init__(
-            Block_ID.BREAKABLE_BLOCK, name, color, position, rotation, scale
+            Block_ID.BREAKABLE_BLOCK,
+            name,
+            color if color else Color(129, 0, 40),
+            position,
+            rotation,
+            scale,
         )
-        self.pattern = Block_Pattern.BRICKS
+        self.pattern: Block_Pattern | int = Block_Pattern.BRICKS
         self.max_health: float = 40
         self.regeneration_time: float = 10
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the breakable block to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the breakable block
         """
         obj = super().json()
@@ -1888,21 +2016,29 @@ class Bopimo_Cannon(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Cannon",
-        color: Color = Color(42, 2, 47),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
         power: float = 50,
     ):
-        super().__init__(Block_ID.CANNON, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.CANNON,
+            name,
+            color if color else Color(42, 2, 47),
+            position,
+            rotation,
+            scale,
+        )
         self.power: float = power
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the cannon to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the cannon
         """
         obj = super().json()
@@ -1945,13 +2081,20 @@ class Bopimo_Portal(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Portal",
-        color: Color = Color(31, 49, 255),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(10, 10, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.PORTAL, name, color, position, rotation, scale)
-        self.pattern_color = Color(158, 1, 255)
+        super().__init__(
+            Block_ID.PORTAL,
+            name,
+            color if color else Color(31, 49, 255),
+            position,
+            rotation,
+            scale if scale else Vector3(10, 10, 2),
+        )
+        self.pattern_color: Color = Color(158, 1, 255)
         self.delay: float = 1
         self.destinations: Int64Array = Int64Array()
         self._opacity: int = 204
@@ -1972,12 +2115,13 @@ class Bopimo_Portal(Bopimo_Tilable_Object):
     def secondary_color(self, value: Color) -> None:
         self.pattern_color = value
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the portal to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the portal
         """
         obj = super().json()
@@ -2005,20 +2149,28 @@ class Bopimo_Web(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Web",
-        color: Color = Color(255, 255, 255),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(6, 1, 6),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.WEB, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.WEB,
+            name,
+            color if color else Color(255, 255, 255),
+            position,
+            rotation,
+            scale if scale else Vector3(6, 1, 6),
+        )
         self.stickiness: float = 0.5
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the web to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the web
         """
         obj = super().json()
@@ -2061,13 +2213,18 @@ class Bopimo_Missile_Launcher(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Missile Launcher",
-        color: Color = Color(160, 30, 176),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         super().__init__(
-            Block_ID.MISSILE_LAUNCHER, name, color, position, rotation, scale
+            Block_ID.MISSILE_LAUNCHER,
+            name,
+            color if color else Color(160, 30, 176),
+            position,
+            rotation,
+            scale,
         )
         self.delay: float = 5
         self.missile_size: float = 1
@@ -2077,12 +2234,13 @@ class Bopimo_Missile_Launcher(Bopimo_Object):
         self.explosion_size: float = 5
         self.model: int = 0
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the missile launcher to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the missile launcher
         """
         obj = super().json()
@@ -2110,7 +2268,7 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
     decorational.
 
     Class Attributes:
-        PITCH_BASE (List[float]):
+        PITCH_BASE (list[float]):
             A list of base frequencies (at octave 0) for the notes C all the
             way to B. Values are measured in Hertz.
         KEY_INDEX (dict[str, int]):
@@ -2147,7 +2305,7 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
             attenuates based on how far away the player is from the note block.
     """
 
-    MIN_VERSION = Game_Version(1, 1, 2)
+    MIN_VERSION: Game_Version = Game_Version(1, 1, 2)
 
     KEY_INDEX: dict[str, int] = {
         "c": 0,
@@ -2168,7 +2326,7 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
         "bb": 10,
         "b": 11,
     }
-    PITCH_BASE: List[float] = [
+    PITCH_BASE: list[float] = [
         16.351875,
         17.32375,
         18.35375,
@@ -2186,14 +2344,21 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Note Block",
-        color: Color = Color(77, 31, 144),
-        center_color: Color = Color(26, 23, 47),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        center_color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.NOTE_BLOCK, name, color, position, rotation, scale)
-        self.center_color: Color = center_color
+        super().__init__(
+            Block_ID.NOTE_BLOCK,
+            name,
+            color if color else Color(77, 31, 144),
+            position,
+            rotation,
+            scale,
+        )
+        self.center_color: Color = center_color if center_color else Color(26, 23, 47)
         self.center_pattern: Block_Pattern | int = Block_Pattern.NOTE
         self.center_pattern_color: Color = Color(176, 131, 241)
 
@@ -2234,7 +2399,7 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
             )
 
         ki = self.KEY_INDEX[key.lower()]
-        frequency: float = self.PITCH_BASE[ki] * (2**octave)
+        frequency: float = cast(float, self.PITCH_BASE[ki] * (2**octave))
 
         divisor: float
         # Formatted as Note Index, then octave
@@ -2273,12 +2438,13 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
 
         self.pitch = frequency / divisor
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the note block to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the note block
         """
         obj = super().json()
@@ -2329,7 +2495,7 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
             The opacity of the sign's pole
     """
 
-    MIN_VERSION = Game_Version(1, 1, 0)
+    MIN_VERSION: Game_Version = Game_Version(1, 1, 0)
     CHARS_PER_LINE: int = 99
     LINES_PER_SECTION: int = 4
 
@@ -2337,17 +2503,24 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
         self,
         name: str = "Generated Sign",
         text: str = "Hello World!",
-        color: Color = Color(155, 60, 17),
-        pole_color: Color = Color(83, 41, 11),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(3, 3, 1),
+        color: Color | None = None,
+        pole_color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.DIALOGUE_SIGN, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.DIALOGUE_SIGN,
+            name,
+            color if color else Color(155, 60, 17),
+            position,
+            rotation,
+            scale if scale else Vector3(3, 3, 1),
+        )
         self._text: str = text
-        self.pattern = Block_Pattern.PLANKS
+        self.pattern: Block_Pattern | int = Block_Pattern.PLANKS
 
-        self.pole_color: Color = pole_color
+        self.pole_color: Color = pole_color if pole_color else Color(83, 41, 11)
         self.pole_pattern: Block_Pattern | int = Block_Pattern.PLANKS
         self.pole_pattern_color: Color = Color(0, 0, 0)
         self._pole_pattern_opacity: int = 60
@@ -2427,7 +2600,7 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
 
         return (final_str, breaks)
 
-    def merge_strings(self, strings: List[str]) -> None:
+    def merge_strings(self, strings: list[str]) -> None:
         """
         Given a list of strings, will take the list of strings and try to merge
         them so Bopimo's engine will display each string as a separate section
@@ -2441,7 +2614,7 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
         implementation may come along in a future version.
 
         Parameters:
-            strings (List[str]):
+            strings (list[str]):
                 The list of strings that will be displayed in separate sections
         """
         wrapped_str: str
@@ -2456,9 +2629,9 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
             if len(string) > self.CHARS_PER_LINE * self.LINES_PER_SECTION:
                 raise ValueError(
                     f"You have a string whose length exceeds the amount of maximum characters in a section ({self.CHARS_PER_LINE * self.LINES_PER_SECTION}). "
-                    "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
-                    "Break this string up into multiple strings. "
-                    f"(Current string length: {len(string)})"
+                    + "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
+                    + "Break this string up into multiple strings. "
+                    + f"(Current string length: {len(string)})"
                 )
             lines_needed: int = self.LINES_PER_SECTION
             # Pre-existing new lines will affect how we do the calculation
@@ -2467,13 +2640,13 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
                 lines_needed -= breaks
                 final_string += wrapped_str + ("\n" * lines_needed)
             else:
-                broken_str: List[str] = string.split(sep="\n")
+                broken_str: list[str] = string.split(sep="\n")
                 if len(broken_str) - 1 > self.LINES_PER_SECTION:
                     raise ValueError(
                         f"You have a string with new line characters that exceed the amount of maximum lines in a section ({self.LINES_PER_SECTION}). "
-                        "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
-                        "Break this string up into multiple strings. "
-                        f'(Current string: "{repr(string)}")'  # Display the string literal
+                        + "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
+                        + "Break this string up into multiple strings. "
+                        + f'(Current string: "{repr(string)}")'  # Display the string literal
                     )
                 lines_needed -= len(broken_str) - 1
                 for i, substr in enumerate(broken_str):
@@ -2486,21 +2659,22 @@ class Bopimo_Sign(Bopimo_Tilable_Object):
                     if lines_needed < 0:
                         raise ValueError(
                             f"You have a string with new line characters whose length exceeds the amount of maximum lines in a section ({self.LINES_PER_SECTION}). "
-                            "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
-                            "Break this string up into multiple strings. "
-                            f'(Current string: "{repr(string)}")'  # Display the string literal
+                            + "This will make your string display in multiple sections instead of one, and will not break up your text properly. "
+                            + "Break this string up into multiple strings. "
+                            + f'(Current string: "{repr(string)}")'  # Display the string literal
                         )
                 if lines_needed > 0:
                     final_string += "\n" * lines_needed
         # Set the sign to our formatted text
         self.text = final_string
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the sign to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the sign
         """
         obj = super().json()
@@ -2533,21 +2707,26 @@ class Bopimo_Level_Painting(Bopimo_Tilable_Object):
             the numeric ID in the link from a level page.
     """
 
-    MIN_VERSION = Game_Version(1, 1, 0)
+    MIN_VERSION: Game_Version = Game_Version(1, 1, 0)
 
     def __init__(
         self,
         name: str = "Generated Level Painting",
         level_id: int = 4193,  # I love doing self promo LOL
-        color: Color = Color(160, 29, 175),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(16, 12, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         super().__init__(
-            Block_ID.LEVEL_PAINTING, name, color, position, rotation, scale
+            Block_ID.LEVEL_PAINTING,
+            name,
+            color if color else Color(160, 29, 175),
+            position,
+            rotation,
+            scale if scale else Vector3(16, 12, 2),
         )
-        self._level_id = level_id
+        self._level_id: int = level_id
 
     @property
     def level_id(self) -> int:
@@ -2558,12 +2737,13 @@ class Bopimo_Level_Painting(Bopimo_Tilable_Object):
         # Keep id with a minimum value of 1
         self._level_id = max(1, id)
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the level painting to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the level painting
         """
         obj = super().json()
@@ -2593,13 +2773,20 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Flower",
-        color: Color = Color(160, 30, 176),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.FLOWER, name, color, position, rotation, scale)
-        self.pattern_color = Color(0, 167, 0)
+        super().__init__(
+            Block_ID.FLOWER,
+            name,
+            color if color else Color(160, 30, 176),
+            position,
+            rotation,
+            scale,
+        )
+        self.pattern_color: Color = Color(0, 167, 0)
         self.capitulum_color: Color = Color(255, 165, 0)
 
     @property
@@ -2608,7 +2795,7 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
 
     @bud_color.setter
     def bud_color(self, value: Color) -> None:
-        self.color = value
+        self.color: Color = value
 
     @property
     def stem_color(self) -> Color:
@@ -2618,16 +2805,17 @@ class Bopimo_Flower(Bopimo_Tilable_Object):
     def stem_color(self, value: Color) -> None:
         self.pattern_color = value
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the flower to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the flower
         """
         obj = super().json()
-        return obj | {"capitulum_color": self.capitulum_color}
+        return obj | {"capitulum_color": self.capitulum_color.json()}
 
 
 class Bopimo_Cornstalk(Bopimo_Object):
@@ -2642,25 +2830,33 @@ class Bopimo_Cornstalk(Bopimo_Object):
             The color of the corn and top flower.
     """
 
-    MIN_VERSION = Game_Version(1, 1, 0)
+    MIN_VERSION: Game_Version = Game_Version(1, 1, 0)
 
     def __init__(
         self,
         name: str = "Generated Cornstalk",
-        color: Color = Color(0, 131, 35),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(5, 10, 5),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.CORNSTALK, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.CORNSTALK,
+            name,
+            color if color else Color(0, 131, 35),
+            position,
+            rotation,
+            scale if scale else Vector3(5, 10, 5),
+        )
         self.corn_color: Color = Color(255, 207, 0)
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the cornstalk to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the cornstalk
         """
         obj = super().json()
@@ -2677,20 +2873,28 @@ class Bopimo_Fence(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Fence",
-        color: Color = Color(121, 85, 72),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 4, 1),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.FENCE, name, color, position, rotation, scale)
-        self.pattern = Block_Pattern.PLANKS
+        super().__init__(
+            Block_ID.FENCE,
+            name,
+            color if color else Color(121, 85, 72),
+            position,
+            rotation,
+            scale if scale else Vector3(2, 4, 1),
+        )
+        self.pattern: Block_Pattern | int = Block_Pattern.PLANKS
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the fence to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the fence
         """
         return super().json()
@@ -2710,26 +2914,34 @@ class Bopimo_Tree(Bopimo_Tilable_Object):
             The color of the tree's leaves
     """
 
-    MIN_VERSION = Game_Version(1, 1, 0)
+    MIN_VERSION: Game_Version = Game_Version(1, 1, 0)
 
     def __init__(
         self,
         name: str = "Generated Tree",
-        color: Color = Color(91, 40, 24),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(11, 17, 11),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.TREE, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.TREE,
+            name,
+            color if color else Color(91, 40, 24),
+            position,
+            rotation,
+            scale if scale else Vector3(11, 17, 11),
+        )
         self.leaves: bool = True
         self.leaves_color: Color = Color(0, 128, 0)
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the tree to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the tree
         """
         obj = super().json()
@@ -2751,21 +2963,29 @@ class Bopimo_Pine_Tree(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Pine Tree",
-        color: Color = Color(0, 88, 36),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(5, 10, 5),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
         snow: bool = False,
     ):
-        super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.PINE_TREE,
+            name,
+            color if color else Color(0, 88, 36),
+            position,
+            rotation,
+            scale if scale else Vector3(5, 10, 5),
+        )
         self.snow: bool = snow
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the pine tree to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the pine tree
         """
         obj = super().json()
@@ -2782,17 +3002,24 @@ class Bopimo_Pine_Tree_Snow(Bopimo_Pine_Tree):
     def __init__(
         self,
         name: str = "Generated Pine Tree",
-        color: Color = Color(0, 88, 36),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(5, 10, 5),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(name, color, position, rotation, scale, True)
+        super().__init__(
+            name,
+            color if color else Color(0, 88, 36),
+            position,
+            rotation,
+            scale if scale else Vector3(5, 10, 5),
+            True,
+        )
         if not DEPRECATION_WARNINGS["Using Bopimo_Pine_Tree_Snow"]:
             logging.warning(
                 "You are creating an instance of Bopimo_Pine_Tree_Snow, which has been removed since Bopimo 1.1.0. "
-                "This class will be removed in a future version of Bopymo. To create a snowy pine tree, use "
-                'Bopimo_Pine_Tree and set the "snow" attribute to True either on a separate line or through quickhanding.'
+                + "This class will be removed in a future version of Bopymo. To create a snowy pine tree, use "
+                + 'Bopimo_Pine_Tree and set the "snow" attribute to True either on a separate line or through quickhanding.'
             )
             DEPRECATION_WARNINGS["Using Bopimo_Pine_Tree_Snow"] = True
 
@@ -2807,19 +3034,27 @@ class Bopimo_Palm_Tree(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Palm Tree",
-        color: Color = Color(94, 214, 0),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(8, 8, 8),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.PINE_TREE, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.PINE_TREE,
+            name,
+            color if color else Color(94, 214, 0),
+            position,
+            rotation,
+            scale if scale else Vector3(8, 8, 8),
+        )
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the palm tree to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the palm tree
         """
         return super().json()
@@ -2845,20 +3080,28 @@ class Bopimo_Street_Lamp(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Street Lamp",
-        color: Color = Color(255, 160, 30),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 10, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.STREET_LAMP, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.STREET_LAMP,
+            name,
+            color if color else Color(255, 160, 30),
+            position,
+            rotation,
+            scale if scale else Vector3(2, 10, 2),
+        )
         self.light_range: float = 25
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the street lamp to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the street lamp
         """
         obj = super().json()
@@ -2888,21 +3131,29 @@ class Bopimo_Torch(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Torch",
-        color: Color = Color(73, 48, 42),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(1, 2, 1),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.TORCH, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.TORCH,
+            name,
+            color if color else Color(73, 48, 42),
+            position,
+            rotation,
+            scale if scale else Vector3(1, 2, 1),
+        )
         self.pattern_color: Color = Color(255, 68, 0)
         self.light_range: float = 25
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the torch to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the torch
         """
         obj = super().json()
@@ -2929,27 +3180,42 @@ class Bopimo_Logo(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Logo",
-        primary_color: Color = Color(130, 12, 155),
-        secondary_color: Color = Color(175, 85, 217),
-        tertiary_color: Color = Color(141, 62, 229),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(6, 2.5, 2),
+        primary_color: Color | None = None,
+        secondary_color: Color | None = None,
+        tertiary_color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.LOGO, name, primary_color, position, rotation, scale)
-        self.secondary_color: Color = secondary_color
-        self.tertiary_color: Color = tertiary_color
+        super().__init__(
+            Block_ID.LOGO,
+            name,
+            primary_color if primary_color else Color(130, 12, 155),
+            position,
+            rotation,
+            scale if scale else Vector3(6, 2.5, 2),
+        )
+        self.secondary_color: Color = (
+            secondary_color if secondary_color else Color(175, 85, 217)
+        )
+        self.tertiary_color: Color = (
+            tertiary_color if tertiary_color else Color(141, 62, 229)
+        )
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the logo to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the logo
         """
         obj = super().json()
-        return obj | {"color2": self.secondary_color, "color3": self.tertiary_color}
+        return obj | {
+            "color2": self.secondary_color.json(),
+            "color3": self.tertiary_color.json(),
+        }
 
 
 class Bopimo_Logo_Icon(Bopimo_Logo):
@@ -2963,12 +3229,12 @@ class Bopimo_Logo_Icon(Bopimo_Logo):
     def __init__(
         self,
         name: str = "Generated Logo Icon",
-        primary_color: Color = Color(130, 12, 155),
-        secondary_color: Color = Color(175, 85, 217),
-        tertiary_color: Color = Color(141, 62, 229),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(6, 2.5, 2),
+        primary_color: Color | None = None,
+        secondary_color: Color | None = None,
+        tertiary_color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         super().__init__(
             name,
@@ -2979,14 +3245,15 @@ class Bopimo_Logo_Icon(Bopimo_Logo):
             rotation,
             scale,
         )
-        self.id = Block_ID.LOGO_ICON
+        self.id: Block_ID | int = Block_ID.LOGO_ICON
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the icon to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the icon
         """
         return super().json()
@@ -3018,32 +3285,42 @@ class Bopimo_String_Lights(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated String Lights",
-        wire_color: Color = Color(0, 67, 27),
-        bulb_colors: ColorArray = ColorArray(
-            [
-                Color(255, 0, 0),
-                Color(255, 215, 0),
-                Color(50, 205, 50),
-                Color(0, 0, 255),
-                Color(255, 0, 255),
-            ]
-        ),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(6, 2.5, 2),
+        wire_color: Color | None = None,
+        bulb_colors: ColorArray | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
         super().__init__(
-            Block_ID.STRING_LIGHTS, name, wire_color, position, rotation, scale
+            Block_ID.STRING_LIGHTS,
+            name,
+            wire_color if wire_color else Color(0, 67, 27),
+            position,
+            rotation,
+            scale if scale else Vector3(6, 2.5, 2),
         )
-        self.bulb_colors: ColorArray = bulb_colors
+        self.bulb_colors: ColorArray = (
+            bulb_colors
+            if bulb_colors
+            else ColorArray(
+                [
+                    Color(255, 0, 0),
+                    Color(255, 215, 0),
+                    Color(50, 205, 50),
+                    Color(0, 0, 255),
+                    Color(255, 0, 255),
+                ]
+            )
+        )
         self.blink_speed: float = 0
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the string lights to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the string lights
         """
         obj = super().json()
@@ -3081,28 +3358,36 @@ class Bopimo_Rose(Bopimo_Tilable_Object):
             upon contact.
     """
 
-    MIN_VERSION = Game_Version(1, 0, 15)
+    MIN_VERSION: Game_Version = Game_Version(1, 0, 15)
 
     def __init__(
         self,
         name: str = "Generated Rose",
-        bud_color: Color = Color(255, 0, 0),
-        stem_color: Color = Color(0, 153, 0),
+        bud_color: Color | None = None,
+        stem_color: Color | None = None,
         damage: float = 1,
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(1, 3, 1),
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.ROSE, name, bud_color, position, rotation, scale)
-        self.pattern_color = stem_color
+        super().__init__(
+            Block_ID.ROSE,
+            name,
+            bud_color if bud_color else Color(255, 0, 0),
+            position,
+            rotation,
+            scale if scale else Vector3(1, 3, 1),
+        )
+        self.pattern_color: Color = stem_color if stem_color else Color(0, 153, 0)
         self.damage: float = damage
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the rose to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the rose
         """
         obj = super().json()
@@ -3132,21 +3417,29 @@ class Bopimo_Item_Mesh(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Item Mesh",
-        color: Color = Color(255, 255, 255),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.MESH, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.MESH,
+            name,
+            color if color else Color(255, 255, 255),
+            position,
+            rotation,
+            scale,
+        )
         self.item_id: int = 1
         self.shaded: bool = True
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the item mesh to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the item mesh
         """
         obj = super().json()
@@ -3163,19 +3456,27 @@ class Bopimo_Cloud(Bopimo_Object):
     def __init__(
         self,
         name: str = "Generated Cloud",
-        color: Color = Color(255, 255, 255),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(8, 2, 8),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.CLOUD, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.CLOUD,
+            name,
+            color if color else Color(255, 255, 255),
+            position,
+            rotation,
+            scale if scale else Vector3(8, 2, 8),
+        )
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the cloud to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the cloud
         """
         return super().json()
@@ -3195,19 +3496,27 @@ class Bopimo_Statue(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Analog Clock",
-        color: Color = Color(246, 156, 0),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(3, 5, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.STATUE,
+            name,
+            color if color else Color(246, 156, 0),
+            position,
+            rotation,
+            scale if scale else Vector3(3, 5, 2),
+        )
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the statue to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the statue
         """
         return super().json()
@@ -3293,12 +3602,19 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Bopi Spawner",
-        color: Color = Color(160, 30, 176),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 0.5, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.BOPI_SPAWNER, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.BOPI_SPAWNER,
+            name,
+            color if color else Color(160, 30, 176),
+            position,
+            rotation,
+            scale if scale else Vector3(2, 0.5, 2),
+        )
         self.max_health: float = 75
         self.attack_damage: float = 10
         self.move_speed: float = 15
@@ -3326,12 +3642,13 @@ class Bopimo_Bopi_Spawner(Bopimo_Tilable_Object):
 
     # TODO: Add a function that recreates the level editor feature of putting in a username to resolve the avatar
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the Bopi spawner to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the Bopi spawner
         """
         obj = super().json()
@@ -3384,19 +3701,27 @@ class Bopimo_Analog_Clock(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Analog Clock",
-        color: Color = Color(160, 29, 175),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.ANALOG_CLOCK, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.ANALOG_CLOCK,
+            name,
+            color if color else Color(160, 29, 175),
+            position,
+            rotation,
+            scale,
+        )
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the analog clock to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the analog clock
         """
         return super().json()
@@ -3415,19 +3740,27 @@ class Bopimo_Bleeding_Eye(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Bleeding Eye",
-        color: Color = Color(237, 0, 8),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.STATUE, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.STATUE,
+            name,
+            color if color else Color(237, 0, 8),
+            position,
+            rotation,
+            scale,
+        )
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the bleeding eye to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the bleeding eye
         """
         return super().json()
@@ -3445,19 +3778,27 @@ class Bopimo_Hyacinth(Bopimo_Tilable_Object):
     def __init__(
         self,
         name: str = "Generated Hyacinth Flower",
-        color: Color = Color(20, 126, 172),
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
-        scale: Vector3 = Vector3(2, 2, 2),
+        color: Color | None = None,
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
+        scale: Vector3 | None = None,
     ):
-        super().__init__(Block_ID.HYACINTH, name, color, position, rotation, scale)
+        super().__init__(
+            Block_ID.HYACINTH,
+            name,
+            color if color else Color(20, 126, 172),
+            position,
+            rotation,
+            scale,
+        )
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the hyacinth to JSON, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the hyacinth
         """
         return super().json()
@@ -3537,8 +3878,8 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         name: str = "Generated Decal",
         decal_type: Decal_Type = Decal_Type.SHIRT,
         image_id: int = 3372,
-        position: Vector3 = Vector3.zero(),
-        rotation: Vector3 = Vector3.zero(),
+        position: Vector3 | None = None,
+        rotation: Vector3 | None = None,
         width: float = 2,
         height: float = 2,
     ):
@@ -3550,7 +3891,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
             # The Z axis must ideally be 0. By changing the Z value, you defeat the purpose of a decal
             Vector3(width, height, 0.01),
         )
-        self.item_id = image_id
+        self.item_id: int = image_id
         self.decal_type: Decal_Type = decal_type
         # Oftentimes, images are not properly centered. Use this to center images.
         self.offset: Vector3 = Vector3.zero()
@@ -3566,7 +3907,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         if self.scale.z > 0.1:
             logging.warning(
                 "You set a Decal's Z scale to a non-zero value, which defeats the purpose of a Decal. "
-                "Consider using a Item_Mesh instead."
+                + "Consider using a Item_Mesh instead."
             )
         match self.decal_type:
             case Decal_Type.SHIRT:
@@ -3582,7 +3923,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
                     self.scale.z,
                 )
 
-    def __get_rotation_matrix(self, rotation: Vector3) -> List[List[float]]:
+    def __get_rotation_matrix(self, rotation: Vector3) -> NDArray[float32]:
         """
         <PRIVATE>
         Given euler angles represented by a Vector3, calculate the rotation
@@ -3593,26 +3934,29 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
                 A Vector3 of the euler angles to calculate a rotation matrix
 
         Returns:
-            List[List[float]]:
+            list[list[float]]:
                 A rotation matrix of the input rotation
         """
-        MATRIX_X: tuple[List[float], List[float], List[float]] = (
+        MATRIX_X: Matrix3 = (
             [1, 0, 0],
             [0, math.cos(rotation.x), -math.sin(rotation.x)],
             [0, math.sin(rotation.x), math.cos(rotation.x)],
         )
-        MATRIX_Y: tuple[List[float], List[float], List[float]] = (
+        MATRIX_Y: Matrix3 = (
             [math.cos(rotation.y), 0, math.sin(rotation.y)],
             [0, 1, 0],
             [-math.sin(rotation.y), 0, math.cos(rotation.y)],
         )
-        MATRIX_Z: tuple[List[float], List[float], List[float]] = (
+        MATRIX_Z: Matrix3 = (
             [math.cos(rotation.z), -math.sin(rotation.z), 0],
             [math.sin(rotation.z), math.cos(rotation.z), 0],
             [0, 0, 1],
         )
 
-        return List[List[float]](dot(dot(MATRIX_Y, MATRIX_X), MATRIX_Z))
+        return cast(
+            NDArray[float32],
+            dot(cast(NDArray[float32], dot(MATRIX_Y, MATRIX_X)), MATRIX_Z),
+        )
 
     def calculate_center_vector(self, scale: Vector3) -> Vector3:
         """
@@ -3641,18 +3985,23 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
         x_adjust = self.PANTS_X_ADJUST * scale.x * -direction + self.offset.x
         y_adjust = self.PANTS_Y_ADJUST * scale.y + self.offset.y
         rot_matrix = self.__get_rotation_matrix(self.rotation.to_radians())
-        offset: List[float] = [x_adjust, y_adjust, 0]
-        x, y, z = dot(rot_matrix, offset)
+        offset: list[float] = [x_adjust, y_adjust, 0]
+        # Dumb pyright / numpy fuckery
+        vec_raw: NDArray[int32] = cast(NDArray[int32], dot(rot_matrix, offset))
+        x: int = cast(int, vec_raw[0])
+        y: int = cast(int, vec_raw[1])
+        z: int = cast(int, vec_raw[2])
         return Vector3(x, y, z)
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the decal to JSON, as part of the exporting process. This
         process involves taking the texture transformations and converting them
         to mesh transformations, so they can be perfectly displayed in-game.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A JSON object of the decal
         """
         obj = super().json()

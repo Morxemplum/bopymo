@@ -3,7 +3,24 @@ from copy import copy, deepcopy
 from enum import IntEnum
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Iterator, List, Mapping, Self
+from collections.abc import Iterator, Mapping, Sequence
+from typing import Self, cast, override
+
+## TYPEDEFS
+
+# This will come up often because though integers are technically acceptable, enums are more future-proof.
+type Bopimo_Integer = int | IntEnum
+
+# Possible types that can be encapsulated in a JSON dict
+type JSON_Value = str | int | float | bool | Sequence[JSON_Value] | Mapping[
+    str, JSON_Value
+] | None  # Thanks black formatter. kys
+
+# A Matrix that has at least 3 rows
+type Matrix3 = tuple[list[float], list[float], list[float]]
+
+# A more primitive version of Vector3, to more easily interface with external libs
+type Vector3_Raw = tuple[float, float, float]
 
 ## TYPES
 
@@ -29,9 +46,9 @@ class Color:
     bopjson_type_name: str = "Color8"
 
     def __init__(self, red: int, green: int, blue: int):
-        self.red = red
-        self.green = green
-        self.blue = blue
+        self.red: int = red
+        self.green: int = green
+        self.blue: int = blue
         self.__clamp()
 
     ## PRIVATE METHODS
@@ -128,12 +145,12 @@ class Color:
         """
         return copy(self)
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the color to bopjson, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson color object
         """
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
@@ -157,11 +174,13 @@ class Color:
     def __copy__(self) -> Self:
         return self.__class__(self.red, self.green, self.blue)
 
+    @override
     def __str__(self) -> str:
         return f"{self.bopjson_type_name}({self.red}, {self.green}, {self.blue})"
 
     ### EQUALITY METHODS
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -171,6 +190,7 @@ class Color:
             and (self.blue == other.blue)
         )
 
+    @override
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -249,12 +269,12 @@ class Vector2:
         """
         return {"x": self.x, "y": self.y}
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the vector to bopjson, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson vector object
         """
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
@@ -267,6 +287,7 @@ class Vector2:
     def __iter__(self) -> Iterator[float]:
         return iter((self.x, self.y))
 
+    @override
     def __str__(self) -> str:
         return f"{self.bopjson_type_name}({self.x}, {self.y})"
 
@@ -299,11 +320,13 @@ class Vector2:
 
     ### EQUALITY METHODS
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
         return (self.x == other.x) and (self.y == other.y)
 
+    @override
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -323,9 +346,9 @@ class Vector2_I8(Vector2):
     bopjson_type_name: str = "Vector2I8"
 
     def __init__(self, x: int, y: int):
-        self.x: float = x
-        self.y: float = y
+        super().__init__(float(x), float(y))
 
+    @override
     def to_obj(self) -> Mapping[str, int]:
         """
         Converts the vector into a more literal dictionary, compatible with
@@ -347,21 +370,24 @@ class Vector2_I8(Vector2):
             )
         return {"x": int(self.x), "y": int(self.y)}
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the vector to bopjson, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson vector object
         """
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
 
     ## DUNDER METHODS
 
+    @override
     def __iter__(self) -> Iterator[int]:
         return iter((int(self.x), int(self.y)))
 
+    @override
     def __str__(self) -> str:
         return f"{self.bopjson_type_name}({int(self.x)}, {int(self.y)})"
 
@@ -395,7 +421,9 @@ class Vector3:
     ## PRIVATE METHODS
 
     @classmethod
-    def __matrix_from_euler(cls, roll: float, pitch: float, yaw: float) -> NDArray[Any]:
+    def __matrix_from_euler(
+        cls, roll: float, pitch: float, yaw: float
+    ) -> NDArray[np.float32]:
         """
         <PRIVATE>
         Given a set of euler angles (in radians), calculate a rotation matrix.
@@ -421,22 +449,27 @@ class Vector3:
         cos_y: float = math.cos(yaw)
         sin_y: float = math.sin(yaw)
 
-        MATRIX_R: tuple[List[float], List[float], List[float]] = (
+        MATRIX_R: Matrix3 = (
             [1, 0, 0],
             [0, cos_r, -sin_r],
             [0, sin_r, cos_r],
         )
-        MATRIX_P: tuple[List[float], List[float], List[float]] = (
+        MATRIX_P: Matrix3 = (
             [cos_p, 0, sin_p],
             [0, 1, 0],
             [-sin_p, 0, cos_p],
         )
-        MATRIX_Y: tuple[List[float], List[float], List[float]] = (
+        MATRIX_Y: Matrix3 = (
             [cos_y, -sin_y, 0],
             [sin_y, cos_y, 0],
             [0, 0, 1],
         )
-        return np.array(np.dot(np.dot(MATRIX_P, MATRIX_R), MATRIX_Y))
+        return np.array(
+            cast(
+                NDArray[np.float32],
+                np.dot(cast(NDArray[np.float32], np.dot(MATRIX_P, MATRIX_R)), MATRIX_Y),
+            )
+        )
 
     ## CLASS METHODS
 
@@ -463,8 +496,8 @@ class Vector3:
         """
         rotation_matrix = cls.__matrix_from_euler(roll, pitch, yaw)
 
-        forward_vector: tuple[float, float, float] = np.dot(
-            rotation_matrix, np.array([0, 0, 1])
+        forward_vector: Vector3_Raw = cast(
+            Vector3_Raw, np.dot(rotation_matrix, np.array([0, 0, 1]))
         )
 
         return cls(*forward_vector)
@@ -492,8 +525,8 @@ class Vector3:
         """
         rotation_matrix = cls.__matrix_from_euler(roll, pitch, yaw)
 
-        up_vector: tuple[float, float, float] = np.dot(
-            rotation_matrix, np.array([0, 1, 0])
+        up_vector: Vector3_Raw = cast(
+            Vector3_Raw, np.dot(rotation_matrix, np.array([0, 1, 0]))
         )
 
         return cls(*up_vector)
@@ -521,8 +554,8 @@ class Vector3:
         """
         rotation_matrix = cls.__matrix_from_euler(roll, pitch, yaw)
 
-        left_vector: tuple[float, float, float] = np.dot(
-            rotation_matrix, np.array([1, 0, 0])
+        left_vector: Vector3_Raw = cast(
+            Vector3_Raw, np.dot(rotation_matrix, np.array([1, 0, 0]))
         )
 
         return cls(*left_vector)
@@ -613,12 +646,12 @@ class Vector3:
         """
         return {"x": self.x, "y": self.y, "z": self.z}
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the vector to bopjson, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson vector object
         """
         return {"type": self.bopjson_type_name, "value": self.to_obj()}
@@ -631,6 +664,7 @@ class Vector3:
     def __iter__(self) -> Iterator[float]:
         return iter((self.x, self.y, self.z))
 
+    @override
     def __str__(self) -> str:
         return f"{self.bopjson_type_name}({self.x}, {self.y}, {self.z})"
 
@@ -663,11 +697,13 @@ class Vector3:
 
     ### EQUALITY METHODS
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
         return (self.x == other.x) and (self.y == other.y) and (self.z == other.z)
 
+    @override
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -691,10 +727,10 @@ class Vector3Array:
 
     bopjson_type_name: str = Vector3.bopjson_type_name + "_Array"
 
-    def __init__(self, vector3_list: List[Vector3] | None = None):
+    def __init__(self, vector3_list: list[Vector3] | None = None):
         if vector3_list is None:
             vector3_list = []
-        self._list = vector3_list
+        self._list: list[Vector3] = vector3_list
 
     ## INSTANCE METHODS
 
@@ -784,15 +820,16 @@ class Vector3Array:
         """
         return self._list.pop(index)
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the array to bopjson, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson array object
         """
-        obj: dict[str, Any] = {"type": self.bopjson_type_name, "value": []}
+        obj: dict[str, JSON_Value] = {"type": self.bopjson_type_name, "value": []}
+        assert isinstance(obj["value"], list)  # Thanks pyright. kys
         for vector3 in self._list:
             obj["value"].append(vector3.to_obj())
         return obj
@@ -802,9 +839,10 @@ class Vector3Array:
     def __copy__(self) -> Self:
         return self.__class__(copy(self._list))
 
-    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+    def __deepcopy__(self, memo: dict[int, object]) -> Self:
         return self.__class__(deepcopy(self._list, memo))
 
+    @override
     def __str__(self) -> str:
         s = "Vector3Array("
         for vec in self._list:
@@ -815,7 +853,7 @@ class Vector3Array:
 
     ### OPERATOR METHODS
 
-    def __add__(self, other: "Vector3Array" | List[Vector3]) -> "Vector3Array":
+    def __add__(self, other: "Vector3Array" | list[Vector3]) -> "Vector3Array":
         if isinstance(other, Vector3Array):
             return Vector3Array(self._list + other._list)
         else:
@@ -834,6 +872,7 @@ class Vector3Array:
 
     ### EQUALITY METHODS
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -848,6 +887,7 @@ class Vector3Array:
                 return False
         return True
 
+    @override
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -871,10 +911,10 @@ class ColorArray:
 
     bopjson_type_name: str = Color.bopjson_type_name + "_Array"
 
-    def __init__(self, color_list: List[Color] | None = None):
+    def __init__(self, color_list: list[Color] | None = None):
         if color_list is None:
             color_list = []
-        self._list = color_list
+        self._list: list[Color] = color_list
 
     ## INSTANCE METHODS
     def add_color(self, color: Color) -> None:
@@ -963,15 +1003,16 @@ class ColorArray:
         """
         return self._list.pop(index)
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the array to bopjson, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson array object
         """
-        obj: dict[str, Any] = {"type": self.bopjson_type_name, "value": []}
+        obj: dict[str, JSON_Value] = {"type": self.bopjson_type_name, "value": []}
+        assert isinstance(obj["value"], list)
         for color in self._list:
             obj["value"].append(color.to_obj())
         return obj
@@ -981,9 +1022,10 @@ class ColorArray:
     def __copy__(self) -> Self:
         return self.__class__(copy(self._list))
 
-    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+    def __deepcopy__(self, memo: dict[int, object]) -> Self:
         return self.__class__(deepcopy(self._list, memo))
 
+    @override
     def __str__(self) -> str:
         s = "ColorArray("
         for col in self._list:
@@ -994,7 +1036,7 @@ class ColorArray:
 
     ### OPERATOR METHODS
 
-    def __add__(self, other: "ColorArray" | List[Color]) -> "ColorArray":
+    def __add__(self, other: "ColorArray" | list[Color]) -> "ColorArray":
         if isinstance(other, ColorArray):
             return ColorArray(self._list + other._list)
         else:
@@ -1013,6 +1055,7 @@ class ColorArray:
 
     ### EQUALITY METHODS
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -1027,14 +1070,11 @@ class ColorArray:
                 return False
         return True
 
+    @override
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
         return not (self == other)
-
-
-# This will come up often because though integers are technically acceptable, enums are more future-proof.
-type Bopimo_Integer = int | IntEnum
 
 
 class IntArray:
@@ -1058,10 +1098,10 @@ class IntArray:
 
     bopjson_type_name: str = "Int_Array"
 
-    def __init__(self, int_list: List[Bopimo_Integer] | None = None):
+    def __init__(self, int_list: list[Bopimo_Integer] | None = None):
         if int_list is None:
             int_list = []
-        self._list = int_list
+        self._list: list[Bopimo_Integer] = int_list
 
     ## INSTANCE METHODS
 
@@ -1151,15 +1191,15 @@ class IntArray:
         """
         return self._list.pop(index)
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the array to bopjson, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson array object
         """
-        values: List[int] = []
+        values: list[int] = []
         for value in self._list:
             values.append(value)
         return {"type": self.bopjson_type_name, "value": values}
@@ -1169,9 +1209,10 @@ class IntArray:
     def __copy__(self) -> Self:
         return self.__class__(copy(self._list))
 
-    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+    def __deepcopy__(self, memo: dict[int, object]) -> Self:
         return self.__class__(deepcopy(self._list, memo))
 
+    @override
     def __str__(self) -> str:
         s = f"{self.bopjson_type_name}("
         for num in self._list:
@@ -1182,7 +1223,7 @@ class IntArray:
 
     ### OPERATOR METHODS
 
-    def __add__(self, other: "IntArray" | List[int]) -> "IntArray":
+    def __add__(self, other: "IntArray" | list[int]) -> "IntArray":
         if isinstance(other, IntArray):
             return IntArray(self._list + other._list)
         else:
@@ -1201,6 +1242,7 @@ class IntArray:
 
     ### EQUALITY METHODS
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -1215,6 +1257,7 @@ class IntArray:
                 return False
         return True
 
+    @override
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -1235,13 +1278,12 @@ class Int32Array(IntArray):
 
     bopjson_type_name: str = "Int32_Array"
 
-    def __init__(self, int_list: List[Bopimo_Integer] | None = None):
-        if int_list is None:
-            int_list = []
-        self._list = int_list
-        self.signed = False
+    def __init__(self, int_list: list[Bopimo_Integer] | None = None):
+        super().__init__(int_list)
+        self.signed: bool = False
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the array to bopjson, as part of the exporting process. In
         addition, each number will be checked to ensure it is inside the 32-bit
@@ -1249,10 +1291,10 @@ class Int32Array(IntArray):
         error.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson array object
         """
-        values: List[int] = []
+        values: list[int] = []
         lower_bound = 0 if not self.signed else -(2**31)
         upper_bound = 2**32 if not self.signed else (2**31) - 1
         for value in self._list:
@@ -1278,13 +1320,12 @@ class Int64Array(IntArray):
 
     bopjson_type_name: str = "Int64_Array"
 
-    def __init__(self, int_list: List[Bopimo_Integer] | None = None):
-        if int_list is None:
-            int_list = []
-        self._list = int_list
-        self.signed = False
+    def __init__(self, int_list: list[Bopimo_Integer] | None = None):
+        super().__init__(int_list)
+        self.signed: bool = False
 
-    def json(self) -> dict[str, Any]:
+    @override
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the array to bopjson, as part of the exporting process. In
         addition, each number will be checked to ensure it is inside the 64-bit
@@ -1292,10 +1333,10 @@ class Int64Array(IntArray):
         error.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson array object
         """
-        values: List[int] = []
+        values: list[int] = []
         lower_bound = 0 if not self.signed else -(2**63)
         upper_bound = 2**64 if not self.signed else (2**63) - 1
         for value in self._list:
@@ -1335,12 +1376,12 @@ class Float32Array:
 
     def __init__(
         self,
-        float_list: List[float] | List[np.float32] | NDArray[np.float32] | None = None,
+        float_list: list[float] | list[np.float32] | NDArray[np.float32] | None = None,
     ):
-        self._list: List[np.float32]
+        self._list: list[np.float32]
         if float_list is None:
             float_list = []
-        if isinstance(float_list, List):
+        if isinstance(float_list, list):
             self._list = []
             for f in float_list:
                 # I would write this more cleanly to distinguish numpy floats from Python floats, but Pylance sucks
@@ -1443,15 +1484,15 @@ class Float32Array:
         """
         return self._list.pop(index).item()
 
-    def json(self) -> dict[str, Any]:
+    def json(self) -> dict[str, JSON_Value]:
         """
         Convert the array to bopjson, as part of the exporting process.
 
         Returns:
-            dict[str, Any]:
+            dict[str, JSON_Value]:
                 A bopjson array object
         """
-        values: List[float] = []
+        values: list[float] = []
         for value in self._list:
             values.append(value.item())
         return {"type": self.bopjson_type_name, "value": values}
@@ -1461,9 +1502,10 @@ class Float32Array:
     def __copy__(self) -> Self:
         return self.__class__(copy(self._list))
 
-    def __deepcopy__(self, memo: dict[Any, Any]) -> Self:
+    def __deepcopy__(self, memo: dict[int, object]) -> Self:
         return self.__class__(deepcopy(self._list, memo))
 
+    @override
     def __str__(self) -> str:
         s = f"{self.bopjson_type_name}("
         for num in self._list:
@@ -1476,12 +1518,12 @@ class Float32Array:
 
     def __add__(
         self,
-        other: "Float32Array" | List[float] | List[np.float32] | NDArray[np.float32],
+        other: "Float32Array" | list[float] | list[np.float32] | NDArray[np.float32],
     ) -> Self:
         if isinstance(other, Float32Array):
             return self.__class__(self._list + other._list)
-        elif isinstance(other, List):
-            o: List[np.float32] = []
+        elif isinstance(other, list):
+            o: list[np.float32] = []
             for f in other:
                 if isinstance(f, float) or isinstance(f, int):
                     o.append(np.float32(f))
@@ -1504,6 +1546,7 @@ class Float32Array:
 
     ### EQUALITY METHODS
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
@@ -1518,6 +1561,7 @@ class Float32Array:
                 return False
         return True
 
+    @override
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError()
