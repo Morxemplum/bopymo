@@ -853,11 +853,11 @@ class Vector3Array:
 
     ### OPERATOR METHODS
 
-    def __add__(self, other: "Vector3Array" | list[Vector3]) -> "Vector3Array":
+    def __add__(self, other: Self | list[Vector3]) -> Self:
         if isinstance(other, Vector3Array):
-            return Vector3Array(self._list + other._list)
+            return type(self)(self._list + other._list)
         else:
-            return Vector3Array(self._list + other)
+            return type(self)(self._list + other)
 
     ### ITERABLE METHODS
 
@@ -1036,11 +1036,11 @@ class ColorArray:
 
     ### OPERATOR METHODS
 
-    def __add__(self, other: "ColorArray" | list[Color]) -> "ColorArray":
+    def __add__(self, other: Self | list[Color]) -> Self:
         if isinstance(other, ColorArray):
-            return ColorArray(self._list + other._list)
+            return type(self)(self._list + other._list)
         else:
-            return ColorArray(self._list + other)
+            return type(self)(self._list + other)
 
     ### ITERABLE METHODS
 
@@ -1223,11 +1223,11 @@ class IntArray:
 
     ### OPERATOR METHODS
 
-    def __add__(self, other: "IntArray" | list[int]) -> "IntArray":
+    def __add__(self, other: Self | list[int]) -> Self:
         if isinstance(other, IntArray):
-            return IntArray(self._list + other._list)
+            return type(self)(self._list + other._list)
         else:
-            return IntArray(self._list + other)
+            return type(self)(self._list + other)
 
     ### ITERABLE METHODS
 
@@ -1518,7 +1518,7 @@ class Float32Array:
 
     def __add__(
         self,
-        other: "Float32Array" | list[float] | list[np.float32] | NDArray[np.float32],
+        other: Self | list[float] | list[np.float32] | NDArray[np.float32],
     ) -> Self:
         if isinstance(other, Float32Array):
             return self.__class__(self._list + other._list)
