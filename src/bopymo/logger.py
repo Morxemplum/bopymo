@@ -71,7 +71,7 @@ class Logger(logging.Logger):
     """
 
     fmt: str = "[%(name)s] [%(levelname)s] - %(message)s"
-    
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
 
@@ -83,4 +83,5 @@ class Logger(logging.Logger):
         # Change this to the value you want
         self.setLevel(logging.INFO)
 
-logging.setLoggerClass(Logger)
+
+
