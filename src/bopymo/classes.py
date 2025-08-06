@@ -21,10 +21,11 @@ from bopymo.enumerators import (
     Sky,
     Weather,
 )
+from bopymo.logger import Logger
 
 from copy import deepcopy
 import datetime
-import logging
+from logging import getLogger, Logger as l, setLoggerClass
 import math
 from numpy import dot, float32, int32
 import json
@@ -33,10 +34,8 @@ import time
 from typing import Self, cast, override
 from numpy.typing import NDArray
 
-# Change how much information you want to display on the console when you use Bopymo.
-LOG_LEVEL = logging.INFO
-LOG_FMT = "[%(levelname)s] - %(message)s"
-logging.basicConfig(level=LOG_LEVEL, format=LOG_FMT)
+setLoggerClass(Logger)
+logger: l = getLogger("bopymo")
 # Here's a quick way to see what features are deprecated, and also ensure to only send one warning per deprecation.
 DEPRECATION_WARNINGS: dict[str, bool] = {
     # Deprecated since Bopymo 0.2
@@ -293,12 +292,12 @@ class Bopimo_Object:
                 The sequence of the object's position points
         """
         if not DEPRECATION_WARNINGS["Getting position_points directly"]:
-            logging.warning(
+            logger.warning(
                 "Getting position_points directly is deprecated. This will be removed in a future version of Bopymo. Please use methods to access position points instead."
             )
             DEPRECATION_WARNINGS["Getting position_points directly"] = True
         if self._position_travel_speed is None:
-            logging.warning(
+            logger.warning(
                 "You are grabbing position_points directly before declaring a constant travel speed. Setting speed to 5."
             )
             self.position_travel_speed = 5
@@ -322,7 +321,7 @@ class Bopimo_Object:
                 A new sequence of position points
         """
         if not DEPRECATION_WARNINGS["Setting position_points directly"]:
-            logging.warning(
+            logger.warning(
                 "Setting position_points directly is deprecated. This will be removed in a future version of Bopymo. Please use methods to set position points instead."
             )
             DEPRECATION_WARNINGS["Setting position_points directly"] = True
@@ -974,7 +973,7 @@ class Bopimo_Level:
                 and song == Music.ISAIAH_NEW_SONG
                 and not DEPRECATION_WARNINGS["Using Music.ISAIAH_NEW_SONG"]
             ):
-                logging.warning(
+                logger.warning(
                     "Your level's music includes the value Music.ISAIAH_NEW_SONG, which has been renamed to Music.ORGAN. "
                     + "This old name will be removed in a future version of Bopymo. Please change this value to use the new name."
                 )
@@ -1013,13 +1012,13 @@ class Bopimo_Level:
         """
         start = time.perf_counter()
         if len(self._blocks) > Bopimo_Level.SERVER_BLOCK_LIMIT:
-            logging.warning(
+            logger.warning(
                 f"Your level has {len(self._blocks)} blocks, which exceeds the server block limit of {Bopimo_Level.SERVER_BLOCK_LIMIT}. "
                 + "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
                 + "not publish your level online."
             )
         if len(self._completion_stars) > Bopimo_Level.SERVER_STAR_LIMIT:
-            logging.warning(
+            logger.warning(
                 f"Your level has {len(self._completion_stars)} completion stars, which exceeds the server star limit of {Bopimo_Level.SERVER_STAR_LIMIT}. "
                 + "You will still be able to play your level offline, but it can not be imported in an online building session and you can "
                 + "not publish your level online."
@@ -1030,7 +1029,7 @@ class Bopimo_Level:
             )  # pyright: ignore[reportUnusedCallResult]
         end = time.perf_counter()
         export_time: int = int((end - start) * 1000)
-        logging.info(
+        logger.info(
             f'"{self.name}" successfully exported to {file_path}.bopjson in {export_time} ms'
         )
 
@@ -1119,7 +1118,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
     @property
     def transparency_enabled(self) -> bool:
         if not DEPRECATION_WARNINGS["Using transparency_enabled"]:
-            logging.warning(
+            logger.warning(
                 'The property "transparency_enabled" has been removed since Bopimo 1.1.0, so using this property is deprecated. '
                 + "This attribute will be removed in a future version of Bopymo. Remove any lines getting this property and get "
                 + '"opacity" directly.'
@@ -1130,7 +1129,7 @@ class Bopimo_Block(Bopimo_Tilable_Object):
     @transparency_enabled.setter
     def transparency_enabled(self, value: bool) -> None:
         if not DEPRECATION_WARNINGS["Using transparency_enabled"]:
-            logging.warning(
+            logger.warning(
                 'The property "transparency_enabled" has been removed since Bopimo 1.1.0, so using this property is deprecated. '
                 + "This attribute will be removed in a future version of Bopymo. Remove any lines setting this property and set "
                 + '"opacity" directly.'
@@ -2432,7 +2431,7 @@ class Bopimo_Note_Block(Bopimo_Tilable_Object):
                 or octave < lowest[1]
                 or octave > highest[1]
             ):
-                logging.warning(
+                logger.warning(
                     f"You've defined a note ({key}{octave}) that is outside the physical range of the instrument {self.instrument}. Expect strange behavior!"
                 )
 
@@ -3016,7 +3015,7 @@ class Bopimo_Pine_Tree_Snow(Bopimo_Pine_Tree):
             True,
         )
         if not DEPRECATION_WARNINGS["Using Bopimo_Pine_Tree_Snow"]:
-            logging.warning(
+            logger.warning(
                 "You are creating an instance of Bopimo_Pine_Tree_Snow, which has been removed since Bopimo 1.1.0. "
                 + "This class will be removed in a future version of Bopymo. To create a snowy pine tree, use "
                 + 'Bopimo_Pine_Tree and set the "snow" attribute to True either on a separate line or through quickhanding.'
@@ -3905,7 +3904,7 @@ class Bopimo_Decal(Bopimo_Item_Mesh):
                 The mesh size needed for the texture to match its size.
         """
         if self.scale.z > 0.1:
-            logging.warning(
+            logger.warning(
                 "You set a Decal's Z scale to a non-zero value, which defeats the purpose of a Decal. "
                 + "Consider using a Item_Mesh instead."
             )

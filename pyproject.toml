@@ -18,6 +18,8 @@ classifiers = [
 license = "MIT"
 license-files = ["LICEN[CS]E"]
 
+dependencies = ["colorama", "types-colorama"]
+
 [project.urls]
 Homepage = "https://github.com/Morxemplum/bopymo"
 Issues = "https://github.com/Morxemplum/bopymo/issues"
